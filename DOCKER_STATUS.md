@@ -1,4 +1,4 @@
-# Docker Status - Cursor Bundle v6.9.33
+# Docker Status - Cursor Bundle v6.9.34
 
 ## Current Status: ⚠️ DOCKER BUILD FAILS
 
@@ -18,7 +18,7 @@ Perhaps iptables or your kernel needs to be upgraded.
 ### Docker Files Included:
 ✅ Dockerfile (syntax valid, but build fails)
 ✅ docker-compose.yml (configuration valid)
-✅ 15-docker_install_v6.9.33.sh (script functional)
+✅ 15-docker_install_v6.9.34.sh (script functional)
 ✅ docker-supervisor.conf (configuration ready)
 
 ### Recommendation:
@@ -28,5 +28,5 @@ Perhaps iptables or your kernel needs to be upgraded.
 - Not guaranteed to work without modifications
 
 ### Working Installation Methods:
-✅ Enhanced installer: ./14-install_v6.9.33_enhanced.sh
+✅ Enhanced installer: ./14-install_v6.9.34_enhanced.sh
 ✅ All other installation methods tested and working

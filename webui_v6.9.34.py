@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-webui_v6.9.33.py — minimal Flask-based web UI for Cursor test suite.
+webui_v6.9.34.py — minimal Flask-based web UI for Cursor test suite.
 
 This script exposes a `/health` endpoint for testing purposes. It accepts
 `--port` to specify the port and optionally a `--test` flag. It does not

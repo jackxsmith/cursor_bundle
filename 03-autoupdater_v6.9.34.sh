@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 03-autoupdater_v6.9.33.sh — wrapper for the auto-updater
+# 03-autoupdater_v6.9.34.sh — wrapper for the auto-updater
 #
 # Provides a minimal command-line interface for checking updates.  This
 # wrapper simply calls the fixed implementation which reports that no
 # updates are available.
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec "$DIR/03-autoupdater_v6.9.33_fixed.sh" "$@"
+exec "$DIR/03-autoupdater_v6.9.34_fixed.sh" "$@"

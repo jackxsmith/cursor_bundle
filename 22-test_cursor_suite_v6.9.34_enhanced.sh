@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 22-test_cursor_suite_v6.9.33_enhanced.sh — Enhanced Cursor Test Suite
+# 22-test_cursor_suite_v6.9.34_enhanced.sh — Enhanced Cursor Test Suite
 set -euo pipefail
 IFS=$'\n\t'
 
-VERSION="6.9.33"
+VERSION="6.9.34"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG="cursor_test_${VERSION}.log"
 JSON="cursor_test_${VERSION}.json"
@@ -142,9 +142,9 @@ test_dependencies() {
 test_file_structure() {
   log "Testing bundle file structure..."
   local required_files=(
-    "01-appimage_v6.9.33.AppImage"
-    "14-install_v6.9.33_enhanced.sh"
-    "02-launcher_v6.9.33_enhanced.sh"
+    "01-appimage_v6.9.34.AppImage"
+    "14-install_v6.9.34_enhanced.sh"
+    "02-launcher_v6.9.34_enhanced.sh"
   )
   
   local missing_files=()
@@ -162,7 +162,7 @@ test_file_structure() {
   fi
   
   # Check AppImage is executable
-  if [[ ! -x "$SCRIPT_DIR/01-appimage_v6.9.33.AppImage" ]]; then
+  if [[ ! -x "$SCRIPT_DIR/01-appimage_v6.9.34.AppImage" ]]; then
     error "AppImage is not executable"
     jsonlog "file_structure" "FAIL" "AppImage not executable"
     return 1
@@ -220,9 +220,9 @@ test_installation() {
   log "Testing installation process..."
   
   # Test dry-run first
-  if [[ -x "$SCRIPT_DIR/14-install_v6.9.33_enhanced.sh" ]]; then
+  if [[ -x "$SCRIPT_DIR/14-install_v6.9.34_enhanced.sh" ]]; then
     log "Testing dry-run installation..."
-    if ! "$SCRIPT_DIR/14-install_v6.9.33_enhanced.sh" --dry-run &>>"$LOG"; then
+    if ! "$SCRIPT_DIR/14-install_v6.9.34_enhanced.sh" --dry-run &>>"$LOG"; then
       error "Dry-run installation failed"
       jsonlog "installation" "FAIL" "Dry-run failed"
       return 1
@@ -242,16 +242,16 @@ test_installation() {
 test_launcher() {
   log "Testing launcher functionality..."
   
-  if [[ -x "$SCRIPT_DIR/02-launcher_v6.9.33_enhanced.sh" ]]; then
+  if [[ -x "$SCRIPT_DIR/02-launcher_v6.9.34_enhanced.sh" ]]; then
     log "Testing launcher help..."
-    if ! "$SCRIPT_DIR/02-launcher_v6.9.33_enhanced.sh" --help &>>"$LOG"; then
+    if ! "$SCRIPT_DIR/02-launcher_v6.9.34_enhanced.sh" --help &>>"$LOG"; then
       error "Launcher help failed"
       jsonlog "launcher" "FAIL" "Help option failed"
       return 1
     fi
     
     log "Testing launcher check..."
-    if ! "$SCRIPT_DIR/02-launcher_v6.9.33_enhanced.sh" --check &>>"$LOG"; then
+    if ! "$SCRIPT_DIR/02-launcher_v6.9.34_enhanced.sh" --check &>>"$LOG"; then
       warn "Launcher check had issues (may be expected)"
       jsonlog "launcher" "WARN" "Check had issues"
     else
@@ -271,7 +271,7 @@ test_launcher() {
 test_web_ui() {
   log "Testing web UI..."
   
-  local web_ui_script="$SCRIPT_DIR/06-launcherplus_v6.9.33_fixed.py"
+  local web_ui_script="$SCRIPT_DIR/06-launcherplus_v6.9.34_fixed.py"
   if [[ -f "$web_ui_script" ]]; then
     log "Testing web UI syntax..."
     if python3 -m py_compile "$web_ui_script" 2>>"$ERROR_LOG"; then
@@ -322,8 +322,8 @@ test_docker() {
     fi
     
     # Test Docker script syntax
-    if [[ -f "15-docker_install_v6.9.33.sh" ]]; then
-        if bash -n "15-docker_install_v6.9.33.sh"; then
+    if [[ -f "15-docker_install_v6.9.34.sh" ]]; then
+        if bash -n "15-docker_install_v6.9.34.sh"; then
             log "✓ Docker installation script syntax OK"
         else
             error "✗ Docker installation script syntax error"
@@ -371,9 +371,9 @@ test_cleanup() {
   log "Testing cleanup functionality..."
   
   # Test uninstall option in enhanced installer
-  if [[ -x "$SCRIPT_DIR/14-install_v6.9.33_enhanced.sh" ]]; then
+  if [[ -x "$SCRIPT_DIR/14-install_v6.9.34_enhanced.sh" ]]; then
     log "Testing uninstall dry-run..."
-    if "$SCRIPT_DIR/14-install_v6.9.33_enhanced.sh" --uninstall --dry-run &>>"$LOG"; then
+    if "$SCRIPT_DIR/14-install_v6.9.34_enhanced.sh" --uninstall --dry-run &>>"$LOG"; then
       jsonlog "cleanup" "PASS" "Uninstall dry-run successful"
     else
       error "Uninstall dry-run failed"

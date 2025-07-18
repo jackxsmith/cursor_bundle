@@ -1,4 +1,4 @@
-Cursor Bundle Size Report - v6.9.33
+Cursor Bundle Size Report - v6.9.34
 
 Bundle size: ~45KB (meaningful increase from v6.9.27)
 All size increases from functional improvements:

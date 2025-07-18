@@ -3,8 +3,8 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# launcher_secure_v6.9.33.sh
-# Unified launcher with enhanced security checks for Cursor v6.9.33
+# launcher_secure_v6.9.34.sh
+# Unified launcher with enhanced security checks for Cursor v6.9.34
 # ============================================================================
 
 log() { echo "[LauncherSecure] $*"; }
@@ -24,7 +24,7 @@ fi
 }
 
 launch_cursor() {
-local binary="./01-appimage_v6.9.33.AppImage"
+local binary="./01-appimage_v6.9.34.AppImage"
 check_integrity "$binary"
 chmod +x "$binary"
 "$binary" &

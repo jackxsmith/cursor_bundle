@@ -29,10 +29,10 @@ test_deb() {
 }
 
 #!/usr/bin/env bash
-# Full Enterprise Test Suite for Cursor v6.9.33
+# Full Enterprise Test Suite for Cursor v6.9.34
 set -euo pipefail
 IFS=$'\n\t'
-VERSION="6.9.33"
+VERSION="6.9.34"
 LOG="cursor_test_${VERSION}.log"
 JSON="cursor_test_${VERSION}.json"
 TMPDIR=$(mktemp -d)
@@ -267,39 +267,39 @@ run_all() {
 }
 
 test_file_launcher() {
-  echo "[INFO] Testing file 01-appimage_v6.9.33.AppImage"
-  if ! test -f "01-appimage_v6.9.33.AppImage"; then
-    echo "[ERROR] File check failed: 01-appimage_v6.9.33.AppImage" >> "$ERROR_LOG"
+  echo "[INFO] Testing file 01-appimage_v6.9.34.AppImage"
+  if ! test -f "01-appimage_v6.9.34.AppImage"; then
+    echo "[ERROR] File check failed: 01-appimage_v6.9.34.AppImage" >> "$ERROR_LOG"
   else
-    echo "[INFO] Validating AppImage presence" "01-appimage_v6.9.33.AppImage"
+    echo "[INFO] Validating AppImage presence" "01-appimage_v6.9.34.AppImage"
   fi
 }
 
 test_file_launcher_sh() {
-  echo "[INFO] Testing file 02-launcher_v6.9.33.sh"
-  if ! bash -n "02-launcher_v6.9.33.sh" 2>/dev/null; then
-    echo "[ERROR] File check failed: 02-launcher_v6.9.33.sh" >> "$ERROR_LOG"
+  echo "[INFO] Testing file 02-launcher_v6.9.34.sh"
+  if ! bash -n "02-launcher_v6.9.34.sh" 2>/dev/null; then
+    echo "[ERROR] File check failed: 02-launcher_v6.9.34.sh" >> "$ERROR_LOG"
   fi
 }
 
 test_file_autoupdater() {
-  echo "[INFO] Testing file 03-autoupdater_v6.9.33.sh"
-  if ! bash -n "03-autoupdater_v6.9.33.sh" 2>/dev/null; then
-    echo "[ERROR] File check failed: 03-autoupdater_v6.9.33.sh" >> "$ERROR_LOG"
+  echo "[INFO] Testing file 03-autoupdater_v6.9.34.sh"
+  if ! bash -n "03-autoupdater_v6.9.34.sh" 2>/dev/null; then
+    echo "[ERROR] File check failed: 03-autoupdater_v6.9.34.sh" >> "$ERROR_LOG"
   fi
 }
 
 test_file_secure() {
-  echo "[INFO] Testing file 04-secure_v6.9.33.sh"
-  if ! bash -n "04-secure_v6.9.33.sh" 2>/dev/null; then
-    echo "[ERROR] File check failed: 04-secure_v6.9.33.sh" >> "$ERROR_LOG"
+  echo "[INFO] Testing file 04-secure_v6.9.34.sh"
+  if ! bash -n "04-secure_v6.9.34.sh" 2>/dev/null; then
+    echo "[ERROR] File check failed: 04-secure_v6.9.34.sh" >> "$ERROR_LOG"
   fi
 }
 
 test_file_secureplus() {
-  echo "[INFO] Testing file 05-secureplus_v6.9.33.sh"
-  if ! bash -n "05-secureplus_v6.9.33.sh" 2>/dev/null; then
-    echo "[ERROR] File check failed: 05-secureplus_v6.9.33.sh" >> "$ERROR_LOG"
+  echo "[INFO] Testing file 05-secureplus_v6.9.34.sh"
+  if ! bash -n "05-secureplus_v6.9.34.sh" 2>/dev/null; then
+    echo "[ERROR] File check failed: 05-secureplus_v6.9.34.sh" >> "$ERROR_LOG"
   fi
 }
 
@@ -325,9 +325,9 @@ test_file_readme() {
 }
 
 test_file_policies() {
-  echo "[INFO] Testing file 21-policies_v6.9.33.txt"
-  if ! grep -Ec "^[1-9][0-9]?\. " "21-policies_v6.9.33.txt" >/dev/null 2>&1; then
-    echo "[ERROR] File check failed: 21-policies_v6.9.33.txt" >> "$ERROR_LOG"
+  echo "[INFO] Testing file 21-policies_v6.9.34.txt"
+  if ! grep -Ec "^[1-9][0-9]?\. " "21-policies_v6.9.34.txt" >/dev/null 2>&1; then
+    echo "[ERROR] File check failed: 21-policies_v6.9.34.txt" >> "$ERROR_LOG"
   fi
 }
 

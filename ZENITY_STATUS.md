@@ -1,4 +1,4 @@
-# Zenity Status - Cursor Bundle v6.9.33
+# Zenity Status - Cursor Bundle v6.9.34
 
 ## Current Status: ⚠️ UNTESTED
 
@@ -23,4 +23,4 @@
 
 ### Honest Recommendation:
 - Script included but not guaranteed to work
-- Use enhanced installer instead: ./14-install_v6.9.33_enhanced.sh
+- Use enhanced installer instead: ./14-install_v6.9.34_enhanced.sh

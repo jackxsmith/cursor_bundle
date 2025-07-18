@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Zenity GUI Installer for Cursor IDE v6.9.33
+# Zenity GUI Installer for Cursor IDE v6.9.34
 
 set -euo pipefail
 
-VERSION="6.9.33"
-APPIMAGE_FILE="01-appimage_v6.9.33.AppImage"
+VERSION="6.9.34"
+APPIMAGE_FILE="01-appimage_v6.9.34.AppImage"
 INSTALL_DIR="/opt/cursor"
 
 # Check if zenity is available

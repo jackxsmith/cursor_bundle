@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# tracker_v6.9.33.sh — Enhanced Function Tracker v4 for Cursor Bundle
+# tracker_v6.9.34.sh — Enhanced Function Tracker v4 for Cursor Bundle
 # ============================================================================
 
 log() { echo "[Tracker] $*"; }

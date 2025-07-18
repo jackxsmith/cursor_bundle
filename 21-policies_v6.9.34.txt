@@ -1,0 +1,13 @@
+# Policies for version 6.9.34
+
+## Upgrade and Versioning
+
+Whenever updating this repository, bump the version number sequentially (e.g., from 6.9.33 to 6.9.34). All filenames for scripts and release archives must follow the pattern `vX.Y.Z.sh` or `vX.Y.Z.zip` where `X.Y.Z` reflects the current version.
+
+## Running the Upgrade Script
+
+To perform the upgrade to version 6.9.34, run the provided script `v6.9.34.sh` using `bash` **without** `sudo`. Running without `sudo` ensures your Git configuration and SSH credentials are used correctly. Example:
+
+
+
+Do not run the script with `sudo`.

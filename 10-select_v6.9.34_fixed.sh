@@ -3,8 +3,8 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# select_v6.9.33.sh
-# Language selector for Cursor v6.9.33
+# select_v6.9.34.sh
+# Language selector for Cursor v6.9.34
 # ============================================================================
 
 LANG_DIR="/opt/cursor/lang"

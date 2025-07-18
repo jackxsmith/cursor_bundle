@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 10-select_v6.9.33_enhanced.sh — Enhanced Language/Option Selection Script
+# 10-select_v6.9.34_enhanced.sh — Enhanced Language/Option Selection Script
 set -euo pipefail
 IFS=$'\n\t'
 
-VERSION="6.9.33"
+VERSION="6.9.34"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LANG_DIR="$HOME/.cursor/lang"
 CONFIG_FILE="$HOME/.cursor/config"
@@ -56,10 +56,10 @@ list_languages() {
   echo "  en - English (default)"
   echo "  it - Italian"
   
-  if [[ -f "$SCRIPT_DIR/08-localization_v6.9.33.json" ]]; then
+  if [[ -f "$SCRIPT_DIR/08-localization_v6.9.34.json" ]]; then
     log "Loading additional languages from localization file..."
     # Extract language codes from JSON file
-    grep -o '"[a-z][a-z]"' "$SCRIPT_DIR/08-localization_v6.9.33.json" | sort -u | sed 's/"//g' | while read -r lang; do
+    grep -o '"[a-z][a-z]"' "$SCRIPT_DIR/08-localization_v6.9.34.json" | sort -u | sed 's/"//g' | while read -r lang; do
       if [[ "$lang" != "en" ]] && [[ "$lang" != "it" ]]; then
         echo "  $lang - Available"
       fi

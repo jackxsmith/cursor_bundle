@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 02-launcher_v6.9.33_enhanced.sh — Enhanced Cursor Launcher v6.9.33
+# 02-launcher_v6.9.34_enhanced.sh — Enhanced Cursor Launcher v6.9.34
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -7,17 +7,17 @@ IFS=$'\n\t'
 # Enhanced Cursor Launcher with improved error handling and path resolution
 # ==============================================================================
 
-VERSION="6.9.33"
+VERSION="6.9.34"
 NAME="Cursor Launcher"
 INSTALL_DIR="/opt/cursor"
 BUNDLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Try multiple possible AppImage locations
 APPIMAGE_CANDIDATES=(
-  "$BUNDLE_DIR/01-appimage_v6.9.33.AppImage"
+  "$BUNDLE_DIR/01-appimage_v6.9.34.AppImage"
   "$BUNDLE_DIR/cursor.AppImage"
   "/opt/cursor/cursor.AppImage"
-  "$BUNDLE_DIR/appimage_v6.9.33.AppImage"
+  "$BUNDLE_DIR/appimage_v6.9.34.AppImage"
 )
 
 APPIMAGE=""

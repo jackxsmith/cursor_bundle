@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 INSTALL_DIR="/opt/cursor"
-# 14-install_v6.9.33.sh — Cursor v6.9.33 Installer (fixed for Ubuntu 25.04)
+# 14-install_v6.9.34.sh — Cursor v6.9.34 Installer (fixed for Ubuntu 25.04)
 set -euo pipefail
 IFS=$'\n\t'
 
 ### Configuration
-VERSION="6.9.33"
+VERSION="6.9.34"
 BUNDLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APPIMAGE="$BUNDLE_DIR/01-appimage_v6.9.33.AppImage"
-PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.33.sh)
-INSTALLER="$BUNDLE_DIR/14-install_v6.9.33.sh"
+APPIMAGE="$BUNDLE_DIR/01-appimage_v6.9.34.AppImage"
+PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.34.sh)
+INSTALLER="$BUNDLE_DIR/14-install_v6.9.34.sh"
 SYMLINK="/usr/local/bin/cursor"
 DESKTOP_ENTRY="/usr/share/applications/cursor.desktop"
 ICON="$INSTALL_DIR/cursor.svg"
@@ -33,7 +33,7 @@ if [[ "$(lsb_release -rs)" == "25.04" ]]; then
 fi
 
 ### 2. Clean up any leading line numbers in preinstall scripts
-PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.33.sh)
+PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.34.sh)
 for script in "${PREINSTALL_SCRIPTS[@]}"; do
   if [[ -f "$script" ]]; then
     log "Stripping line numbers from $(basename "$script")"
@@ -43,7 +43,7 @@ for script in "${PREINSTALL_SCRIPTS[@]}"; do
 done
 
 ### 3. Run pre-install scripts (if any)
-PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.33.sh)
+PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.34.sh)
 for script in "${PREINSTALL_SCRIPTS[@]}"; do
   if [[ -x "$script" ]]; then
     log "Executing $(basename "$script")"
@@ -95,8 +95,8 @@ sudo chmod +x "$SYMLINK"
 log "Cursor v$VERSION installed successfully."
 
 # Automatically run test suite after install
-if [[ -f "$BUNDLE_DIR/22-test_cursor_suite_v6.9.33_fixed.sh" ]]; then
-  bash "$BUNDLE_DIR/22-test_cursor_suite_v6.9.33_fixed.sh"
+if [[ -f "$BUNDLE_DIR/22-test_cursor_suite_v6.9.34_fixed.sh" ]]; then
+  bash "$BUNDLE_DIR/22-test_cursor_suite_v6.9.34_fixed.sh"
 fi
 echo "You can launch it by running: cursor"
 

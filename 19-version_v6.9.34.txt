@@ -1,7 +1,7 @@
-Cursor v6.9.33 – Complete Unified Installer Suite
+Cursor v6.9.34 – Complete Unified Installer Suite
 =================================================
 
-Version: 6.9.33
+Version: 6.9.34
 Release Date: July 17, 2025
 Bundle Type: Complete with all installation methods fixed
 
@@ -14,7 +14,7 @@ Key Features:
 • Complete documentation and testing
 
 Installation:
-sudo ./14-install_v6.9.33_enhanced.sh
+sudo ./14-install_v6.9.34_enhanced.sh
 
 Validation:
-./22-test_cursor_suite_v6.9.33_enhanced.sh
+./22-test_cursor_suite_v6.9.34_enhanced.sh
