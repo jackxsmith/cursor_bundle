@@ -1,0 +1,145 @@
+=== Cursor Test Suite v6.9.32 ===
+Test started: Fri Jul 18 04:11:04 UTC 2025
+[2025-07-18 04:11:04][INFO] Starting comprehensive test suite...
+[2025-07-18 04:11:04][INFO] Running: test_dependencies
+[2025-07-18 04:11:04][INFO] Testing system dependencies...
+[2025-07-18 04:11:04][INFO] Optional dependencies not found (this is normal): zenity
+docker
+notify-send
+flask
+[2025-07-18 04:11:04][INFO] Dependencies check completed
+[2025-07-18 04:11:04][INFO] Running: test_file_structure
+[2025-07-18 04:11:04][INFO] Testing bundle file structure...
+[2025-07-18 04:11:04][INFO] File structure check completed
+[2025-07-18 04:11:04][INFO] Running: test_syntax_check
+[2025-07-18 04:11:04][INFO] Testing script syntax...
+[2025-07-18 04:11:04][INFO] Checking syntax: 02-launcher_v6.9.31.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 02-launcher_v6.9.31_enhanced.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 02-launcher_v6.9.31_fixed.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 02-launcher_v6.9.32.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 02-launcher_v6.9.32_enhanced.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 02-launcher_v6.9.32_fixed.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 03-autoupdater_v6.9.31.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 03-autoupdater_v6.9.31_fixed.sh
+[2025-07-18 04:11:04][INFO] Checking syntax: 03-autoupdater_v6.9.32.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 03-autoupdater_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 04-secure_v6.9.31.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 04-secure_v6.9.32.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 05-secureplus_v6.9.31.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 05-secureplus_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 05-secureplus_v6.9.32.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 05-secureplus_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 09-zenity_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 09-zenity_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 10-select_v6.9.31_enhanced.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 10-select_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 10-select_v6.9.32_enhanced.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 10-select_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 11-preinstall_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 11-preinstall_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 12-postinstall_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 12-postinstall_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 13-posttest_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 13-posttest_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 14-install_v6.9.31_enhanced.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 14-install_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 14-install_v6.9.32_enhanced.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 14-install_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 15-docker_install_v6.9.31.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 15-docker_install_v6.9.32.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 16-tracker_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 16-tracker_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 17-policycheck_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 17-policycheck_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 22-test_cursor_suite_v6.9.31_enhanced.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 22-test_cursor_suite_v6.9.31_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 22-test_cursor_suite_v6.9.32_enhanced.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: 22-test_cursor_suite_v6.9.32_fixed.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: get-docker.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: install_v6.9.31.sh
+[2025-07-18 04:11:05][INFO] Checking syntax: install_v6.9.32.sh
+[2025-07-18 04:11:05][INFO] Checking Python syntax: 06-launcherplus_v6.9.31_fixed.py
+[2025-07-18 04:11:05][INFO] Checking Python syntax: 06-launcherplus_v6.9.32_fixed.py
+[2025-07-18 04:11:06][INFO] Checking Python syntax: 07-tkinter_v6.9.31_fixed.py
+[2025-07-18 04:11:06][INFO] Checking Python syntax: 07-tkinter_v6.9.32_fixed.py
+[2025-07-18 04:11:06][INFO] Checking Python syntax: webui_v6.9.31.py
+[2025-07-18 04:11:06][INFO] Checking Python syntax: webui_v6.9.32.py
+[2025-07-18 04:11:06][INFO] Syntax check completed
+[2025-07-18 04:11:06][INFO] Running: test_installation
+[2025-07-18 04:11:06][INFO] Testing installation process...
+[2025-07-18 04:11:06][INFO] Testing dry-run installation...
+[install][INFO] Starting Cursor IDE installer v6.9.32
+[install][INFO] Command line: /home/oai/share/cursor_bundle_v6.9.32_complete/14-install_v6.9.32_enhanced.sh --dry-run
+[install][INFO] Dry-run mode enabled
+[install][INFO] Detected distribution: Debian GNU/Linux 12 (bookworm)
+[install][INFO] Installing required dependencies...
+[install][INFO] [DRY-RUN] Would run: apt-get update && apt-get install -y curl libfuse2 libfuse2t64 python3 python3-pip zenity xdg-utils
+[install][INFO] Verifying dependencies...
+[install][INFO] [DRY-RUN] Missing dependencies detected: libfuse2/libfuse2t64 (ignored in dry-run mode)
+[install][INFO] Starting Cursor IDE installation...
+[install][INFO] [DRY-RUN] Would install Cursor IDE to /opt/cursor
+[install][INFO] [DRY-RUN] Would create symlink at /usr/local/bin/cursor
+[install][INFO] [DRY-RUN] Would create desktop entry at /usr/share/applications/cursor.desktop
+[install][INFO] Installation process completed
+[2025-07-18 04:11:06][INFO] Installation test completed
+[2025-07-18 04:11:06][INFO] Running: test_launcher
+[2025-07-18 04:11:06][INFO] Testing launcher functionality...
+[2025-07-18 04:11:06][INFO] Testing launcher help...
+Cursor Launcher v6.9.32
+
+USAGE:
+  /home/oai/share/cursor_bundle_v6.9.32_complete/02-launcher_v6.9.32_enhanced.sh [OPTION]
+
+OPTIONS:
+  --check       Check AppImage and dependencies
+  --install     Create desktop entry and symlink (requires sudo)
+  --run         Run Cursor AppImage
+  --uninstall   Remove desktop entry and symlink (requires sudo)
+  --version     Show version information
+  -h, --help    Show this help message
+
+EXAMPLES:
+  /home/oai/share/cursor_bundle_v6.9.32_complete/02-launcher_v6.9.32_enhanced.sh --check     # Verify installation
+  /home/oai/share/cursor_bundle_v6.9.32_complete/02-launcher_v6.9.32_enhanced.sh --install   # Set up desktop integration
+  /home/oai/share/cursor_bundle_v6.9.32_complete/02-launcher_v6.9.32_enhanced.sh --run       # Launch Cursor IDE
+  /home/oai/share/cursor_bundle_v6.9.32_complete/02-launcher_v6.9.32_enhanced.sh             # Same as --run
+
+DESCRIPTION:
+  Enhanced launcher for Cursor IDE with automatic path detection,
+  dependency checking, and desktop integration management.
+
+[2025-07-18 04:11:06][INFO] Testing launcher check...
+=== Cursor IDE System Check ===
+
+[2025-07-18 04:11:06] Checking AppImage and dependencies...
+[2025-07-18 04:11:06] Found AppImage: /home/oai/share/cursor_bundle_v6.9.32_complete/01-appimage_v6.9.32.AppImage
+[2025-07-18 04:11:06] ✓ AppImage is valid and executable
+✓ AppImage: OK
+[2025-07-18 04:11:06] Checking dependencies...
+[2025-07-18 04:11:06] ⚠ Missing dependencies: libfuse2 or libfuse2t64
+[2025-07-18 04:11:06] Install with: sudo apt-get install libfuse2
+⚠ Dependencies: MISSING (see log for details)
+⚠ Installation: Not found (run --install for desktop integration)
+⚠ Desktop entry: Not found
+
+System check completed. See /home/oai/.cursor_launcher.log for details.
+[2025-07-18 04:11:06][INFO] Launcher test completed
+[2025-07-18 04:11:06][INFO] Running: test_web_ui
+[2025-07-18 04:11:06][INFO] Testing web UI...
+[2025-07-18 04:11:06][INFO] Testing web UI syntax...
+[2025-07-18 04:11:07][INFO] Testing web UI startup...
+[2025-07-18 04:11:10][INFO] Web UI test completed
+[2025-07-18 04:11:10][INFO] Running: test_docker
+[2025-07-18 04:11:10][INFO] Testing Docker installation method...
+[2025-07-18 04:11:10][INFO] Docker not available, skipping Docker tests
+[2025-07-18 04:11:10][INFO] Running: test_cleanup
+[2025-07-18 04:11:10][INFO] Testing cleanup functionality...
+[2025-07-18 04:11:10][INFO] Testing uninstall dry-run...
+[install][INFO] Starting Cursor IDE installer v6.9.32
+[install][INFO] Command line: /home/oai/share/cursor_bundle_v6.9.32_complete/14-install_v6.9.32_enhanced.sh --uninstall
+--dry-run
+[install][INFO] Uninstalling Cursor IDE...
+[install][INFO] Cursor IDE uninstalled successfully
+[2025-07-18 04:11:10][INFO] Cleanup test completed
+[2025-07-18 04:11:10][INFO] Test suite completed
+[2025-07-18 04:11:10][INFO] ✅ All tests passed!

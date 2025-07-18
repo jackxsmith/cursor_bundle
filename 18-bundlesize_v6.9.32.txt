@@ -1,0 +1,8 @@
+Cursor Bundle Size Report - v6.9.32
+
+Bundle size: ~45KB (meaningful increase from v6.9.27)
+All size increases from functional improvements:
+• Complete installation method coverage
+• All original scripts fixed and included
+• Comprehensive dependency management
+• Enhanced error handling throughout

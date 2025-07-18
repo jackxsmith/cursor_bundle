@@ -1,0 +1,9 @@
+[Desktop Entry]
+X-GNOME-Autostart-enabled=true
+Name=Cursor
+Exec=/opt/cursor/01-appimage_v6.9.32.AppImage
+Icon=utilities-terminal
+Type=Application
+Categories=Utility;Development;
+Comment=Launch the Cursor application
+Terminal=false

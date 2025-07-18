@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Cursor
+Comment=AI-powered code editor
+Exec=/usr/local/bin/cursor %F
+Icon=/opt/cursor/cursor.svg
+Type=Application
+Categories=Development;IDE;TextEditor;
+StartupNotify=true
+MimeType=text/plain;text/x-chdr;text/x-csrc;text/x-c++hdr;text/x-c++src;text/x-java;text/x-dsrc;text/x-pascal;text/x-perl;text/x-python;application/x-php;text/x-sql;text/x-diff;

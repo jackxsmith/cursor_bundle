@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  cursor-ide:
+    build: .
+    container_name: cursor-ide
+    ports:
+      - "5900:5900"  # VNC
+      - "8080:8080"  # Web UI
+    volumes:
+      - cursor-data:/home/cursor
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - DISPLAY=:1
+    restart: unless-stopped
+
+volumes:
+  cursor-data:

@@ -1,0 +1,7 @@
+*.tar.gz
+*.zip
+*.log
+.git
+README*.md
+CHANGELOG*.md
+all_warnings.txt
