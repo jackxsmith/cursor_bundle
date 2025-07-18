@@ -1,11 +1,11 @@
-# Cursor Bundle v6.9.32 - Complete Installation Suite
+# Cursor Bundle v6.9.33 - Complete Installation Suite
 
 ## All Installation Methods Fixed and Updated
 
 ### Enhanced Scripts (Recommended)
-- `14-install_v6.9.32_enhanced.sh` - Main installer with dependency management
-- `02-launcher_v6.9.32_enhanced.sh` - Enhanced launcher with path detection
-- `22-test_cursor_suite_v6.9.32_enhanced.sh` - Comprehensive test suite
+- `14-install_v6.9.33_enhanced.sh` - Main installer with dependency management
+- `02-launcher_v6.9.33_enhanced.sh` - Enhanced launcher with path detection
+- `22-test_cursor_suite_v6.9.33_enhanced.sh` - Comprehensive test suite
 
 ### All Original Methods Fixed
 - All original installation scripts updated and error-free
@@ -14,12 +14,12 @@
 
 ### Quick Start
 ```bash
-sudo ./14-install_v6.9.32_enhanced.sh
+sudo ./14-install_v6.9.33_enhanced.sh
 ```
 
 ### Validation
 ```bash
-./22-test_cursor_suite_v6.9.32_enhanced.sh
+./22-test_cursor_suite_v6.9.33_enhanced.sh
 ```
 
 ## Docker Installation
@@ -27,8 +27,8 @@ sudo ./14-install_v6.9.32_enhanced.sh
 ### Quick Docker Setup
 ```bash
 # Build and run with Docker
-./15-docker_install_v6.9.32.sh --build
-./15-docker_install_v6.9.32.sh --run
+./15-docker_install_v6.9.33.sh --build
+./15-docker_install_v6.9.33.sh --run
 
 # Access via VNC: localhost:5900
 # Access via Web UI: http://localhost:8080
@@ -49,16 +49,16 @@ docker-compose down
 ### Docker Management
 ```bash
 # Build image
-./15-docker_install_v6.9.32.sh --build
+./15-docker_install_v6.9.33.sh --build
 
 # Run container
-./15-docker_install_v6.9.32.sh --run
+./15-docker_install_v6.9.33.sh --run
 
 # Stop container
-./15-docker_install_v6.9.32.sh --stop
+./15-docker_install_v6.9.33.sh --stop
 
 # Remove everything
-./15-docker_install_v6.9.32.sh --remove
+./15-docker_install_v6.9.33.sh --remove
 
 # Shell access
 docker exec -it cursor-ide bash
@@ -74,7 +74,7 @@ It wraps the shell installer and presents an **Install** and
 To launch the Tkinter GUI installer, run:
 
 ```bash
-python3 07-tkinter_v6.9.32_fixed.py
+python3 07-tkinter_v6.9.33_fixed.py
 ```
 
 Please note that the `tkinter` module must be available in your

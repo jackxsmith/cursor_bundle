@@ -3,8 +3,8 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# tracker_v6.9.32.sh
-# Tracks function names and confirms script completeness for Cursor v6.9.32
+# tracker_v6.9.33.sh
+# Tracks function names and confirms script completeness for Cursor v6.9.33
 # ============================================================================
 
 log() { echo "[Tracker] $*"; }
@@ -63,12 +63,12 @@ else
 fi
 
 log ""
-log "Verifying 17-policycheck_v6.9.32_fixed.sh presence..."
+log "Verifying 17-policycheck_v6.9.33_fixed.sh presence..."
 
-POLICY_SCRIPT="$TARGET_DIR/17-policycheck_v6.9.32_fixed.sh"
+POLICY_SCRIPT="$TARGET_DIR/17-policycheck_v6.9.33_fixed.sh"
 
 if [[ ! -f "$POLICY_SCRIPT" ]]; then
-echo "[ERROR] 17-policycheck_v6.9.32_fixed.sh is missing"
+echo "[ERROR] 17-policycheck_v6.9.33_fixed.sh is missing"
 exit 2
 fi
 
@@ -95,7 +95,7 @@ exit 3
 fi
 
 log ""
-log "Confirming .version matches v6.9.32..."
+log "Confirming .version matches v6.9.33..."
 
 VERSION_FILE="$TARGET_DIR/.version"
 if [[ ! -f "$VERSION_FILE" ]]; then
@@ -104,7 +104,7 @@ exit 4
 fi
 
 VERSION_STR=$(cat "$VERSION_FILE")
-if [[ "$VERSION_STR" != "v6.9.32" ]]; then
+if [[ "$VERSION_STR" != "v6.9.33" ]]; then
 echo "[ERROR] Version mismatch: $VERSION_STR"
 exit 5
 fi

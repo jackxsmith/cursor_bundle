@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 INSTALL_DIR="/opt/cursor"
-# 14-install_v6.9.32_enhanced.sh — Cursor v6.9.32 Enhanced Installer
+# 14-install_v6.9.33_enhanced.sh — Cursor v6.9.33 Enhanced Installer
 # Automatically installs all dependencies and handles all installation scenarios
 set -euo pipefail
 IFS=$'\n\t'
 
 ### Configuration
-VERSION="6.9.32"
+VERSION="6.9.33"
 BUNDLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APPIMAGE="$BUNDLE_DIR/01-appimage_v6.9.32.AppImage"
-PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.32.sh)
-INSTALLER="$BUNDLE_DIR/14-install_v6.9.32_enhanced.sh"
+APPIMAGE="$BUNDLE_DIR/01-appimage_v6.9.33.AppImage"
+PREINSTALL_SCRIPTS=("$BUNDLE_DIR"/*preinstall*_v6.9.33.sh)
+INSTALLER="$BUNDLE_DIR/14-install_v6.9.33_enhanced.sh"
 SYMLINK="/usr/local/bin/cursor"
 DESKTOP_ENTRY="/usr/share/applications/cursor.desktop"
 ICON="$INSTALL_DIR/cursor.svg"
@@ -80,7 +80,7 @@ EOF
 
 show_version() {
   echo "Cursor IDE Installer v$VERSION"
-  echo "Bundle contains Cursor IDE v6.9.32 AppImage"
+  echo "Bundle contains Cursor IDE v6.9.33 AppImage"
   echo "Enhanced with automatic dependency management"
 }
 
@@ -348,7 +348,7 @@ EOF
   fi
   
   # Run post-install scripts
-  local postinstall_scripts=("$BUNDLE_DIR"/*postinstall*_v6.9.32.sh)
+  local postinstall_scripts=("$BUNDLE_DIR"/*postinstall*_v6.9.33.sh)
   for script in "${postinstall_scripts[@]}"; do
     if [[ -x "$script" ]]; then
       log "Executing post-install script: $(basename "$script")"
@@ -434,7 +434,7 @@ main() {
   install_cursor
   
   # Run test suite if available
-  local test_suite="$BUNDLE_DIR/22-test_cursor_suite_v6.9.32_fixed.sh"
+  local test_suite="$BUNDLE_DIR/22-test_cursor_suite_v6.9.33_fixed.sh"
   if [[ -f "$test_suite" ]] && [[ "$DRY_RUN" == "false" ]]; then
     log "Running post-installation tests..."
     bash "$test_suite" >> "$LOG_FILE" 2>&1 || warn "Some tests failed, but installation should work"

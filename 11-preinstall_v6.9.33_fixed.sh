@@ -3,8 +3,8 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ===========================================================================
-# preinstall_v6.9.32.sh
-# Pre-installation script for Cursor v6.9.32
+# preinstall_v6.9.33.sh
+# Pre-installation script for Cursor v6.9.33
 # ===========================================================================
 
 log() { echo "[PreInstall] $*"; }

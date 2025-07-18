@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-07‑tkinter_v6.9.32_fixed.py – simple Tkinter GUI installer for the Cursor IDE.
+07‑tkinter_v6.9.33_fixed.py – simple Tkinter GUI installer for the Cursor IDE.
 
 This script provides a minimal graphical installer using the built‑in
 `tkinter` toolkit so that users can install or uninstall the Cursor IDE
 without resorting to the command line.  It wraps the existing shell
-installer (`install_v6.9.32.sh`) and presents a small window with
+installer (`install_v6.9.33.sh`) and presents a small window with
 Install and Uninstall buttons.  Pressing one of these buttons will
 invoke the appropriate mode on the installer.  A progress bar is shown
 while the operation runs in a background thread.  Any error output is
@@ -41,7 +41,7 @@ except ImportError:
 def run_installer(script_path: str, mode: str, progress: ttk.Progressbar, root: tk.Tk) -> None:
     """Run the installer in a background thread and update progress.
 
-    :param script_path: Path to the install_v6.9.32.sh wrapper
+    :param script_path: Path to the install_v6.9.33.sh wrapper
     :param mode: Either "install" or "uninstall"
     :param progress: Progressbar widget to update
     :param root: The Tk root window
@@ -71,7 +71,7 @@ def run_installer(script_path: str, mode: str, progress: ttk.Progressbar, root: 
 def main() -> None:
     # Determine the location of the installer relative to this script
     script_dir = os.path.abspath(os.path.dirname(__file__))
-    install_script = os.path.join(script_dir, "install_v6.9.32.sh")
+    install_script = os.path.join(script_dir, "install_v6.9.33.sh")
     if not os.path.isfile(install_script):
         sys.stderr.write(
             f"Error: installer script not found at {install_script}\nPlease ensure this script resides in the same directory.\n"
@@ -79,7 +79,7 @@ def main() -> None:
         sys.exit(1)
 
     root = tk.Tk()
-    root.title("Cursor Installer v6.9.32")
+    root.title("Cursor Installer v6.9.33")
     root.resizable(False, False)
 
     # Centre the window on screen

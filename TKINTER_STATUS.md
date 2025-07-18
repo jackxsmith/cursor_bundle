@@ -1,9 +1,9 @@
-# Tkinter Status – Cursor Bundle v6.9.32
+# Tkinter Status – Cursor Bundle v6.9.33
 
 ## Current Status: ⚠️ Unverified
 
 ### What Was Added
-- A new script `07-tkinter_v6.9.32_fixed.py` providing a minimal
+- A new script `07-tkinter_v6.9.33_fixed.py` providing a minimal
   Tkinter‑based GUI installer.
 - The GUI offers **Install** and **Uninstall** buttons and displays
   an indeterminate progress bar while calling the standard shell
@@ -25,7 +25,7 @@
   advanced error recovery or update checks.
 
 ### Recommendation
-- Use the enhanced installer (`14-install_v6.9.32_enhanced.sh`) for
+- Use the enhanced installer (`14-install_v6.9.33_enhanced.sh`) for
   automated installations.
 - The Tkinter installer is provided as a fallback option when
   `zenity` is unavailable and a GUI environment is present.

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Docker Installation Script for Cursor IDE v6.9.32
+# Docker Installation Script for Cursor IDE v6.9.33
 
 set -euo pipefail
 
-VERSION="6.9.32"
+VERSION="6.9.33"
 SCRIPT_NAME="Docker Cursor Installer"
 
 # Logging function
@@ -13,10 +13,10 @@ log() {
 
 show_help() {
     cat << 'HELP'
-Cursor IDE Docker Installer v6.9.32
+Cursor IDE Docker Installer v6.9.33
 
 USAGE:
-  ./15-docker_install_v6.9.32.sh [OPTIONS]
+  ./15-docker_install_v6.9.33.sh [OPTIONS]
 
 OPTIONS:
   --build         Build Docker image
@@ -26,8 +26,8 @@ OPTIONS:
   --help, -h      Show this help message
 
 EXAMPLES:
-  ./15-docker_install_v6.9.32.sh --build
-  ./15-docker_install_v6.9.32.sh --run
+  ./15-docker_install_v6.9.33.sh --build
+  ./15-docker_install_v6.9.33.sh --run
   docker exec -it cursor-ide bash
 
 PORTS:
@@ -54,7 +54,7 @@ check_docker() {
 
 build_image() {
     log "Building Cursor IDE Docker image..."
-    docker build -t cursor-ide:v6.9.32 .
+    docker build -t cursor-ide:v6.9.33 .
     log "Docker image built successfully"
 }
 
@@ -70,7 +70,7 @@ run_container() {
         --name cursor-ide \
         -p 5900:5900 \
         -p 8080:8080 \
-        cursor-ide:v6.9.32
+        cursor-ide:v6.9.33
     
     log "Container started successfully"
     log "VNC access: localhost:5900"
@@ -88,7 +88,7 @@ remove_all() {
     log "Removing Cursor IDE container and image..."
     docker stop cursor-ide 2>/dev/null || true
     docker rm cursor-ide 2>/dev/null || true
-    docker rmi cursor-ide:v6.9.32 2>/dev/null || true
+    docker rmi cursor-ide:v6.9.33 2>/dev/null || true
     log "Cleanup completed"
 }
 

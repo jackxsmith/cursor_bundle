@@ -3,7 +3,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # =============================================================================
-# posttest_v6.9.32.sh
+# posttest_v6.9.33.sh
 # Final post-test verification after installation and updates
 # =============================================================================
 

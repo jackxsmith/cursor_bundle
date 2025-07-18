@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# 03-autoupdater_v6.9.32_fixed.sh — Simple auto-updater stub for Cursor v6.9.32
+# 03-autoupdater_v6.9.33_fixed.sh — Simple auto-updater stub for Cursor v6.9.33
 
 set -euo pipefail
 IFS=$'\n\t'
 
 # This script is a placeholder for Cursor's auto-update mechanism.
 # In this fixed version it simply reports that no updates are available.
-VERSION="6.9.32"
+VERSION="6.9.33"
 
 show_help() {
   echo "Cursor Auto-Updater v$VERSION"

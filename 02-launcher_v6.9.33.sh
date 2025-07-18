@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# 02-launcher_v6.9.32.sh — wrapper for the unified launcher
+# 02-launcher_v6.9.33.sh — wrapper for the unified launcher
 #
 # This thin wrapper exists to satisfy test suites expecting a
 # versioned launcher script without a suffix.  It simply delegates
 # all arguments to the fixed implementation.
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec "$DIR/02-launcher_v6.9.32_fixed.sh" "$@"
+exec "$DIR/02-launcher_v6.9.33_fixed.sh" "$@"

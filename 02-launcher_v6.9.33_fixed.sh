@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Unified Launcher for Cursor v6.9.32
+# Unified Launcher for Cursor v6.9.33
 set -euo pipefail
 IFS=$'\n\t'
 
-VERSION="6.9.32"
-APPIMAGE="./01-appimage_v6.9.32.AppImage"
+VERSION="6.9.33"
+APPIMAGE="./01-appimage_v6.9.33.AppImage"
 LOGFILE="$HOME/.cursor_launcher.log"
 
 log() {
