@@ -1,7 +1,9 @@
-Cursor Installer Policy Manifest — Version 6.9.33
+# Policy for Running the Upgrade Script
 
-✅ ALL INSTALLATION METHODS FIXED AND WORKING
-✅ ALL VERSION NUMBERS CONSISTENT (v6.9.33)
-✅ ALL DEPENDENCIES INCLUDED
-✅ COMPREHENSIVE ERROR RESOLUTION APPLIED
-✅ MULTI-DISTRIBUTION SUPPORT IMPLEMENTED
+This repository includes a single automated upgrade script (`upgrade_to_v6_9_33_v.sh`) that performs all necessary version updates and pushes them to GitHub. To use it:
+
+1. Open a terminal.
+2. Run `bash upgrade_to_v6_9_33_v.sh` from the repository directory or your Downloads folder.
+3. **Do not use `sudo`** when running the script. Running as a normal user ensures your Git configuration and SSH credentials are used properly. Using `sudo` may cause authentication failures when pushing to GitHub.
+
+No other manual intervention is required. Once the script finishes successfully, the repository will be fully updated.
