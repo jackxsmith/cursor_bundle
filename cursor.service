@@ -3,7 +3,7 @@ Description=Cursor Application
 After=network.target
 
 [Service]
-ExecStart=/opt/cursor/01-appimage_v6.9.34.AppImage
+ExecStart=/opt/cursor/01-appimage_v6.9.35.AppImage
 Restart=on-failure
 User=root
 
