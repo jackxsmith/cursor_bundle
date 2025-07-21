@@ -1,5 +1,0 @@
-# Policies v6.9.42
-* Scripts/archives must follow vX.Y.Z.* naming.
-* Release artifacts in dist/ must be GPG‑signed (`make sign-artifacts`).
-* An SBOM (CycloneDX JSON) must be generated as dist/sbom.json.
-* CI workflow runs sign-artifacts and generate-sbom jobs.

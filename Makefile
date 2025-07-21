@@ -31,3 +31,6 @@ sign-artifacts:
 
 generate-sbom:
 	bash scripts/generate_sbom.sh
+
+perf-test:
+	bash scripts/run_performance_test.sh

@@ -1,0 +1,5 @@
+# Policies v6.9.43
+* Upgrade script must follow vX.Y.Z.sh naming.
+* Makefile must provide `perf-test` target (k6).
+* CI perf-test job must run and fail if thresholds are exceeded.
+* Script must be run without sudo; push manually after verifying CI.
