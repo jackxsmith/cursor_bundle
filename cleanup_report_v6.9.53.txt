@@ -1,6 +1,3 @@
 ver  updated text files
-rm   ./cleanup_report_v6.9.52.txt
-rm   ./21-policies_v6.9.52.txt
-rm   ./lint_report_v6.9.52.txt
 lint report saved to lint_report_v6.9.53.txt
 new   21-policies_v6.9.53.txt
