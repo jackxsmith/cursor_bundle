@@ -1,0 +1,2 @@
+# Policies v6.9.65
+* Scripts bump version to v6.9.65.

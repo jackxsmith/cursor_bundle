@@ -1,3 +1,7 @@
+# Cursor Bundle – Open‑source Automation Suite
+
+![CI](https://github.com/jackxsmith/cursor_bundle/actions/workflows/ci.yml/badge.svg) 
+
 # Release v6.9.58
 
 This branch contains the release of version **v6.9.58**.
