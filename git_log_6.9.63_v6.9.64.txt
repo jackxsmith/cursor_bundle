@@ -1,4 +1,15 @@
-74ab68f (HEAD -> release/v6.9.62, tag: v6.9.62, origin/release/v6.9.62) chore: cleanup & bump to v6.9.62 (auto‑merge script)
+8d8b0f2 (HEAD -> release/v6.9.62, tag: v6.9.62, origin/release/v6.9.62) chore: cleanup & bump to v6.9.62 (auto‑merge script)
+ bump_and_merge.sh               |    4 +-
+ change_summary_v6.9.62.txt      |    4 +
+ ci_workflows_v6.9.62.tar.gz     |  Bin 638 -> 638 bytes
+ cleanup_report_v6.9.62.txt      |   24 +-
+ diff-6.9.61-to-6.9.62.patch     | 3973 ++++++++++++++++++++++-----------------
+ git_log_6.9.62.txt              |   87 +-
+ git_log_6.9.62_v6.9.62.txt      |  497 +++++
+ git_metadata_6.9.62.txt         |    3 +
+ git_metadata_6.9.62_v6.9.62.txt |   18 +
+ 9 files changed, 2843 insertions(+), 1767 deletions(-)
+74ab68f chore: cleanup & bump to v6.9.62 (auto‑merge script)
  ....txt => 21-policies_v6.9.60_v6.9.61_v6.9.62.txt |    4 +-
  ..._v6.9.61.txt => 21-policies_v6.9.61_v6.9.62.txt |    4 +-
  21-policies_v6.9.62.txt                            |    4 +
@@ -440,51 +451,3 @@ c078445 feat: upgrade to 6.9.35, add enterprise tools and policies
 1520be6 docs: update policies file to instruct running upgrade script without sudo
  21-policies_v6.9.33.txt | 14 ++++++++------
  1 file changed, 8 insertions(+), 6 deletions(-)
-7a72e00 chore: upgrade bundle from 6.9.32 to 6.9.33
- ...6.9.32.AppImage => 01-appimage_v6.9.33.AppImage | Bin
- 02-launcher_v6.9.32.sh => 02-launcher_v6.9.33.sh   |   4 +-
- ..._enhanced.sh => 02-launcher_v6.9.33_enhanced.sh |   8 ++--
- ...6.9.32_fixed.sh => 02-launcher_v6.9.33_fixed.sh |   6 +--
- ...updater_v6.9.32.sh => 03-autoupdater_v6.9.33.sh |   4 +-
- ....32_fixed.sh => 03-autoupdater_v6.9.33_fixed.sh |   4 +-
- 04-secure_v6.9.32.sh => 04-secure_v6.9.33.sh       |   6 +--
- ...cureplus_v6.9.32.sh => 05-secureplus_v6.9.33.sh |   4 +-
- ...9.32_fixed.sh => 05-secureplus_v6.9.33_fixed.sh |   6 +--
- ...32_fixed.py => 06-launcherplus_v6.9.33_fixed.py |   0
- ...v6.9.32_fixed.py => 07-tkinter_v6.9.33_fixed.py |  10 ++---
- ...on_v6.9.32.json => 08-localization_v6.9.33.json |   0
- ..._v6.9.32_fixed.sh => 09-zenity_v6.9.33_fixed.sh |   6 +--
- ...32_enhanced.sh => 10-select_v6.9.33_enhanced.sh |   8 ++--
- ..._v6.9.32_fixed.sh => 10-select_v6.9.33_fixed.sh |   4 +-
- ...9.32_fixed.sh => 11-preinstall_v6.9.33_fixed.sh |   4 +-
- ....32_fixed.sh => 12-postinstall_v6.9.33_fixed.sh |   2 +-
- ...6.9.32_fixed.sh => 13-posttest_v6.9.33_fixed.sh |   2 +-
- ...2_enhanced.sh => 14-install_v6.9.33_enhanced.sh |  16 ++++----
- ...v6.9.32_fixed.sh => 14-install_v6.9.33_fixed.sh |  18 ++++-----
- ...tall_v6.9.32.sh => 15-docker_install_v6.9.33.sh |  18 ++++-----
- ...v6.9.32_fixed.sh => 16-tracker_v6.9.33_fixed.sh |  14 +++----
- ....32_fixed.sh => 17-policycheck_v6.9.33_fixed.sh |   2 +-
- ...lesize_v6.9.32.txt => 18-bundlesize_v6.9.33.txt |   2 +-
- 19-version_v6.9.32.txt => 19-version_v6.9.33.txt   |   8 ++--
- 21-policies_v6.9.32.txt => 21-policies_v6.9.33.txt |   4 +-
- ....sh => 22-test_cursor_suite_v6.9.33_enhanced.sh |  32 ++++++++--------
- ...xed.sh => 22-test_cursor_suite_v6.9.33_fixed.sh |  42 ++++++++++-----------
- DOCKER_STATUS.md                                   |   6 +--
- INSTALLATION_STATUS.md                             |  10 ++---
- README_v6.9.32.md => README_v6.9.33.md             |  26 ++++++-------
- TKINTER_STATUS.md                                  |   6 +--
- VERSION                                            |   1 +
- ZENITY_STATUS.md                                   |   4 +-
- all_warnings.txt                                   |  30 +++++++--------
- ...6.9.32_amd64.deb => cursor-ide_6.9.33_amd64.deb | Bin
- cursor.service                                     |   2 +-
- ...r_errors_6.9.32.log => cursor_errors_6.9.33.log |   0
- cursor_test_6.9.32.json => cursor_test_6.9.33.json |   0
- cursor_test_6.9.32.log => cursor_test_6.9.33.log   |   0
- cursor_v6.9.32.tar.gz => cursor_v6.9.33.tar.gz     | Bin
- install_6.9.32.log => install_6.9.33.log           |   0
- install_v6.9.32.sh                                 |   4 --
- install_v6.9.33.sh                                 |   4 ++
- ..._v6.9.32.sh.sha256 => install_v6.9.33.sh.sha256 |   0
- webui_v6.9.32.py => webui_v6.9.33.py               |   2 +-
- 46 files changed, 165 insertions(+), 164 deletions(-)
