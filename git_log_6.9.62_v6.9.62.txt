@@ -1,72 +1,33 @@
-74ab68f (HEAD -> release/v6.9.62, tag: v6.9.62, origin/release/v6.9.62) chore: cleanup & bump to v6.9.62 (auto‑merge script)
- ....txt => 21-policies_v6.9.60_v6.9.61_v6.9.62.txt |    4 +-
- ..._v6.9.61.txt => 21-policies_v6.9.61_v6.9.62.txt |    4 +-
- 21-policies_v6.9.62.txt                            |    4 +
- README.md                                          |    2 +-
- VERSION                                            |    2 +-
- ...61.txt => build_log_v6.9.60_v6.9.61_v6.9.62.txt |    0
- bump_and_merge.sh                                  |  177 ++
- ...t => change_summary_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ....9.61.txt => change_summary_v6.9.61_v6.9.62.txt |    0
- change_summary_v6.9.62.txt                         |    0
- ci_workflows_v6.9.61.tar_v6.9.61.gz                |    0
- ci_workflows_v6.9.62.tar.gz                        |  Bin 0 -> 638 bytes
- cleanup_report_v6.9.60_v6.9.61.txt                 |    9 -
- cleanup_report_v6.9.60_v6.9.61_v6.9.62.txt         |    9 +
- cleanup_report_v6.9.61.txt                         |   23 -
- cleanup_report_v6.9.61_v6.9.62.txt                 |   23 +
- cleanup_report_v6.9.62.txt                         |   27 +
- ...txt => code_metrics_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ...txt => dependencies_v6.9.60_v6.9.61_v6.9.62.txt |    0
- diff-6.9.61-to-6.9.62.patch                        | 2180 ++++++++++++++++++++
- ....txt => environment_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ...t => git_log_6.9.60_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ....9.61.txt => git_log_6.9.60_v6.9.61_v6.9.62.txt |    0
- git_log_6.9.61.txt => git_log_6.9.61_v6.9.62.txt   |    0
- git_log_6.9.62.txt                                 |  497 +++++
- ...git_metadata_6.9.60_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ....txt => git_metadata_6.9.60_v6.9.61_v6.9.62.txt |    0
- ...a_6.9.61.txt => git_metadata_6.9.61_v6.9.62.txt |    0
- git_metadata_6.9.62.txt                            |   18 +
- ....txt => lint_report_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ..._v6.9.61.txt => lint_report_v6.9.61_v6.9.62.txt |    0
- lint_report_v6.9.62.txt                            |    2 +
- ....txt => performance_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ... => static_analysis_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ...txt => test_results_v6.9.60_v6.9.61_v6.9.62.txt |    0
- v60.sh                                             |   22 +-
- ... => webhook_config_v6.9.60_v6.9.61_v6.9.62.json |    0
- 37 files changed, 2954 insertions(+), 49 deletions(-)
-20db855 (tag: v6.9.61, origin/release/v6.9.61, release/v6.9.61) chore: cleanup & bump to v6.9.61 (auto‑remote fix)
- ..._v6.9.60.txt => 21-policies_v6.9.60_v6.9.61.txt |    4 +-
- 21-policies_v6.9.61.txt                            |    5 +
+20db855 (HEAD -> release/v6.9.62, tag: v6.9.62, origin/release/v6.9.62) chore: cleanup & bump to v6.9.62 (auto‑remote fix)
+ ..._v6.9.60.txt => 21-policies_v6.9.60_v6.9.62.txt |    4 +-
+ 21-policies_v6.9.62.txt                            |    5 +
  README.md                                          |    6 +-
  VERSION                                            |    2 +-
- ...og_v6.9.60.txt => build_log_v6.9.60_v6.9.61.txt |    0
- ....9.60.txt => change_summary_v6.9.60_v6.9.61.txt |    0
- change_summary_v6.9.61.txt                         |    0
+ ...og_v6.9.60.txt => build_log_v6.9.60_v6.9.62.txt |    0
+ ....9.60.txt => change_summary_v6.9.60_v6.9.62.txt |    0
+ change_summary_v6.9.62.txt                         |    0
  ci_workflows_v6.9.60.tar_v6.9.60.gz                |    0
- ci_workflows_v6.9.61.tar.gz                        |  Bin 0 -> 638 bytes
+ ci_workflows_v6.9.62.tar.gz                        |  Bin 0 -> 638 bytes
  cleanup_report_v6.9.60.txt                         |    9 -
- cleanup_report_v6.9.60_v6.9.61.txt                 |    9 +
- cleanup_report_v6.9.61.txt                         |   23 +
- ...v6.9.60.txt => code_metrics_v6.9.60_v6.9.61.txt |    0
- ...v6.9.60.txt => dependencies_v6.9.60_v6.9.61.txt |    0
- diff-6.9.60-to-6.9.61.patch                        | 1536 ++++++++++++++++++++
- ..._v6.9.60.txt => environment_v6.9.60_v6.9.61.txt |    0
- ....9.60.txt => git_log_6.9.60_v6.9.60_v6.9.61.txt |    0
- ....9.60_v6.9.60.txt => git_log_6.9.60_v6.9.61.txt |    0
- git_log_6.9.61.txt                                 |  569 ++++++++
- ....txt => git_metadata_6.9.60_v6.9.60_v6.9.61.txt |    0
- ...a_6.9.60.txt => git_metadata_6.9.60_v6.9.61.txt |    0
- git_metadata_6.9.61.txt                            |   15 +
- ..._v6.9.60.txt => lint_report_v6.9.60_v6.9.61.txt |    0
- lint_report_v6.9.61.txt                            |    2 +
- ..._v6.9.60.txt => performance_v6.9.60_v6.9.61.txt |    0
- ...9.60.txt => static_analysis_v6.9.60_v6.9.61.txt |    0
- ...v6.9.60.txt => test_results_v6.9.60_v6.9.61.txt |    0
+ cleanup_report_v6.9.60_v6.9.62.txt                 |    9 +
+ cleanup_report_v6.9.62.txt                         |   23 +
+ ...v6.9.60.txt => code_metrics_v6.9.60_v6.9.62.txt |    0
+ ...v6.9.60.txt => dependencies_v6.9.60_v6.9.62.txt |    0
+ diff-6.9.60-to-6.9.62.patch                        | 1536 ++++++++++++++++++++
+ ..._v6.9.60.txt => environment_v6.9.60_v6.9.62.txt |    0
+ ....9.60.txt => git_log_6.9.60_v6.9.60_v6.9.62.txt |    0
+ ....9.60_v6.9.60.txt => git_log_6.9.60_v6.9.62.txt |    0
+ git_log_6.9.62.txt                                 |  569 ++++++++
+ ....txt => git_metadata_6.9.60_v6.9.60_v6.9.62.txt |    0
+ ...a_6.9.60.txt => git_metadata_6.9.60_v6.9.62.txt |    0
+ git_metadata_6.9.62.txt                            |   15 +
+ ..._v6.9.60.txt => lint_report_v6.9.60_v6.9.62.txt |    0
+ lint_report_v6.9.62.txt                            |    2 +
+ ..._v6.9.60.txt => performance_v6.9.60_v6.9.62.txt |    0
+ ...9.60.txt => static_analysis_v6.9.60_v6.9.62.txt |    0
+ ...v6.9.60.txt => test_results_v6.9.60_v6.9.62.txt |    0
  v60.sh                                             |   22 +-
- ....60.json => webhook_config_v6.9.60_v6.9.61.json |    0
+ ....60.json => webhook_config_v6.9.60_v6.9.62.json |    0
  29 files changed, 2175 insertions(+), 27 deletions(-)
 97abcf5 (tag: v6.9.60, origin/release/v6.9.60, release/v6.9.60) chore: cleanup & bump to v6.9.60 (single artefact rule)
  21-policies_v6.9.51.txt                            |   6 -
@@ -488,3 +449,49 @@ c078445 feat: upgrade to 6.9.35, add enterprise tools and policies
  ..._v6.9.32.sh.sha256 => install_v6.9.33.sh.sha256 |   0
  webui_v6.9.32.py => webui_v6.9.33.py               |   2 +-
  46 files changed, 165 insertions(+), 164 deletions(-)
+b5a7cfc chore: remove v6.9.31 duplicate files and cleanup logs
+ 01-appimage_v6.9.31.AppImage                       | Bin 10485764 -> 0 bytes
+ 02-launcher_v6.9.31.sh                             |   9 -
+ 02-launcher_v6.9.31_enhanced.sh                    | 323 ------------
+ 02-launcher_v6.9.31_fixed.sh                       | 149 ------
+ 03-autoupdater_v6.9.31.sh                          |   9 -
+ 03-autoupdater_v6.9.31_fixed.sh                    |  37 --
+ 04-secure_v6.9.31.sh                               |   8 -
+ 05-secureplus_v6.9.31.sh                           |   9 -
+ 05-secureplus_v6.9.31_fixed.sh                     |  40 --
+ 06-launcherplus_v6.9.31_fixed.py                   |  32 --
+ 07-tkinter_v6.9.31_fixed.py                        | 108 ----
+ 08-localization_v6.9.31.json                       |  22 -
+ 09-zenity_v6.9.31_fixed.sh                         |  86 ----
+ 10-select_v6.9.31_enhanced.sh                      | 178 -------
+ 10-select_v6.9.31_fixed.sh                         |  40 --
+ 11-preinstall_v6.9.31_fixed.sh                     |  29 --
+ 12-postinstall_v6.9.31_fixed.sh                    |  24 -
+ 13-posttest_v6.9.31_fixed.sh                       |  43 --
+ 14-install_v6.9.31_enhanced.sh                     | 448 -----------------
+ 14-install_v6.9.31_fixed.sh                        | 104 ----
+ 15-docker_install_v6.9.31.sh                       | 121 -----
+ 16-tracker_v6.9.31_fixed.sh                        | 115 -----
+ 17-policycheck_v6.9.31_fixed.sh                    |  92 ----
+ 18-bundlesize_v6.9.31.txt                          |   8 -
+ 19-version_v6.9.31.txt                             |  20 -
+ 21-policies_v6.9.31.txt                            |   7 -
+ 22-test_cursor_suite_v6.9.31_enhanced.sh           | 555 ---------------------
+ 22-test_cursor_suite_v6.9.31_fixed.sh              | 340 -------------
+ README_v6.9.31.md                                  |  82 ---
+ .../06-launcherplus_v6.9.31_fixed.cpython-311.pyc  | Bin 1533 -> 0 bytes
+ .../06-launcherplus_v6.9.32_fixed.cpython-311.pyc  | Bin 1533 -> 0 bytes
+ .../07-tkinter_v6.9.31_fixed.cpython-311.pyc       | Bin 7884 -> 0 bytes
+ .../07-tkinter_v6.9.32_fixed.cpython-311.pyc       | Bin 8238 -> 0 bytes
+ __pycache__/webui_v6.9.31.cpython-311.pyc          | Bin 1902 -> 0 bytes
+ __pycache__/webui_v6.9.32.cpython-311.pyc          | Bin 1902 -> 0 bytes
+ cursor-ide_6.9.31_amd64.deb                        | Bin 2456 -> 0 bytes
+ cursor_errors_6.9.31.log                           |   0
+ cursor_test_6.9.31.json                            |  11 -
+ cursor_test_6.9.31.log                             | 100 ----
+ cursor_v6.9.31.tar.gz                              | Bin 10530 -> 0 bytes
+ install_6.9.31.log                                 |  73 ---
+ install_v6.9.31.sh                                 |   4 -
+ install_v6.9.31.sh.sha256                          |   1 -
+ webui_v6.9.31.py                                   |  35 --
+ 44 files changed, 3262 deletions(-)
