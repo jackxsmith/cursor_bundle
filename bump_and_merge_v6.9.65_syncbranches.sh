@@ -115,4 +115,18 @@ if ! git ls-remote --heads origin "$TARGET" | grep -q "$TARGET"; then
   git push origin "$TARGET"
 fi
 
+# --- guarantee perfect pointer match (force‑reset if allowed)
+git checkout "$TARGET"
+git fetch origin main
+if ! git merge-base --is-ancestor "$TARGET" origin/main || \
+   ! git merge-base --is-ancestor origin/main "$TARGET"; then
+  echo "Making $TARGET point EXACTLY to origin/main …"
+  git reset --hard origin/main
+  git push --force-with-lease origin "$TARGET" || \
+    echo "⚠️  Could not force‑push (branch may be protected)."
+else
+  echo "$TARGET already points to the same commit as main."
+fi
+
+
 echo "✔ main and $TARGET now point to the same commit and branch is retained."
