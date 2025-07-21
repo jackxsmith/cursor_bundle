@@ -1,0 +1,2 @@
+Bandit not installed; skipping Python security scan.
+Pylint not installed; skipping Python lint.
