@@ -1,0 +1,873 @@
+diff --git a/21-policies_v6.9.56.txt b/21-policies_v6.9.56.txt
+deleted file mode 100644
+index 574effd..0000000
+--- a/21-policies_v6.9.56.txt
++++ /dev/null
+@@ -1,7 +0,0 @@
+-# Policies v6.9.56
+-* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.56`.  Older duplicates (v6.9.35–55) are removed.
+-* Version strings are updated before renaming, preventing missing‑file warnings.
+-* The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
+-* Lint results are written to `lint_report_v6.9.56.txt`.
+-* Commits are made on a new branch named `release/v6.9.56` to avoid naming conflicts with the tag `v6.9.56`.  Both the branch and the tag are pushed to the `origin` remote.
+-* Additional context files (diff, log, extended metadata and README) plus a webhook configuration template are created and committed with this branch to aid in history inspection and debugging.
+diff --git a/README.md b/README.md
+index 2d36840..39eb17a 100644
+--- a/README.md
++++ b/README.md
+@@ -1,19 +1,19 @@
+-# Release v6.9.56
++# Release v6.9.57
+ 
+-This branch contains the release of version **v6.9.56**.
++This branch contains the release of version **v6.9.57**.
+ 
+ ## Contents
+ 
+ - **original_bundle.zip** – a copy of the original bundle archive.  Keeping this file makes it easy to inspect the initial state of the project for any historical debugging.
+-- **diff-6.9.55-to-6.9.56.patch** – a unified diff showing all changes made between v6.9.55 and v6.9.56.  This allows for quick review of the upgrade without digging through Git history.
+-- **v6.9.56.sh** – the script used to perform this upgrade.  Having the script alongside the changes makes it easier to reproduce or debug the process.
+-- **cleanup_report_v6.9.56.txt** – records every file removed or renamed during the upgrade.
+-- **lint_report_v6.9.56.txt** – output from the linting pass on Python and shell scripts.
+-- **21-policies_v6.9.56.txt** – defines the policies enforced during this upgrade.
+-- **git_log_6.9.56.txt** – a snapshot of recent history showing decorated commits and file change stats.
+-- **git_metadata_6.9.56.txt** – a detailed dump of git metadata including recent log, refs, remotes and configuration.
+-- **webhook_config_v6.9.56.json** – a template for configuring a webhook on GitHub for this repository.
++- **diff-6.9.55-to-6.9.57.patch** – a unified diff showing all changes made between v6.9.55 and v6.9.57.  This allows for quick review of the upgrade without digging through Git history.
++- **v6.9.57.sh** – the script used to perform this upgrade.  Having the script alongside the changes makes it easier to reproduce or debug the process.
++- **cleanup_report_v6.9.57.txt** – records every file removed or renamed during the upgrade.
++- **lint_report_v6.9.57.txt** – output from the linting pass on Python and shell scripts.
++- **21-policies_v6.9.57.txt** – defines the policies enforced during this upgrade.
++- **git_log_6.9.57.txt** – a snapshot of recent history showing decorated commits and file change stats.
++- **git_metadata_6.9.57.txt** – a detailed dump of git metadata including recent log, refs, remotes and configuration.
++- **webhook_config_v6.9.57.json** – a template for configuring a webhook on GitHub for this repository.
+ 
+ ## Summary
+ 
+-This branch was created from the previous version tag `v6.9.55`.  All version strings were updated to `6.9.56`, duplicate artefacts were removed, and new artefacts were suffixed with `_6.9.56`.  A fresh lint was run, and the upgrade script committed the changes on this branch and pushed both the branch and the tag `v6.9.56` to the remote.  See `diff-6.9.55-to-6.9.56.patch` for the exact code changes.  The extended metadata and webhook configuration template are included to make it easier to troubleshoot and integrate this branch into external systems.
++This branch was created from the previous version tag `v6.9.55`.  All version strings were updated to `6.9.57`, duplicate artefacts were removed, and new artefacts were suffixed with `_6.9.57`.  A fresh lint was run, and the upgrade script committed the changes on this branch and pushed both the branch and the tag `v6.9.57` to the remote.  See `diff-6.9.55-to-6.9.57.patch` for the exact code changes.  The extended metadata and webhook configuration template are included to make it easier to troubleshoot and integrate this branch into external systems.
+diff --git a/VERSION b/VERSION
+index f55bfe0..34fcbab 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-6.9.56
++6.9.57
+diff --git a/cleanup_report_v6.9.56.txt b/cleanup_report_v6.9.56.txt
+deleted file mode 100644
+index 5ba4d5a..0000000
+--- a/cleanup_report_v6.9.56.txt
++++ /dev/null
+@@ -1,13 +0,0 @@
+-ver  updated text files
+-rm   ./git_log_6.9.54_v6.9.55.txt
+-rm   ./lint_report_v6.9.55.txt
+-rm   ./21-policies_v6.9.55.txt
+-rm   ./cleanup_report_v6.9.55.txt
+-mv   ./git_log_6.9.55.txt → ./git_log_6.9.55_v6.9.56.txt
+-lint report saved to lint_report_v6.9.56.txt
+-new   21-policies_v6.9.56.txt
+-new   diff-6.9.55-to-6.9.56.patch
+-new   README.md
+-new   git_log_6.9.56.txt
+-new   git_metadata_6.9.56.txt
+-new   webhook_config_v6.9.56.json
+diff --git a/git_log_6.9.55_v6.9.56.txt b/git_log_6.9.55_v6.9.56.txt
+deleted file mode 100644
+index 19b33d6..0000000
+--- a/git_log_6.9.55_v6.9.56.txt
++++ /dev/null
+@@ -1,246 +0,0 @@
+-72b7140 (HEAD -> release/v6.9.54, tag: v6.9.54, origin/release/v6.9.54) chore: full cleanup & bump to v6.9.54 (one artefact per version)
+- 21-policies_v6.9.53.txt                            |   6 -
+- 21-policies_v6.9.54.txt                            |   7 +
+- README.md                                          |  88 +-------
+- VERSION                                            |   2 +-
+- cleanup_report_v6.9.53.txt                         |   4 -
+- cleanup_report_v6.9.54.txt                         |   9 +
+- diff-6.9.53-to-6.9.54.patch                        | 205 +++++++++++++++++
+- git_log_6.9.54.txt                                 | 249 +++++++++++++++++++++
+- lint_report_v6.9.53.txt => lint_report_v6.9.54.txt |   0
+- scripts/upgrades/v6.9.47.sh                        |  12 +-
+- v6.9.47.sh                                         |  10 +-
+- v6.9.51.sh                                         |  16 +-
+- v6.9.52.sh                                         |  22 +-
+- 13 files changed, 512 insertions(+), 118 deletions(-)
+-f9e2ce7 (origin/release/v6.9.53, release/v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+- cleanup_report_v6.9.53.txt |   1 +
+- original_bundle.zip        | Bin 0 -> 708437 bytes
+- 2 files changed, 1 insertion(+)
+-91fc59c chore: full cleanup & bump to v6.9.53 (one artefact per version)
+- 21-policies_v6.9.53.txt    | 2 +-
+- cleanup_report_v6.9.53.txt | 3 ---
+- 2 files changed, 1 insertion(+), 4 deletions(-)
+-cd265f0 (tag: v6.9.53, v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+- 21-policies_v6.9.52.txt                            |  6 ------
+- 21-policies_v6.9.53.txt                            |  6 ++++++
+- VERSION                                            |  2 +-
+- cleanup_report_v6.9.52.txt                         |  3 ---
+- cleanup_report_v6.9.53.txt                         |  6 ++++++
+- lint_report_v6.9.52.txt => lint_report_v6.9.53.txt |  0
+- scripts/upgrades/v6.9.47.sh                        | 12 ++++++------
+- v6.9.47.sh                                         | 10 +++++-----
+- v6.9.51.sh                                         | 16 ++++++++--------
+- v6.9.52.sh                                         | 22 +++++++++++-----------
+- 10 files changed, 43 insertions(+), 40 deletions(-)
+-5dd527d (v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+- v6.9.52.sh | 6 +++---
+- 1 file changed, 3 insertions(+), 3 deletions(-)
+-dc74efc chore: full cleanup & bump to v6.9.52 (one artefact per version)
+- cleanup_report_v6.9.52.txt |   4 --
+- v6.9.52.sh                 | 155 +++++++++++++++++++++++++++++++++++++++++++++
+- 2 files changed, 155 insertions(+), 4 deletions(-)
+-8c3d622 (tag: v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+- 21-policies_v6.9.51.txt => 21-policies_v6.9.52.txt |  8 ++++----
+- VERSION                                            |  2 +-
+- cleanup_report_v6.9.51.txt                         |  8 --------
+- cleanup_report_v6.9.52.txt                         |  7 +++++++
+- lint_report_v6.9.51.txt => lint_report_v6.9.52.txt |  0
+- rename_misnamed_files_report_v6.9.51.txt           |  0
+- scripts/upgrades/v6.9.47.sh                        | 12 ++++++------
+- v6.9.47.sh                                         | 10 +++++-----
+- v6.9.51.sh                                         | 16 ++++++++--------
+- 9 files changed, 31 insertions(+), 32 deletions(-)
+-eb3d8f4 (tag: v6.9.51, origin/main, main) chore: full cleanup & bump to v6.9.51 (one artefact per version)
+- 21-policies_v6.9.47.txt                            |   5 -
+- 21-policies_v6.9.51.txt                            |   6 +
+- VERSION                                            |   2 +-
+- cleanup_report_v6.9.47.txt                         |  18 ---
+- cleanup_report_v6.9.51.txt                         |   8 ++
+- lint_report_v6.9.47.txt => lint_report_v6.9.51.txt |   0
+- ...txt => rename_misnamed_files_report_v6.9.51.txt |   0
+- scripts/upgrades/v6.9.47.sh                        |  12 +-
+- v6.9.47.sh                                         |  10 +-
+- v6.9.50.sh                                         | 139 +++++++++++++++++++++
+- v6.9.51.sh                                         | 132 +++++++++++++++++++
+- 11 files changed, 297 insertions(+), 35 deletions(-)
+-411e440 fix: rename misnamed upgrade scripts to match version numbers
+- rename_misnamed_files_report.txt | 4 ----
+- 1 file changed, 4 deletions(-)
+-e939020 fix: rename misnamed upgrade scripts to match version numbers
+- rename_misnamed_files_report.txt            | 4 ++++
+- scripts/upgrades/{v6.9.43.sh => v6.9.40.sh} | 0
+- v6.9.46 => scripts/upgrades/v6.9.41.sh      | 0
+- scripts/upgrades/{v6.9.44.sh => v6.9.45.sh} | 0
+- scripts/upgrades/{v6.9.46.sh => v6.9.47.sh} | 0
+- 5 files changed, 4 insertions(+)
+-98734a9 (tag: v6.9.47) chore: full cleanup & bump to v6.9.47 (one artefact per version)
+- 08-localization_v6.9.46.json |  22 -------
+- 18-bundlesize_v6.9.46.txt    |   8 ---
+- 19-version_v6.9.46.txt       |  20 ------
+- 21-policies_v6.9.46.txt      |   5 --
+- 21-policies_v6.9.47.txt      |   5 ++
+- VERSION                      |   2 +-
+- all_warnings_v6.9.46.txt     |  16 -----
+- cleanup_report_v6.9.47.txt   |  18 ++++++
+- cursor.tar_v6.9.46.gz        | Bin 10530 -> 0 bytes
+- cursor_errors_v6.9.46.log    |   0
+- cursor_test_v6.9.46.json     |  11 ----
+- cursor_test_v6.9.46.log      | 145 -------------------------------------------
+- dist/cursor.tar_v6.9.46.gz   | Bin 279966 -> 0 bytes
+- dynamic_security_v6.9.46.log |   1 -
+- error_report_v6.9.46.txt     |   3 -
+- install_v6.9.46.log          |  91 ---------------------------
+- lint_report_v6.9.47.txt      |   2 +
+- rename_report_v6.9.46.txt    |   3 -
+- scripts/upgrades/v6.9.46.sh  |  12 ++--
+- static_analysis_v6.9.46.log  |   5 --
+- v6.9.47.sh                   | 122 ++++++++++++++++++++++++++++++++++++
+- 21 files changed, 154 insertions(+), 337 deletions(-)
+-0898a84 (tag: v6.9.46) chore: path cleanup & bump to v6.9.46
+- ...pimage_v6.9.35.AppImage => 01-appimage.AppImage | Bin
+- 02-launcher_v6.9.35.sh => 02-launcher.sh           |   0
+- ..._v6.9.35_enhanced.sh => 02-launcher_enhanced.sh |   0
+- ...uncher_v6.9.35_fixed.sh => 02-launcher_fixed.sh |   0
+- 03-autoupdater_v6.9.35.sh => 03-autoupdater.sh     |   0
+- ...ter_v6.9.35_fixed.sh => 03-autoupdater_fixed.sh |   0
+- 04-secure_v6.9.35.sh => 04-secure.sh               |   0
+- 05-secureplus_v6.9.35.sh => 05-secureplus.sh       |   0
+- ...plus_v6.9.35_fixed.sh => 05-secureplus_fixed.sh |   0
+- ...us_v6.9.35_fixed.py => 06-launcherplus_fixed.py |   0
+- 07-tkinter_v6.9.35_fixed.py => 07-tkinter_fixed.py |   0
+- ...35_v6.9.45.json => 08-localization_v6.9.46.json |   0
+- 09-zenity_v6.9.35_fixed.sh => 09-zenity_fixed.sh   |   0
+- ...ct_v6.9.35_enhanced.sh => 10-select_enhanced.sh |   0
+- 10-select_v6.9.35_fixed.sh => 10-select_fixed.sh   |   0
+- ...tall_v6.9.35_fixed.sh => 11-preinstall_fixed.sh |   0
+- ...all_v6.9.35_fixed.sh => 12-postinstall_fixed.sh |   0
+- ...sttest_v6.9.35_fixed.sh => 13-posttest_fixed.sh |   0
+- ...l_v6.9.35_enhanced.sh => 14-install_enhanced.sh |   0
+- 14-install_v6.9.35_fixed.sh => 14-install_fixed.sh |   0
+- ...cker_install_v6.9.35.sh => 15-docker_install.sh |   0
+- 16-tracker_v6.9.35_fixed.sh => 16-tracker_fixed.sh |   0
+- ...eck_v6.9.35_fixed.sh => 17-policycheck_fixed.sh |   0
+- ...6.9.35_v6.9.45.txt => 18-bundlesize_v6.9.46.txt |   0
+- ...n_v6.9.35_v6.9.45.txt => 19-version_v6.9.46.txt |   0
+- 21-policies_v6.9.35_v6.9.45.txt                    |  20 ----
+- 21-policies_v6.9.37_v6.9.45.txt                    |  29 -----
+- 21-policies_v6.9.45.txt                            |   5 -
+- 21-policies_v6.9.46.txt                            |   5 +
+- ...enhanced.sh => 22-test_cursor_suite_enhanced.sh |   0
+- ....9.35_fixed.sh => 22-test_cursor_suite_fixed.sh |   0
+- README_v6.9.35.md => README.md                     |   0
+- VERSION                                            |   2 +-
+- ...arnings_v6.9.45.txt => all_warnings_v6.9.46.txt |   0
+- ...or-ide_6.9.35_amd64.deb => cursor-ide_amd64.deb | Bin
+- ...v6.9.35.tar_v6.9.45.gz => cursor.tar_v6.9.46.gz | Bin
+- cursor_errors_v6.9.45.log                          |   2 -
+- ...6.9.35_v6.9.45.log => cursor_errors_v6.9.46.log |   0
+- ...6.9.35_v6.9.45.json => cursor_test_v6.9.46.json |   0
+- ...t_6.9.35_v6.9.45.log => cursor_test_v6.9.46.log |   0
+- ...6.9.37.tar_v6.9.45.gz => cursor.tar_v6.9.46.gz} | Bin
+- ...ity_v6.9.45.log => dynamic_security_v6.9.46.log |   0
+- error_report_v6.9.45.txt                           |   3 -
+- ...v6.9.37_v6.9.45.txt => error_report_v6.9.46.txt |   0
+- install_v6.9.35.sh => install.sh                   |   0
+- install_v6.9.35.sh.sha256 => install.sh.sha256     |   0
+- install_6.9.35_v6.9.45.log => install_v6.9.46.log  |   0
+- rename_report_v6.9.46.txt                          |   3 +
+- v6.9.43.sh => scripts/upgrades/v6.9.43.sh          |   0
+- v6.9.44.sh => scripts/upgrades/v6.9.44.sh          |   0
+- scripts/upgrades/v6.9.46.sh                        | 121 +++++++++++++++++++++
+- ...ysis_v6.9.45.log => static_analysis_v6.9.46.log |   0
+- v6.9.45.sh                                         | 118 --------------------
+- v6.9.45 => v6.9.46                                 |   0
+- webui_v6.9.35.py => webui.py                       |   0
+- 55 files changed, 130 insertions(+), 178 deletions(-)
+-a16d849 (tag: v6.9.45) chore: enforce version suffixes on artefacts & bump to v6.9.45
+- ...35.json => 08-localization_v6.9.35_v6.9.45.json |   0
+- ...6.9.35.txt => 18-bundlesize_v6.9.35_v6.9.45.txt |   0
+- ...n_v6.9.35.txt => 19-version_v6.9.35_v6.9.45.txt |   0
+- ..._v6.9.35.txt => 21-policies_v6.9.35_v6.9.45.txt |   0
+- ..._v6.9.37.txt => 21-policies_v6.9.37_v6.9.45.txt |   0
+- 21-policies_v6.9.44.txt                            |   9 --
+- 21-policies_v6.9.45.txt                            |   5 +
+- Makefile                                           |   4 +
+- VERSION                                            |   2 +-
+- all_warnings.txt => all_warnings_v6.9.45.txt       |   0
+- ..._6.9.35.log => cursor_errors_6.9.35_v6.9.45.log |   0
+- cursor_errors.log => cursor_errors_v6.9.45.log     |   0
+- ..._6.9.35.json => cursor_test_6.9.35_v6.9.45.json |   0
+- ...st_6.9.35.log => cursor_test_6.9.35_v6.9.45.log |   0
+- ...v6.9.35.tar.gz => cursor_v6.9.35.tar_v6.9.45.gz | Bin
+- ...ar_v6.9.44.gz => cursor_v6.9.37.tar_v6.9.45.gz} | Bin
+- ...ity_v6.9.44.log => dynamic_security_v6.9.45.log |   0
+- ...v6.9.37.txt => error_report_v6.9.37_v6.9.45.txt |   0
+- ..._report_v6.9.44.txt => error_report_v6.9.45.txt |   0
+- install_6.9.35.log => install_6.9.35_v6.9.45.log   |   0
+- scripts/version_suffix.sh                          |  10 ++
+- ...ysis_v6.9.44.log => static_analysis_v6.9.45.log |   0
+- v6.9.44.sh                                         |  10 +-
+- v6.9.44 => v6.9.45                                 |   0
+- v6.9.45.sh                                         | 118 +++++++++++++++++++++
+- 25 files changed, 143 insertions(+), 15 deletions(-)
+-2a13fef (tag: v6.9.44) chore: normalise artefact names & bump to v6.9.44
+- 21-policies_v6.9.43.txt                            |   5 -
+- 21-policies_v6.9.44.txt                            |   9 ++
+- VERSION                                            |   2 +-
+- ...6.9.37.tar.gz => cursor_v6.9.37.tar_v6.9.44.gz} | Bin
+- ...ic_security.log => dynamic_security_v6.9.44.log |   0
+- ..._report_v6.9.43.txt => error_report_v6.9.44.txt |   0
+- static_analysis.log => static_analysis_v6.9.44.log |   0
+- v6.9.43 => v6.9.44                                 |   0
+- v6.9.44.sh                                         | 102 +++++++++++++++++++++
+- 9 files changed, 112 insertions(+), 6 deletions(-)
+-22db705 (tag: v6.9.43) feat: upgrade to v6.9.43 with k6 performance test scaffolding
+- .github/workflows/ci.yml                             | 19 +++++++++++++++----
+- 21-policies_v6.9.42.txt                              |  5 -----
+- 21-policies_v6.9.43.txt                              |  5 +++++
+- Makefile                                             |  3 +++
+- VERSION                                              |  2 +-
+- error_report_v6.9.42.txt => error_report_v6.9.43.txt |  0
+- perf/basic_load.js                                   | 13 +++++++++++++
+- scripts/run_performance_test.sh                      | 10 ++++++++++
+- v6.9.42 => v6.9.43                                   |  0
+- v6.9.42.sh => v6.9.43.sh                             |  0
+- 10 files changed, 47 insertions(+), 10 deletions(-)
+-e5b11e4 (tag: v6.9.42) feat: upgrade to v6.9.42 with signing & SBOM scaffolding
+- .github/workflows/ci.yml                             | 19 +++++++++----------
+- 21-policies_v6.9.41.txt                              |  4 ----
+- 21-policies_v6.9.42.txt                              |  5 +++++
+- Makefile                                             |  6 ++++++
+- VERSION                                              |  2 +-
+- error_report_v6.9.41.txt => error_report_v6.9.42.txt |  0
+- scripts/generate_sbom.sh                             |  9 +++++++++
+- scripts/sign_artifacts.sh                            |  8 ++++++++
+- v6.9.41 => v6.9.42                                   |  0
+- v6.9.41.sh => v6.9.42.sh                             |  0
+- 10 files changed, 38 insertions(+), 15 deletions(-)
+-a72d83a (tag: v6.9.41) feat: upgrade to v6.9.41 with mutation‑test & coverage targets
+- 21-policies_v6.9.40.txt  |  5 ---
+- 21-policies_v6.9.41.txt  |  4 +++
+- VERSION                  |  2 +-
+- error_report_v6.9.41.txt |  3 ++
+- v6.9.41                  | 84 ++++++++++++++++++++++++++++++++++++++++++++++++
+- v6.9.40.sh => v6.9.41.sh |  0
+- 6 files changed, 92 insertions(+), 6 deletions(-)
+-9017acd feat: upgrade to v6.9.40 with mutation testing & coverage scaffolding
+- .github/workflows/ci.yml     | 81 +++++++-------------------------------------
+- 21-policies_v6.9.40.txt      | 27 +++------------
+- scripts/generate_coverage.sh | 15 ++------
+- scripts/mutation_test.sh     | 24 ++++---------
+- v6.9.40.sh                   | 10 +++---
+- 5 files changed, 33 insertions(+), 124 deletions(-)
+-7edab0c (tag: v6.9.40) feat: upgrade to v6.9.40 with mutation testing and coverage scaffolding
+- .github/workflows/ci.yml     | 23 +++++++++++++++++++++++
+- 21-policies_v6.9.39.txt      | 28 ----------------------------
+- 21-policies_v6.9.40.txt      | 22 ++++++++++++++++++++++
+- Makefile                     |  6 ++++++
+- VERSION                      |  2 +-
+- scripts/generate_coverage.sh | 14 ++++++++++++++
+- scripts/mutation_test.sh     | 20 ++++++++++++++++++++
+- v6.9.39.sh => v6.9.40.sh     |  0
+- 8 files changed, 86 insertions(+), 29 deletions(-)
+-d2fbf86 feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+- v6.9.39.sh | 6 +++---
+- 1 file changed, 3 insertions(+), 3 deletions(-)
+diff --git a/git_log_6.9.56.txt b/git_log_6.9.56.txt
+deleted file mode 100644
+index 917a808..0000000
+--- a/git_log_6.9.56.txt
++++ /dev/null
+@@ -1,258 +0,0 @@
+-f21a6fb (HEAD -> release/v6.9.55, tag: v6.9.55, origin/release/v6.9.55) chore: full cleanup & bump to v6.9.55 (one artefact per version)
+- 21-policies_v6.9.54.txt => 21-policies_v6.9.55.txt |   8 +-
+- README.md                                          |  16 +-
+- VERSION                                            |   2 +-
+- cleanup_report_v6.9.54.txt                         |   9 -
+- cleanup_report_v6.9.55.txt                         |  10 +
+- diff-6.9.54-to-6.9.55.patch                        | 493 +++++++++++++++++++++
+- git_log_6.9.54.txt => git_log_6.9.54_v6.9.55.txt   |   0
+- git_log_6.9.55.txt                                 | 246 ++++++++++
+- lint_report_v6.9.54.txt => lint_report_v6.9.55.txt |   0
+- scripts/upgrades/v6.9.47.sh                        |  12 +-
+- v6.9.47.sh                                         |  10 +-
+- v6.9.51.sh                                         |  16 +-
+- v6.9.52.sh                                         |  22 +-
+- 13 files changed, 792 insertions(+), 52 deletions(-)
+-72b7140 (tag: v6.9.54, origin/release/v6.9.54, release/v6.9.54) chore: full cleanup & bump to v6.9.54 (one artefact per version)
+- 21-policies_v6.9.53.txt                            |   6 -
+- 21-policies_v6.9.54.txt                            |   7 +
+- README.md                                          |  88 +-------
+- VERSION                                            |   2 +-
+- cleanup_report_v6.9.53.txt                         |   4 -
+- cleanup_report_v6.9.54.txt                         |   9 +
+- diff-6.9.53-to-6.9.54.patch                        | 205 +++++++++++++++++
+- git_log_6.9.54.txt                                 | 249 +++++++++++++++++++++
+- lint_report_v6.9.53.txt => lint_report_v6.9.54.txt |   0
+- scripts/upgrades/v6.9.47.sh                        |  12 +-
+- v6.9.47.sh                                         |  10 +-
+- v6.9.51.sh                                         |  16 +-
+- v6.9.52.sh                                         |  22 +-
+- 13 files changed, 512 insertions(+), 118 deletions(-)
+-f9e2ce7 (origin/release/v6.9.53, release/v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+- cleanup_report_v6.9.53.txt |   1 +
+- original_bundle.zip        | Bin 0 -> 708437 bytes
+- 2 files changed, 1 insertion(+)
+-91fc59c chore: full cleanup & bump to v6.9.53 (one artefact per version)
+- 21-policies_v6.9.53.txt    | 2 +-
+- cleanup_report_v6.9.53.txt | 3 ---
+- 2 files changed, 1 insertion(+), 4 deletions(-)
+-cd265f0 (tag: v6.9.53, v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+- 21-policies_v6.9.52.txt                            |  6 ------
+- 21-policies_v6.9.53.txt                            |  6 ++++++
+- VERSION                                            |  2 +-
+- cleanup_report_v6.9.52.txt                         |  3 ---
+- cleanup_report_v6.9.53.txt                         |  6 ++++++
+- lint_report_v6.9.52.txt => lint_report_v6.9.53.txt |  0
+- scripts/upgrades/v6.9.47.sh                        | 12 ++++++------
+- v6.9.47.sh                                         | 10 +++++-----
+- v6.9.51.sh                                         | 16 ++++++++--------
+- v6.9.52.sh                                         | 22 +++++++++++-----------
+- 10 files changed, 43 insertions(+), 40 deletions(-)
+-5dd527d (v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+- v6.9.52.sh | 6 +++---
+- 1 file changed, 3 insertions(+), 3 deletions(-)
+-dc74efc chore: full cleanup & bump to v6.9.52 (one artefact per version)
+- cleanup_report_v6.9.52.txt |   4 --
+- v6.9.52.sh                 | 155 +++++++++++++++++++++++++++++++++++++++++++++
+- 2 files changed, 155 insertions(+), 4 deletions(-)
+-8c3d622 (tag: v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+- 21-policies_v6.9.51.txt => 21-policies_v6.9.52.txt |  8 ++++----
+- VERSION                                            |  2 +-
+- cleanup_report_v6.9.51.txt                         |  8 --------
+- cleanup_report_v6.9.52.txt                         |  7 +++++++
+- lint_report_v6.9.51.txt => lint_report_v6.9.52.txt |  0
+- rename_misnamed_files_report_v6.9.51.txt           |  0
+- scripts/upgrades/v6.9.47.sh                        | 12 ++++++------
+- v6.9.47.sh                                         | 10 +++++-----
+- v6.9.51.sh                                         | 16 ++++++++--------
+- 9 files changed, 31 insertions(+), 32 deletions(-)
+-eb3d8f4 (tag: v6.9.51, origin/main, main) chore: full cleanup & bump to v6.9.51 (one artefact per version)
+- 21-policies_v6.9.47.txt                            |   5 -
+- 21-policies_v6.9.51.txt                            |   6 +
+- VERSION                                            |   2 +-
+- cleanup_report_v6.9.47.txt                         |  18 ---
+- cleanup_report_v6.9.51.txt                         |   8 ++
+- lint_report_v6.9.47.txt => lint_report_v6.9.51.txt |   0
+- ...txt => rename_misnamed_files_report_v6.9.51.txt |   0
+- scripts/upgrades/v6.9.47.sh                        |  12 +-
+- v6.9.47.sh                                         |  10 +-
+- v6.9.50.sh                                         | 139 +++++++++++++++++++++
+- v6.9.51.sh                                         | 132 +++++++++++++++++++
+- 11 files changed, 297 insertions(+), 35 deletions(-)
+-411e440 fix: rename misnamed upgrade scripts to match version numbers
+- rename_misnamed_files_report.txt | 4 ----
+- 1 file changed, 4 deletions(-)
+-e939020 fix: rename misnamed upgrade scripts to match version numbers
+- rename_misnamed_files_report.txt            | 4 ++++
+- scripts/upgrades/{v6.9.43.sh => v6.9.40.sh} | 0
+- v6.9.46 => scripts/upgrades/v6.9.41.sh      | 0
+- scripts/upgrades/{v6.9.44.sh => v6.9.45.sh} | 0
+- scripts/upgrades/{v6.9.46.sh => v6.9.47.sh} | 0
+- 5 files changed, 4 insertions(+)
+-98734a9 (tag: v6.9.47) chore: full cleanup & bump to v6.9.47 (one artefact per version)
+- 08-localization_v6.9.46.json |  22 -------
+- 18-bundlesize_v6.9.46.txt    |   8 ---
+- 19-version_v6.9.46.txt       |  20 ------
+- 21-policies_v6.9.46.txt      |   5 --
+- 21-policies_v6.9.47.txt      |   5 ++
+- VERSION                      |   2 +-
+- all_warnings_v6.9.46.txt     |  16 -----
+- cleanup_report_v6.9.47.txt   |  18 ++++++
+- cursor.tar_v6.9.46.gz        | Bin 10530 -> 0 bytes
+- cursor_errors_v6.9.46.log    |   0
+- cursor_test_v6.9.46.json     |  11 ----
+- cursor_test_v6.9.46.log      | 145 -------------------------------------------
+- dist/cursor.tar_v6.9.46.gz   | Bin 279966 -> 0 bytes
+- dynamic_security_v6.9.46.log |   1 -
+- error_report_v6.9.46.txt     |   3 -
+- install_v6.9.46.log          |  91 ---------------------------
+- lint_report_v6.9.47.txt      |   2 +
+- rename_report_v6.9.46.txt    |   3 -
+- scripts/upgrades/v6.9.46.sh  |  12 ++--
+- static_analysis_v6.9.46.log  |   5 --
+- v6.9.47.sh                   | 122 ++++++++++++++++++++++++++++++++++++
+- 21 files changed, 154 insertions(+), 337 deletions(-)
+-0898a84 (tag: v6.9.46) chore: path cleanup & bump to v6.9.46
+- ...pimage_v6.9.35.AppImage => 01-appimage.AppImage | Bin
+- 02-launcher_v6.9.35.sh => 02-launcher.sh           |   0
+- ..._v6.9.35_enhanced.sh => 02-launcher_enhanced.sh |   0
+- ...uncher_v6.9.35_fixed.sh => 02-launcher_fixed.sh |   0
+- 03-autoupdater_v6.9.35.sh => 03-autoupdater.sh     |   0
+- ...ter_v6.9.35_fixed.sh => 03-autoupdater_fixed.sh |   0
+- 04-secure_v6.9.35.sh => 04-secure.sh               |   0
+- 05-secureplus_v6.9.35.sh => 05-secureplus.sh       |   0
+- ...plus_v6.9.35_fixed.sh => 05-secureplus_fixed.sh |   0
+- ...us_v6.9.35_fixed.py => 06-launcherplus_fixed.py |   0
+- 07-tkinter_v6.9.35_fixed.py => 07-tkinter_fixed.py |   0
+- ...35_v6.9.45.json => 08-localization_v6.9.46.json |   0
+- 09-zenity_v6.9.35_fixed.sh => 09-zenity_fixed.sh   |   0
+- ...ct_v6.9.35_enhanced.sh => 10-select_enhanced.sh |   0
+- 10-select_v6.9.35_fixed.sh => 10-select_fixed.sh   |   0
+- ...tall_v6.9.35_fixed.sh => 11-preinstall_fixed.sh |   0
+- ...all_v6.9.35_fixed.sh => 12-postinstall_fixed.sh |   0
+- ...sttest_v6.9.35_fixed.sh => 13-posttest_fixed.sh |   0
+- ...l_v6.9.35_enhanced.sh => 14-install_enhanced.sh |   0
+- 14-install_v6.9.35_fixed.sh => 14-install_fixed.sh |   0
+- ...cker_install_v6.9.35.sh => 15-docker_install.sh |   0
+- 16-tracker_v6.9.35_fixed.sh => 16-tracker_fixed.sh |   0
+- ...eck_v6.9.35_fixed.sh => 17-policycheck_fixed.sh |   0
+- ...6.9.35_v6.9.45.txt => 18-bundlesize_v6.9.46.txt |   0
+- ...n_v6.9.35_v6.9.45.txt => 19-version_v6.9.46.txt |   0
+- 21-policies_v6.9.35_v6.9.45.txt                    |  20 ----
+- 21-policies_v6.9.37_v6.9.45.txt                    |  29 -----
+- 21-policies_v6.9.45.txt                            |   5 -
+- 21-policies_v6.9.46.txt                            |   5 +
+- ...enhanced.sh => 22-test_cursor_suite_enhanced.sh |   0
+- ....9.35_fixed.sh => 22-test_cursor_suite_fixed.sh |   0
+- README_v6.9.35.md => README.md                     |   0
+- VERSION                                            |   2 +-
+- ...arnings_v6.9.45.txt => all_warnings_v6.9.46.txt |   0
+- ...or-ide_6.9.35_amd64.deb => cursor-ide_amd64.deb | Bin
+- ...v6.9.35.tar_v6.9.45.gz => cursor.tar_v6.9.46.gz | Bin
+- cursor_errors_v6.9.45.log                          |   2 -
+- ...6.9.35_v6.9.45.log => cursor_errors_v6.9.46.log |   0
+- ...6.9.35_v6.9.45.json => cursor_test_v6.9.46.json |   0
+- ...t_6.9.35_v6.9.45.log => cursor_test_v6.9.46.log |   0
+- ...6.9.37.tar_v6.9.45.gz => cursor.tar_v6.9.46.gz} | Bin
+- ...ity_v6.9.45.log => dynamic_security_v6.9.46.log |   0
+- error_report_v6.9.45.txt                           |   3 -
+- ...v6.9.37_v6.9.45.txt => error_report_v6.9.46.txt |   0
+- install_v6.9.35.sh => install.sh                   |   0
+- install_v6.9.35.sh.sha256 => install.sh.sha256     |   0
+- install_6.9.35_v6.9.45.log => install_v6.9.46.log  |   0
+- rename_report_v6.9.46.txt                          |   3 +
+- v6.9.43.sh => scripts/upgrades/v6.9.43.sh          |   0
+- v6.9.44.sh => scripts/upgrades/v6.9.44.sh          |   0
+- scripts/upgrades/v6.9.46.sh                        | 121 +++++++++++++++++++++
+- ...ysis_v6.9.45.log => static_analysis_v6.9.46.log |   0
+- v6.9.45.sh                                         | 118 --------------------
+- v6.9.45 => v6.9.46                                 |   0
+- webui_v6.9.35.py => webui.py                       |   0
+- 55 files changed, 130 insertions(+), 178 deletions(-)
+-a16d849 (tag: v6.9.45) chore: enforce version suffixes on artefacts & bump to v6.9.45
+- ...35.json => 08-localization_v6.9.35_v6.9.45.json |   0
+- ...6.9.35.txt => 18-bundlesize_v6.9.35_v6.9.45.txt |   0
+- ...n_v6.9.35.txt => 19-version_v6.9.35_v6.9.45.txt |   0
+- ..._v6.9.35.txt => 21-policies_v6.9.35_v6.9.45.txt |   0
+- ..._v6.9.37.txt => 21-policies_v6.9.37_v6.9.45.txt |   0
+- 21-policies_v6.9.44.txt                            |   9 --
+- 21-policies_v6.9.45.txt                            |   5 +
+- Makefile                                           |   4 +
+- VERSION                                            |   2 +-
+- all_warnings.txt => all_warnings_v6.9.45.txt       |   0
+- ..._6.9.35.log => cursor_errors_6.9.35_v6.9.45.log |   0
+- cursor_errors.log => cursor_errors_v6.9.45.log     |   0
+- ..._6.9.35.json => cursor_test_6.9.35_v6.9.45.json |   0
+- ...st_6.9.35.log => cursor_test_6.9.35_v6.9.45.log |   0
+- ...v6.9.35.tar.gz => cursor_v6.9.35.tar_v6.9.45.gz | Bin
+- ...ar_v6.9.44.gz => cursor_v6.9.37.tar_v6.9.45.gz} | Bin
+- ...ity_v6.9.44.log => dynamic_security_v6.9.45.log |   0
+- ...v6.9.37.txt => error_report_v6.9.37_v6.9.45.txt |   0
+- ..._report_v6.9.44.txt => error_report_v6.9.45.txt |   0
+- install_6.9.35.log => install_6.9.35_v6.9.45.log   |   0
+- scripts/version_suffix.sh                          |  10 ++
+- ...ysis_v6.9.44.log => static_analysis_v6.9.45.log |   0
+- v6.9.44.sh                                         |  10 +-
+- v6.9.44 => v6.9.45                                 |   0
+- v6.9.45.sh                                         | 118 +++++++++++++++++++++
+- 25 files changed, 143 insertions(+), 15 deletions(-)
+-2a13fef (tag: v6.9.44) chore: normalise artefact names & bump to v6.9.44
+- 21-policies_v6.9.43.txt                            |   5 -
+- 21-policies_v6.9.44.txt                            |   9 ++
+- VERSION                                            |   2 +-
+- ...6.9.37.tar.gz => cursor_v6.9.37.tar_v6.9.44.gz} | Bin
+- ...ic_security.log => dynamic_security_v6.9.44.log |   0
+- ..._report_v6.9.43.txt => error_report_v6.9.44.txt |   0
+- static_analysis.log => static_analysis_v6.9.44.log |   0
+- v6.9.43 => v6.9.44                                 |   0
+- v6.9.44.sh                                         | 102 +++++++++++++++++++++
+- 9 files changed, 112 insertions(+), 6 deletions(-)
+-22db705 (tag: v6.9.43) feat: upgrade to v6.9.43 with k6 performance test scaffolding
+- .github/workflows/ci.yml                             | 19 +++++++++++++++----
+- 21-policies_v6.9.42.txt                              |  5 -----
+- 21-policies_v6.9.43.txt                              |  5 +++++
+- Makefile                                             |  3 +++
+- VERSION                                              |  2 +-
+- error_report_v6.9.42.txt => error_report_v6.9.43.txt |  0
+- perf/basic_load.js                                   | 13 +++++++++++++
+- scripts/run_performance_test.sh                      | 10 ++++++++++
+- v6.9.42 => v6.9.43                                   |  0
+- v6.9.42.sh => v6.9.43.sh                             |  0
+- 10 files changed, 47 insertions(+), 10 deletions(-)
+-e5b11e4 (tag: v6.9.42) feat: upgrade to v6.9.42 with signing & SBOM scaffolding
+- .github/workflows/ci.yml                             | 19 +++++++++----------
+- 21-policies_v6.9.41.txt                              |  4 ----
+- 21-policies_v6.9.42.txt                              |  5 +++++
+- Makefile                                             |  6 ++++++
+- VERSION                                              |  2 +-
+- error_report_v6.9.41.txt => error_report_v6.9.42.txt |  0
+- scripts/generate_sbom.sh                             |  9 +++++++++
+- scripts/sign_artifacts.sh                            |  8 ++++++++
+- v6.9.41 => v6.9.42                                   |  0
+- v6.9.41.sh => v6.9.42.sh                             |  0
+- 10 files changed, 38 insertions(+), 15 deletions(-)
+-a72d83a (tag: v6.9.41) feat: upgrade to v6.9.41 with mutation‑test & coverage targets
+- 21-policies_v6.9.40.txt  |  5 ---
+- 21-policies_v6.9.41.txt  |  4 +++
+- VERSION                  |  2 +-
+- error_report_v6.9.41.txt |  3 ++
+- v6.9.41                  | 84 ++++++++++++++++++++++++++++++++++++++++++++++++
+- v6.9.40.sh => v6.9.41.sh |  0
+- 6 files changed, 92 insertions(+), 6 deletions(-)
+-9017acd feat: upgrade to v6.9.40 with mutation testing & coverage scaffolding
+- .github/workflows/ci.yml     | 81 +++++++-------------------------------------
+- 21-policies_v6.9.40.txt      | 27 +++------------
+- scripts/generate_coverage.sh | 15 ++------
+- scripts/mutation_test.sh     | 24 ++++---------
+- v6.9.40.sh                   | 10 +++---
+- 5 files changed, 33 insertions(+), 124 deletions(-)
+-7edab0c (tag: v6.9.40) feat: upgrade to v6.9.40 with mutation testing and coverage scaffolding
+- .github/workflows/ci.yml     | 23 +++++++++++++++++++++++
+- 21-policies_v6.9.39.txt      | 28 ----------------------------
+- 21-policies_v6.9.40.txt      | 22 ++++++++++++++++++++++
+- Makefile                     |  6 ++++++
+- VERSION                      |  2 +-
+- scripts/generate_coverage.sh | 14 ++++++++++++++
+- scripts/mutation_test.sh     | 20 ++++++++++++++++++++
+- v6.9.39.sh => v6.9.40.sh     |  0
+- 8 files changed, 86 insertions(+), 29 deletions(-)
+diff --git a/git_metadata_6.9.56.txt b/git_metadata_6.9.56.txt
+deleted file mode 100644
+index 23cb1ae..0000000
+--- a/git_metadata_6.9.56.txt
++++ /dev/null
+@@ -1,84 +0,0 @@
+-### git log (50 commits):
+-* f21a6fb2fc7a7cd2005f09154a5937dbfb724822 (HEAD -> release/v6.9.55, tag: v6.9.55, origin/release/v6.9.55) chore: full cleanup & bump to v6.9.55 (one artefact per version)
+-* 72b7140ba9781a074e660a5b324c8f32b7309833 (tag: v6.9.54, origin/release/v6.9.54, release/v6.9.54) chore: full cleanup & bump to v6.9.54 (one artefact per version)
+-* f9e2ce75520d332b5c667e20e020c854cf923e47 (origin/release/v6.9.53, release/v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+-* 91fc59c371bf32656c90fe3e3b78b878254252ac chore: full cleanup & bump to v6.9.53 (one artefact per version)
+-* cd265f0cadd8322ad3035b86e15bbd58a78c0e5d (tag: v6.9.53, v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+-* 5dd527d18c283763261078a6334e4dfd8deddf6b (v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+-* dc74efc26bab314a22e94c97de58a22f9b307870 chore: full cleanup & bump to v6.9.52 (one artefact per version)
+-* 8c3d6223254b4ba291cae6eef92aeb8f0bdef2c3 (tag: v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+-* eb3d8f42764a093c960ff10adfa9687d1bd3fd5c (tag: v6.9.51, origin/main, main) chore: full cleanup & bump to v6.9.51 (one artefact per version)
+-* 411e440f1aaddcb538f41a3daf434349083090a2 fix: rename misnamed upgrade scripts to match version numbers
+-* e9390206e12882213a90938e87018e0673424fab fix: rename misnamed upgrade scripts to match version numbers
+-* 98734a966ca00092805052cbe6e93935bae28a0f (tag: v6.9.47) chore: full cleanup & bump to v6.9.47 (one artefact per version)
+-* 0898a8442bda697dd920af7f4eae96e5fff9c9bb (tag: v6.9.46) chore: path cleanup & bump to v6.9.46
+-* a16d8490ea11ebfe19533000c2bbbeb514f9e0da (tag: v6.9.45) chore: enforce version suffixes on artefacts & bump to v6.9.45
+-* 2a13fefbea518189cd52bb50db06cff5f8eaae08 (tag: v6.9.44) chore: normalise artefact names & bump to v6.9.44
+-* 22db70566601d1265a4312f9ca99b331f10b54d8 (tag: v6.9.43) feat: upgrade to v6.9.43 with k6 performance test scaffolding
+-* e5b11e4424a39c70055ab44a6cb14d825c0b03c5 (tag: v6.9.42) feat: upgrade to v6.9.42 with signing & SBOM scaffolding
+-* a72d83ad46afa260c596122ec7afae6a26b5a5ed (tag: v6.9.41) feat: upgrade to v6.9.41 with mutation‑test & coverage targets
+-* 9017acdea0f6271c048a11413a174d96d0d9e585 feat: upgrade to v6.9.40 with mutation testing & coverage scaffolding
+-* 7edab0cd2de59bac4256ae9cea258d20944bde17 (tag: v6.9.40) feat: upgrade to v6.9.40 with mutation testing and coverage scaffolding
+-* d2fbf86cc8492bbc94f94c51d4be8aca11f57669 feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+-* 2fede9c20af1614fdb7fe652dd1dee0e08061455 (tag: v6.9.39) feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+-* c0784455be699c2fefa1f76ed70b308ed596f525 feat: upgrade to 6.9.35, add enterprise tools and policies
+-* 5b12546c0a2a1a7337ff01d500eebf2484b6ec88 chore: upgrade version from 6.9.33 to 6.9.34 and update policies
+-* 1520be6624b9956ecf0845a085bccb8e8fb9dbd4 docs: update policies file to instruct running upgrade script without sudo
+-* 7a72e003d6e8177fce5d775b80185a088f4078fa chore: upgrade bundle from 6.9.32 to 6.9.33
+-* b5a7cfc1d081b502a1b8e9b4fd27f2a483df372d chore: remove v6.9.31 duplicate files and cleanup logs
+-* 3cd0b6bdb31df7148cbcc24ba46a0fdad67d3f0d Initial commit for Cursor bundle v6.9.32
+-
+-### git show-ref:
+-eb3d8f42764a093c960ff10adfa9687d1bd3fd5c refs/heads/main
+-f9e2ce75520d332b5c667e20e020c854cf923e47 refs/heads/release/v6.9.53
+-72b7140ba9781a074e660a5b324c8f32b7309833 refs/heads/release/v6.9.54
+-f21a6fb2fc7a7cd2005f09154a5937dbfb724822 refs/heads/release/v6.9.55
+-5dd527d18c283763261078a6334e4dfd8deddf6b refs/heads/v6.9.52
+-cd265f0cadd8322ad3035b86e15bbd58a78c0e5d refs/heads/v6.9.53
+-eb3d8f42764a093c960ff10adfa9687d1bd3fd5c refs/remotes/origin/main
+-f9e2ce75520d332b5c667e20e020c854cf923e47 refs/remotes/origin/release/v6.9.53
+-72b7140ba9781a074e660a5b324c8f32b7309833 refs/remotes/origin/release/v6.9.54
+-f21a6fb2fc7a7cd2005f09154a5937dbfb724822 refs/remotes/origin/release/v6.9.55
+-2fede9c20af1614fdb7fe652dd1dee0e08061455 refs/tags/v6.9.39
+-7edab0cd2de59bac4256ae9cea258d20944bde17 refs/tags/v6.9.40
+-a72d83ad46afa260c596122ec7afae6a26b5a5ed refs/tags/v6.9.41
+-e5b11e4424a39c70055ab44a6cb14d825c0b03c5 refs/tags/v6.9.42
+-22db70566601d1265a4312f9ca99b331f10b54d8 refs/tags/v6.9.43
+-2a13fefbea518189cd52bb50db06cff5f8eaae08 refs/tags/v6.9.44
+-a16d8490ea11ebfe19533000c2bbbeb514f9e0da refs/tags/v6.9.45
+-0898a8442bda697dd920af7f4eae96e5fff9c9bb refs/tags/v6.9.46
+-98734a966ca00092805052cbe6e93935bae28a0f refs/tags/v6.9.47
+-eb3d8f42764a093c960ff10adfa9687d1bd3fd5c refs/tags/v6.9.51
+-8c3d6223254b4ba291cae6eef92aeb8f0bdef2c3 refs/tags/v6.9.52
+-cd265f0cadd8322ad3035b86e15bbd58a78c0e5d refs/tags/v6.9.53
+-72b7140ba9781a074e660a5b324c8f32b7309833 refs/tags/v6.9.54
+-f21a6fb2fc7a7cd2005f09154a5937dbfb724822 refs/tags/v6.9.55
+-
+-### git remote -v:
+-origin	git@github.com:jackxsmith/cursor_bundle.git (fetch)
+-origin	git@github.com:jackxsmith/cursor_bundle.git (push)
+-
+-### git config (sanitised):
+-safe.directory=/home/jj/Downloads
+-safe.directory=/home/jj/Downloads
+-safe.directory=/home/jj/Downloads
+-safe.directory=/home/jj/Downloads
+-safe.directory=/home/jj/Downloads
+-safe.directory=/home/jj/Downloads
+-safe.directory=/home/jj
+-core.repositoryformatversion=0
+-core.filemode=true
+-core.bare=false
+-core.logallrefupdates=true
+-user.name=Jack X. Smith
+-user.email=jackxsmith@example.com
+-remote.origin.url=git@github.com:jackxsmith/cursor_bundle.git
+-remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+-branch.main.remote=origin
+-branch.main.merge=refs/heads/main
+-branch.release/v6.9.53.remote=origin
+-branch.release/v6.9.53.merge=refs/heads/release/v6.9.53
+-branch.release/v6.9.54.remote=origin
+-branch.release/v6.9.54.merge=refs/heads/release/v6.9.54
+-branch.release/v6.9.55.remote=origin
+-branch.release/v6.9.55.merge=refs/heads/release/v6.9.55
+diff --git a/lint_report_v6.9.56.txt b/lint_report_v6.9.56.txt
+deleted file mode 100644
+index 35d07e5..0000000
+--- a/lint_report_v6.9.56.txt
++++ /dev/null
+@@ -1,2 +0,0 @@
+-Ruff not installed.
+-ShellCheck not installed.
+diff --git a/scripts/upgrades/v6.9.47.sh b/scripts/upgrades/v6.9.47.sh
+index 32d44e4..79c718b 100755
+--- a/scripts/upgrades/v6.9.47.sh
++++ b/scripts/upgrades/v6.9.47.sh
+@@ -1,12 +1,12 @@
+ #!/usr/bin/env bash
+-# v6.9.56.sh  (fixed)
++# v6.9.57.sh  (fixed)
+ #
+-# Bump 6.9.45 → 6.9.56 **and** normalise every path.
++# Bump 6.9.45 → 6.9.57 **and** normalise every path.
+ # – Moves old upgrade scripts to scripts/upgrades/  (kept as‑is)
+-# – Renames files containing 6.9.45 → 6.9.56
++# – Renames files containing 6.9.45 → 6.9.57
+ # – Removes stray 6.9.(35‑44) fragments
+-# – Appends _v6.9.56 suffix to logs / artefacts lacking it
+-# – Generates rename_report_v6.9.56.txt
++# – Appends _v6.9.57 suffix to logs / artefacts lacking it
++# – Generates rename_report_v6.9.57.txt
+ #
+ # Re‑run safely; skips mv when src == dst and ignores scripts/upgrades/*
+ # No auto‑push.
+@@ -15,7 +15,7 @@ set -euo pipefail
+ shopt -s globstar nullglob
+ 
+ OLD_VERSION="6.9.45"
+-NEW_VERSION="6.9.56"
++NEW_VERSION="6.9.57"
+ REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+ REPORT="rename_report_v${NEW_VERSION}.txt"
+ 
+diff --git a/v6.9.47.sh b/v6.9.47.sh
+index 4a66a8b..84bebef 100755
+--- a/v6.9.47.sh
++++ b/v6.9.47.sh
+@@ -1,16 +1,16 @@
+ #!/usr/bin/env bash
+-# v6.9.56.sh
++# v6.9.57.sh
+ #
+ # Purpose
+ # -------
+-# • Bump project from 6.9.46 → 6.9.56
++# • Bump project from 6.9.46 → 6.9.57
+ # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
+-#   logical file (the latest, suffixed _v6.9.56) and deleting superseded logs,
++#   logical file (the latest, suffixed _v6.9.57) and deleting superseded logs,
+ #   tarballs, reports, etc.
+ # • Eliminate “missing‑file” warnings by updating version strings *before* any
+ #   renames, and by checking each path exists before operating on it.
+ # • Run a quick lint check (Ruff for Python, ShellCheck for Bash) and store
+-#   results in `lint_report_v6.9.56.txt`.
++#   results in `lint_report_v6.9.57.txt`.
+ # • Commit and tag locally (no automatic push).
+ #
+ # Safe to re‑run: skips moves if src=dst, skips deletes if file already gone.
+@@ -19,7 +19,7 @@ set -euo pipefail
+ shopt -s globstar nullglob
+ 
+ OLD_VERSION="6.9.46"
+-NEW_VERSION="6.9.56"
++NEW_VERSION="6.9.57"
+ REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+ REPORT="cleanup_report_v${NEW_VERSION}.txt"
+ LINT="lint_report_v${NEW_VERSION}.txt"
+diff --git a/v6.9.51.sh b/v6.9.51.sh
+index b3f6f3e..c8510df 100755
+--- a/v6.9.51.sh
++++ b/v6.9.51.sh
+@@ -1,16 +1,16 @@
+ #!/usr/bin/env bash
+-# v6.9.56.sh
++# v6.9.57.sh
+ #
+ # Purpose
+ # -------
+-# • Bump project from 6.9.50 → 6.9.56.
++# • Bump project from 6.9.50 → 6.9.57.
+ # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
+-#   logical file (the latest, suffixed _v6.9.56) and deleting superseded logs,
++#   logical file (the latest, suffixed _v6.9.57) and deleting superseded logs,
+ #   tarballs, reports, etc.  This covers all older suffixes from 6.9.35 up
+ #   through 6.9.50.
+ # • Update version strings before any renames to avoid missing‑file warnings.
+ # • Run a quick lint pass (Ruff for Python, ShellCheck for Bash) and store
+-#   results in `lint_report_v6.9.56.txt`.
++#   results in `lint_report_v6.9.57.txt`.
+ # • Commit, tag and automatically push to the `origin` remote.
+ #
+ # Safe to re‑run: skips moves if src=dst, skips deletes if file already gone.
+@@ -19,7 +19,7 @@ set -euo pipefail
+ shopt -s globstar nullglob
+ 
+ OLD_VERSION="6.9.50"
+-NEW_VERSION="6.9.56"
++NEW_VERSION="6.9.57"
+ REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+ REPORT="cleanup_report_v${NEW_VERSION}.txt"
+ LINT="lint_report_v${NEW_VERSION}.txt"
+@@ -96,11 +96,11 @@ echo "lint report saved to $LINT" >>"$REPORT"
+ # 5. Policies update
+ ###############################################################################
+ cat > "21-policies_v$NEW_VERSION.txt" <<'EOF'
+-# Policies v6.9.56
+-* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.56`.  Older duplicates (v6.9.35–50) are removed.
++# Policies v6.9.57
++* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.57`.  Older duplicates (v6.9.35–50) are removed.
+ * Version strings are updated before renaming, preventing missing‑file warnings.
+ * The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
+-* Lint results are written to `lint_report_v6.9.56.txt`.
++* Lint results are written to `lint_report_v6.9.57.txt`.
+ * Commit, tag and push to the `origin` remote are done automatically at the end.
+ EOF
+ echo "new   21-policies_v$NEW_VERSION.txt" >>"$REPORT"
+diff --git a/v6.9.52.sh b/v6.9.52.sh
+index 2c02bad..4a5f2e5 100755
+--- a/v6.9.52.sh
++++ b/v6.9.52.sh
+@@ -1,16 +1,16 @@
+ #!/usr/bin/env bash
+-# v6.9.56.sh
++# v6.9.57.sh
+ #
+ # Purpose
+ # -------
+-# • Bump project from 6.9.56 → 6.9.56.
++# • Bump project from 6.9.57 → 6.9.57.
+ # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
+-#   logical file (the latest, suffixed _v6.9.56) and deleting superseded logs,
++#   logical file (the latest, suffixed _v6.9.57) and deleting superseded logs,
+ #   tarballs, reports, etc.  This covers all older suffixes from 6.9.35 up
+-#   through 6.9.56.
++#   through 6.9.57.
+ # • Update version strings before any renames to avoid missing‑file warnings.
+ # • Run a quick lint pass (Ruff for Python, ShellCheck for Bash) and store
+-#   results in `lint_report_v6.9.56.txt`.
++#   results in `lint_report_v6.9.57.txt`.
+ # • Commit on a new branch named after the version, tag the commit, and
+ #   automatically push both the branch and tag to the `origin` remote.
+ #
+@@ -19,8 +19,8 @@
+ set -euo pipefail
+ shopt -s globstar nullglob
+ 
+-OLD_VERSION="6.9.56"
+-NEW_VERSION="6.9.56"
++OLD_VERSION="6.9.57"
++NEW_VERSION="6.9.57"
+ REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+ REPORT="cleanup_report_v${NEW_VERSION}.txt"
+ LINT="lint_report_v${NEW_VERSION}.txt"
+@@ -110,12 +110,12 @@ echo "lint report saved to $LINT" >>"$REPORT"
+ # 5. Policies update
+ ###############################################################################
+ cat > "21-policies_v$NEW_VERSION.txt" <<'EOF'
+-# Policies v6.9.56
+-* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.56`.  Older duplicates (v6.9.35–51) are removed.
++# Policies v6.9.57
++* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.57`.  Older duplicates (v6.9.35–51) are removed.
+ * Version strings are updated before renaming, preventing missing‑file warnings.
+ * The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
+-* Lint results are written to `lint_report_v6.9.56.txt`.
+-* Commits are made on a new branch named `v6.9.56`; this branch and the associated tag are pushed to the `origin` remote.
++* Lint results are written to `lint_report_v6.9.57.txt`.
++* Commits are made on a new branch named `v6.9.57`; this branch and the associated tag are pushed to the `origin` remote.
+ EOF
+ echo "new   21-policies_v$NEW_VERSION.txt" >>"$REPORT"
+ 
+diff --git a/webhook_config_v6.9.56.json b/webhook_config_v6.9.56.json
+deleted file mode 100644
+index e33900a..0000000
+--- a/webhook_config_v6.9.56.json
++++ /dev/null
+@@ -1,11 +0,0 @@
+-{
+-  "name": "web",
+-  "active": true,
+-  "events": ["push", "pull_request"],
+-  "config": {
+-    "url": "https://example.com/webhook",
+-    "content_type": "json",
+-    "insecure_ssl": "0",
+-    "secret": "REPLACE_WITH_YOUR_SECRET"
+-  }
+-}
