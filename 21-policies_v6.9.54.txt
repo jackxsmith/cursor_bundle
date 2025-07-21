@@ -1,0 +1,7 @@
+# Policies v6.9.54
+* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.54`.  Older duplicates (v6.9.35–53) are removed.
+* Version strings are updated before renaming, preventing missing‑file warnings.
+* The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
+* Lint results are written to `lint_report_v6.9.54.txt`.
+* Commits are made on a new branch named `release/v6.9.54` to avoid naming conflicts with the tag `v6.9.54`.  Both the branch and the tag are pushed to the `origin` remote.
+* Additional context files (diff, log and README) are created and committed with this branch to aid in history inspection and debugging.

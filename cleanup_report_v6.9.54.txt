@@ -1,0 +1,9 @@
+ver  updated text files
+rm   ./cleanup_report_v6.9.53.txt
+rm   ./21-policies_v6.9.53.txt
+rm   ./lint_report_v6.9.53.txt
+lint report saved to lint_report_v6.9.54.txt
+new   21-policies_v6.9.54.txt
+new   diff-6.9.53-to-6.9.54.patch
+new   README.md
+new   git_log_6.9.54.txt

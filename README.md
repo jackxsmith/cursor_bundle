@@ -1,82 +1,16 @@
-# Cursor Bundle v6.9.35 - Complete Installation Suite
+# Release v6.9.54
 
-## All Installation Methods Fixed and Updated
+This branch contains the release of version **v6.9.54**.
 
-### Enhanced Scripts (Recommended)
-- `14-install_v6.9.35_enhanced.sh` - Main installer with dependency management
-- `02-launcher_v6.9.35_enhanced.sh` - Enhanced launcher with path detection
-- `22-test_cursor_suite_v6.9.35_enhanced.sh` - Comprehensive test suite
+## Contents
 
-### All Original Methods Fixed
-- All original installation scripts updated and error-free
-- Complete compatibility across all installation methods
-- Comprehensive error resolution applied
+- **original_bundle.zip** – a copy of the original bundle archive.  Keeping this file makes it easy to inspect the initial state of the project for any historical debugging.
+- **diff-6.9.53-to-6.9.54.patch** – a unified diff showing all changes made between v6.9.53 and v6.9.54.  This allows for quick review of the upgrade without digging through Git history.
+- **v6.9.54.sh** – the script used to perform this upgrade.  Having the script alongside the changes makes it easier to reproduce or debug the process.
+- **cleanup_report_v6.9.54.txt** – records every file removed or renamed during the upgrade.
+- **lint_report_v6.9.54.txt** – output from the linting pass on Python and shell scripts.
+- **21-policies_v6.9.54.txt** – defines the policies enforced during this upgrade.
 
-### Quick Start
-```bash
-sudo ./14-install_v6.9.35_enhanced.sh
-```
+## Summary
 
-### Validation
-```bash
-./22-test_cursor_suite_v6.9.35_enhanced.sh
-```
-
-## Docker Installation
-
-### Quick Docker Setup
-```bash
-# Build and run with Docker
-./15-docker_install_v6.9.35.sh --build
-./15-docker_install_v6.9.35.sh --run
-
-# Access via VNC: localhost:5900
-# Access via Web UI: http://localhost:8080
-```
-
-### Docker Compose Setup
-```bash
-# Using Docker Compose
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-### Docker Management
-```bash
-# Build image
-./15-docker_install_v6.9.35.sh --build
-
-# Run container
-./15-docker_install_v6.9.35.sh --run
-
-# Stop container
-./15-docker_install_v6.9.35.sh --stop
-
-# Remove everything
-./15-docker_install_v6.9.35.sh --remove
-
-# Shell access
-docker exec -it cursor-ide bash
-```
-
-## Tkinter GUI Installer (Optional)
-
-If you do not have `zenity` installed or prefer a lightweight,
-Python‑native interface, you can use the provided Tkinter installer.
-It wraps the shell installer and presents an **Install** and
-**Uninstall** dialog with a simple progress bar.
-
-To launch the Tkinter GUI installer, run:
-
-```bash
-python3 07-tkinter_v6.9.35_fixed.py
-```
-
-Please note that the `tkinter` module must be available in your
-Python installation.  On minimal systems it may need to be installed
-separately (e.g., `sudo apt-get install python3-tk`).
+This branch was created from the previous version tag .  All version strings were updated to , duplicate artefacts were removed, and new artefacts were suffixed with .  A fresh lint was run, and the upgrade script committed the changes on this branch and pushed both the branch and the tag  to the remote.  See  for the exact code changes.
