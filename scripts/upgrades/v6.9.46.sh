@@ -16,7 +16,7 @@ shopt -s globstar nullglob
 
 OLD_VERSION="6.9.45"
 NEW_VERSION="6.9.47"
-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
 REPORT="rename_report_v${NEW_VERSION}.txt"
 
 echo "→ Working in $REPO_DIR"

@@ -1,7 +1,0 @@
-ver  updated text files
-rm   ./21-policies_v6.9.47.txt
-rm   ./cleanup_report_v6.9.47.txt
-rm   ./lint_report_v6.9.47.txt
-mv   ./rename_misnamed_files_report.txt → ./rename_misnamed_files_report_v6.9.51.txt
-lint report saved to lint_report_v6.9.51.txt
-new   21-policies_v6.9.51.txt
