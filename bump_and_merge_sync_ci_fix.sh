@@ -7,7 +7,7 @@ set -euo pipefail
 shopt -s globstar nullglob
 
 OWNER="jackxsmith"; REPO="cursor_bundle"
-NEW_VERSION="${1:-6.9.70}"
+NEW_VERSION="${1:-6.9.71}"
 CLONE_DIR="${REPO_DIR:-$HOME/Downloads/$REPO}"
 API="https://api.github.com"
 
