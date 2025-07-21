@@ -3,11 +3,11 @@
 #
 # Purpose
 # -------
-# • Bump project from 6.9.51 → 6.9.52.
+# • Bump project from 6.9.52 → 6.9.52.
 # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
 #   logical file (the latest, suffixed _v6.9.52) and deleting superseded logs,
 #   tarballs, reports, etc.  This covers all older suffixes from 6.9.35 up
-#   through 6.9.51.
+#   through 6.9.52.
 # • Update version strings before any renames to avoid missing‑file warnings.
 # • Run a quick lint pass (Ruff for Python, ShellCheck for Bash) and store
 #   results in `lint_report_v6.9.52.txt`.
@@ -19,7 +19,7 @@
 set -euo pipefail
 shopt -s globstar nullglob
 
-OLD_VERSION="6.9.51"
+OLD_VERSION="6.9.52"
 NEW_VERSION="6.9.52"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
 REPORT="cleanup_report_v${NEW_VERSION}.txt"
