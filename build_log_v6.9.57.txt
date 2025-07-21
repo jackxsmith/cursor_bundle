@@ -1,0 +1,3 @@
+Running make…
+Running linters...
+# Add lint commands (shellcheck, ruff, etc.) here

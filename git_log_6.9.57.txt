@@ -1,4 +1,37 @@
-72b7140 (HEAD -> release/v6.9.54, tag: v6.9.54, origin/release/v6.9.54) chore: full cleanup & bump to v6.9.54 (one artefact per version)
+581c08f (HEAD -> release/v6.9.56, tag: v6.9.56, origin/release/v6.9.56) chore: full cleanup & bump to v6.9.56 (one artefact per version)
+ 21-policies_v6.9.55.txt                            |   7 -
+ 21-policies_v6.9.56.txt                            |   7 +
+ README.md                                          |  19 +-
+ VERSION                                            |   2 +-
+ cleanup_report_v6.9.55.txt                         |  10 -
+ cleanup_report_v6.9.56.txt                         |  13 +
+ diff-6.9.55-to-6.9.56.patch                        | 748 +++++++++++++++++++++
+ git_log_6.9.55.txt => git_log_6.9.55_v6.9.56.txt   |   0
+ git_log_6.9.54_v6.9.55.txt => git_log_6.9.56.txt   |  53 +-
+ git_metadata_6.9.56.txt                            |  84 +++
+ lint_report_v6.9.55.txt => lint_report_v6.9.56.txt |   0
+ scripts/upgrades/v6.9.47.sh                        |  12 +-
+ v6.9.47.sh                                         |  10 +-
+ v6.9.51.sh                                         |  16 +-
+ v6.9.52.sh                                         |  22 +-
+ webhook_config_v6.9.56.json                        |  11 +
+ 16 files changed, 936 insertions(+), 78 deletions(-)
+f21a6fb (tag: v6.9.55, origin/release/v6.9.55, release/v6.9.55) chore: full cleanup & bump to v6.9.55 (one artefact per version)
+ 21-policies_v6.9.54.txt => 21-policies_v6.9.55.txt |   8 +-
+ README.md                                          |  16 +-
+ VERSION                                            |   2 +-
+ cleanup_report_v6.9.54.txt                         |   9 -
+ cleanup_report_v6.9.55.txt                         |  10 +
+ diff-6.9.54-to-6.9.55.patch                        | 493 +++++++++++++++++++++
+ git_log_6.9.54.txt => git_log_6.9.54_v6.9.55.txt   |   0
+ git_log_6.9.55.txt                                 | 246 ++++++++++
+ lint_report_v6.9.54.txt => lint_report_v6.9.55.txt |   0
+ scripts/upgrades/v6.9.47.sh                        |  12 +-
+ v6.9.47.sh                                         |  10 +-
+ v6.9.51.sh                                         |  16 +-
+ v6.9.52.sh                                         |  22 +-
+ 13 files changed, 792 insertions(+), 52 deletions(-)
+72b7140 (tag: v6.9.54, origin/release/v6.9.54, release/v6.9.54) chore: full cleanup & bump to v6.9.54 (one artefact per version)
  21-policies_v6.9.53.txt                            |   6 -
  21-policies_v6.9.54.txt                            |   7 +
  README.md                                          |  88 +-------
@@ -231,16 +264,3 @@ a72d83a (tag: v6.9.41) feat: upgrade to v6.9.41 with mutation‑test & coverage 
  scripts/mutation_test.sh     | 24 ++++---------
  v6.9.40.sh                   | 10 +++---
  5 files changed, 33 insertions(+), 124 deletions(-)
-7edab0c (tag: v6.9.40) feat: upgrade to v6.9.40 with mutation testing and coverage scaffolding
- .github/workflows/ci.yml     | 23 +++++++++++++++++++++++
- 21-policies_v6.9.39.txt      | 28 ----------------------------
- 21-policies_v6.9.40.txt      | 22 ++++++++++++++++++++++
- Makefile                     |  6 ++++++
- VERSION                      |  2 +-
- scripts/generate_coverage.sh | 14 ++++++++++++++
- scripts/mutation_test.sh     | 20 ++++++++++++++++++++
- v6.9.39.sh => v6.9.40.sh     |  0
- 8 files changed, 86 insertions(+), 29 deletions(-)
-d2fbf86 feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
- v6.9.39.sh | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
