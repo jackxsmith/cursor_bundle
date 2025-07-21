@@ -1,5 +1,0 @@
-Policies v6.9.61
-• Always correct 'origin' to git@github.com:jackxsmith/cursor_bundle.git before pushing.
-• Preserve all ci_workflows_* files; create placeholders for OLD_VERSION tarballs.
-• Single‑artefact rule: keep only _v6.9.61 copies.
-• Idempotent, safe renames; verify tool availability.
