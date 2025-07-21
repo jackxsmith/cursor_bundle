@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# v6.9.44.sh
-# Bump Cursor bundle from 6.9.43 → 6.9.44 **and**
+# v6.9.45.sh
+# Bump Cursor bundle from 6.9.43 → 6.9.45 **and**
 # normalise file‑naming so every generated artefact embeds the version
 # as  _vX.Y.Z.{ext}.  Also skips renaming previous upgrade scripts, so
 # history stays intact.  Commits + tags locally; no auto‑push.
@@ -8,7 +8,7 @@
 set -euo pipefail
 
 OLD_VERSION="6.9.43"
-NEW_VERSION="6.9.44"
+NEW_VERSION="6.9.45"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
 
 echo "→ Working in $REPO_DIR"
@@ -47,7 +47,7 @@ echo "$NEW_VERSION" > VERSION
 ###############################################################################
 mkdir -p dist perf logs
 
-# Example: rename dist/release.txt → dist/release_v6.9.44.txt
+# Example: rename dist/release.txt → dist/release_v6.9.45.txt
 for artefact in dist/*; do
   [[ -f $artefact ]] || continue
   base=$(basename "$artefact")
@@ -75,7 +75,7 @@ cat > "21-policies_v$NEW_VERSION.txt" <<EOF
   - static_analysis_v$NEW_VERSION.log
   - sbom_v$NEW_VERSION.json
   - release_v$NEW_VERSION.tar.gz
-* Upgrade scripts keep historical names (v6.9.43.sh, v6.9.44.sh, …) and are not renamed.
+* Upgrade scripts keep historical names (v6.9.43.sh, v6.9.45.sh, …) and are not renamed.
 * Script runs without sudo; review, then push with:
     git push origin main --follow-tags
 EOF

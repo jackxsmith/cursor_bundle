@@ -34,3 +34,7 @@ generate-sbom:
 
 perf-test:
 	bash scripts/run_performance_test.sh
+
+sanitize-names:
+	@echo "Suffixing artefacts in dist/, logs/, perf/ with current VERSION …"
+	@bash scripts/version_suffix.sh

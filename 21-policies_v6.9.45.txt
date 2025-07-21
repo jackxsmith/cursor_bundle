@@ -1,0 +1,5 @@
+# Policies v6.9.45
+* All artefacts (.log, .txt, .json, .tar.gz, etc.) must carry *_vX.Y.Z* in filename.
+* Historical upgrade scripts (v*.sh) remain unchanged.
+* Use `make sanitize-names` or `scripts/version_suffix.sh` for future files.
+* This upgrade bumps to v6.9.45; run script without sudo, then push.

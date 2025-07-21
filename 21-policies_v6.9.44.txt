@@ -1,9 +1,0 @@
-# Policies v6.9.44
-* All generated artefacts **must** include the exact version in their filename:
-  - error_report_v6.9.44.txt
-  - static_analysis_v6.9.44.log
-  - sbom_v6.9.44.json
-  - release_v6.9.44.tar.gz
-* Upgrade scripts keep historical names (v6.9.43.sh, v6.9.44.sh, …) and are not renamed.
-* Script runs without sudo; review, then push with:
-    git push origin main --follow-tags
