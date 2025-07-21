@@ -1,4 +1,0 @@
-# Policies v6.9.41
-* Upgrade scripts must follow vX.Y.Z.sh naming.
-* Makefile must have `mutation-test` and `coverage-report` targets.
-* Run without sudo; push manually after verifying CI.

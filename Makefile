@@ -25,3 +25,9 @@ mutation-test:
 
 coverage-report:
 	bash scripts/generate_coverage.sh
+
+sign-artifacts:
+	bash scripts/sign_artifacts.sh
+
+generate-sbom:
+	bash scripts/generate_sbom.sh

@@ -1,10 +1,8 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  push: { branches: [ main ] }
+  pull_request: { branches: [ main ] }
 
 jobs:
   build:
@@ -16,13 +14,14 @@ jobs:
         with: { python-version: '3.x' }
       - run: |
           python -m pip install --upgrade pip
-          pip install ruff mutmut pytest pytest-cov
+          pip install ruff mutmut pytest pytest-cov cyclonedx-bom
       - run: make lint || true
       - run: make test || true
       - run: make mutation-test
       - run: make coverage-report
-      - name: Archive coverage HTML
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage-html
-          path: htmlcov
+      - name: Build release (placeholder)
+        run: mkdir -p dist && echo "release-$NEW_VERSION" > dist/release.txt
+      - run: make sign-artifacts
+      - run: make generate-sbom
+      - uses: actions/upload-artifact@v3
+        with: { name: dist, path: dist }
