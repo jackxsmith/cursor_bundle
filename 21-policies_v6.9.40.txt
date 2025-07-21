@@ -1,5 +1,0 @@
-# Policies v6.9.40
-* Scripts/archives must follow vX.Y.Z.* naming.
-* Mutation tests (`scripts/mutation_test.sh`) must run in CI; mutation score must not drop.
-* Coverage report must be generated (XML + HTML); failing if coverage < previous release.
-* Script must be run without sudo; push manually after verifying CI.
