@@ -9,7 +9,7 @@ OLD_VERSION="6.9.40"
 NEW_VERSION="6.9.41"
 
 # Determine repo location
-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
 echo "→ Working in $REPO_DIR"
 [[ -d $REPO_DIR ]] || { echo "Repo not found"; exit 1; }
 cd "$REPO_DIR"

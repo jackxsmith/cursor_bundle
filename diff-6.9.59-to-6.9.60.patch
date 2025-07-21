@@ -1,0 +1,285 @@
+diff --git a/21-policies_v6.9.51.txt b/21-policies_v6.9.51.txt
+deleted file mode 100644
+index 27d8813..0000000
+--- a/21-policies_v6.9.51.txt
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# Policies v6.9.51
+-* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.51`.  Older duplicates (v6.9.35–50) are removed.
+-* Version strings are updated before renaming, preventing missing‑file warnings.
+-* The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
+-* Lint results are written to `lint_report_v6.9.51.txt`.
+-* Commit, tag and push to the `origin` remote are done automatically at the end.
+diff --git a/README.md b/README.md
+index a097134..5ee1747 100644
+--- a/README.md
++++ b/README.md
+@@ -1,82 +1,31 @@
+-# Cursor Bundle v6.9.35 - Complete Installation Suite
+-
+-## All Installation Methods Fixed and Updated
+-
+-### Enhanced Scripts (Recommended)
+-- `14-install_v6.9.35_enhanced.sh` - Main installer with dependency management
+-- `02-launcher_v6.9.35_enhanced.sh` - Enhanced launcher with path detection
+-- `22-test_cursor_suite_v6.9.35_enhanced.sh` - Comprehensive test suite
+-
+-### All Original Methods Fixed
+-- All original installation scripts updated and error-free
+-- Complete compatibility across all installation methods
+-- Comprehensive error resolution applied
+-
+-### Quick Start
+-```bash
+-sudo ./14-install_v6.9.35_enhanced.sh
+-```
+-
+-### Validation
+-```bash
+-./22-test_cursor_suite_v6.9.35_enhanced.sh
+-```
+-
+-## Docker Installation
+-
+-### Quick Docker Setup
+-```bash
+-# Build and run with Docker
+-./15-docker_install_v6.9.35.sh --build
+-./15-docker_install_v6.9.35.sh --run
+-
+-# Access via VNC: localhost:5900
+-# Access via Web UI: http://localhost:8080
+-```
+-
+-### Docker Compose Setup
+-```bash
+-# Using Docker Compose
+-docker-compose up -d
+-
+-# View logs
+-docker-compose logs -f
+-
+-# Stop services
+-docker-compose down
+-```
+-
+-### Docker Management
+-```bash
+-# Build image
+-./15-docker_install_v6.9.35.sh --build
+-
+-# Run container
+-./15-docker_install_v6.9.35.sh --run
+-
+-# Stop container
+-./15-docker_install_v6.9.35.sh --stop
+-
+-# Remove everything
+-./15-docker_install_v6.9.35.sh --remove
+-
+-# Shell access
+-docker exec -it cursor-ide bash
+-```
+-
+-## Tkinter GUI Installer (Optional)
+-
+-If you do not have `zenity` installed or prefer a lightweight,
+-Python‑native interface, you can use the provided Tkinter installer.
+-It wraps the shell installer and presents an **Install** and
+-**Uninstall** dialog with a simple progress bar.
+-
+-To launch the Tkinter GUI installer, run:
+-
+-```bash
+-python3 07-tkinter_v6.9.35_fixed.py
+-```
+-
+-Please note that the `tkinter` module must be available in your
+-Python installation.  On minimal systems it may need to be installed
+-separately (e.g., `sudo apt-get install python3-tk`).
++# Release v6.9.60
++
++This branch contains the release of version **v6.9.60**.
++
++## Contents
++
++- **original_bundle.zip** – copy of the original bundle archive.
++- **diff-6.9.60-to-6.9.60.patch** – unified diff showing changes from v6.9.60 to v6.9.60.
++- **v6.9.60.sh** – the script used to perform this upgrade.
++- **cleanup_report_v6.9.60.txt** – records of file removals/renames.
++- **lint_report_v6.9.60.txt** – lint results.
++- **21-policies_v6.9.60.txt** – the policies applied during this upgrade.
++- **git_log_6.9.60.txt** – decorated commit log with stats.
++- **git_metadata_6.9.60.txt** – detailed Git metadata.
++- **webhook_config_v6.9.60.json** – a template for GitHub webhooks.
++- **test_results_v6.9.60.txt** – test suite output (or a note if skipped).
++- **build_log_v6.9.60.txt** – build logs (or a note if none).
++- **static_analysis_v6.9.60.txt** – consolidated static analysis results.
++- **dependencies_v6.9.60.txt** – pip/npm dependency snapshots.
++- **environment_v6.9.60.txt** – system and tool version information.
++- **change_summary_v6.9.60.txt** – commit messages since the previous tag.
++- **performance_v6.9.60.txt** – placeholder for performance metrics.
++- **ci_workflows_v6.9.60.tar.gz** – CI workflow archive for this release.
++- **code_metrics_v6.9.60.txt** – counts of files and lines by extension.
++- **todo_fixme_v6.9.60.txt** – TODO/FIXME occurrences found.
++- **largest_files_v6.9.60.txt** – top 20 largest files by size.
++- **security_audit_v6.9.60.txt** – results of dependency vulnerability scans.
++
++## Summary
++
++This branch originates from tag `v6.9.60`.  Version strings have been updated to `6.9.60`; obsolete artefacts (except  files) were removed; remaining artefacts were suffixed with `6.9.60`.  A new CI workflow archive was created, comprehensive diagnostics were generated, and the changes were committed and tagged.  See the files above for details.
+diff --git a/VERSION b/VERSION
+index 41876f9..83c261d 100644
+--- a/VERSION
++++ b/VERSION
+@@ -1 +1 @@
+-6.9.51
++6.9.60
+diff --git a/cleanup_report_v6.9.51.txt b/cleanup_report_v6.9.51.txt
+deleted file mode 100644
+index cc57887..0000000
+--- a/cleanup_report_v6.9.51.txt
++++ /dev/null
+@@ -1,7 +0,0 @@
+-ver  updated text files
+-rm   ./21-policies_v6.9.47.txt
+-rm   ./cleanup_report_v6.9.47.txt
+-rm   ./lint_report_v6.9.47.txt
+-mv   ./rename_misnamed_files_report.txt → ./rename_misnamed_files_report_v6.9.51.txt
+-lint report saved to lint_report_v6.9.51.txt
+-new   21-policies_v6.9.51.txt
+diff --git a/lint_report_v6.9.51.txt b/lint_report_v6.9.51.txt
+deleted file mode 100644
+index 35d07e5..0000000
+--- a/lint_report_v6.9.51.txt
++++ /dev/null
+@@ -1,2 +0,0 @@
+-Ruff not installed.
+-ShellCheck not installed.
+diff --git a/rename_misnamed_files_report_v6.9.51.txt b/rename_misnamed_files_report_v6.9.51.txt
+deleted file mode 100644
+index f6d4418..0000000
+--- a/rename_misnamed_files_report_v6.9.51.txt
++++ /dev/null
+@@ -1,4 +0,0 @@
+-mv    v6.9.46 → scripts/upgrades/v6.9.41.sh
+-mv    scripts/upgrades/v6.9.43.sh → scripts/upgrades/v6.9.40.sh
+-mv    scripts/upgrades/v6.9.44.sh → scripts/upgrades/v6.9.45.sh
+-mv    scripts/upgrades/v6.9.46.sh → scripts/upgrades/v6.9.47.sh
+diff --git a/scripts/upgrades/v6.9.40.sh b/scripts/upgrades/v6.9.40.sh
+index dfe21dc..5afa037 100755
+--- a/scripts/upgrades/v6.9.40.sh
++++ b/scripts/upgrades/v6.9.40.sh
+@@ -14,7 +14,7 @@ NEW_VERSION="6.9.40"
+ 
+ # Define repository location
+ DOWNLOADS_DIR="$HOME/Downloads"
+-REPO_DIR="$DOWNLOADS_DIR/cursor_bundle_v6.9.32"
++REPO_DIR="$DOWNLOADS_DIR/cursor_bundle"
+ 
+ if [[ ! -d "$REPO_DIR" ]]; then
+   echo "Repository directory $REPO_DIR not found. Ensure the bundle is extracted and try again."
+diff --git a/scripts/upgrades/v6.9.41.sh b/scripts/upgrades/v6.9.41.sh
+index 1a843fd..fb0ca50 100755
+--- a/scripts/upgrades/v6.9.41.sh
++++ b/scripts/upgrades/v6.9.41.sh
+@@ -9,7 +9,7 @@ OLD_VERSION="6.9.40"
+ NEW_VERSION="6.9.41"
+ 
+ # Determine repo location
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ echo "→ Working in $REPO_DIR"
+ [[ -d $REPO_DIR ]] || { echo "Repo not found"; exit 1; }
+ cd "$REPO_DIR"
+diff --git a/scripts/upgrades/v6.9.43.sh b/scripts/upgrades/v6.9.43.sh
+index dfe21dc..5afa037 100755
+--- a/scripts/upgrades/v6.9.43.sh
++++ b/scripts/upgrades/v6.9.43.sh
+@@ -14,7 +14,7 @@ NEW_VERSION="6.9.40"
+ 
+ # Define repository location
+ DOWNLOADS_DIR="$HOME/Downloads"
+-REPO_DIR="$DOWNLOADS_DIR/cursor_bundle_v6.9.32"
++REPO_DIR="$DOWNLOADS_DIR/cursor_bundle"
+ 
+ if [[ ! -d "$REPO_DIR" ]]; then
+   echo "Repository directory $REPO_DIR not found. Ensure the bundle is extracted and try again."
+diff --git a/scripts/upgrades/v6.9.44.sh b/scripts/upgrades/v6.9.44.sh
+index 3f60967..28ccff6 100755
+--- a/scripts/upgrades/v6.9.44.sh
++++ b/scripts/upgrades/v6.9.44.sh
+@@ -9,7 +9,7 @@ set -euo pipefail
+ 
+ OLD_VERSION="6.9.43"
+ NEW_VERSION="6.9.45"
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ 
+ echo "→ Working in $REPO_DIR"
+ [[ -d $REPO_DIR ]] || { echo "Repo not found"; exit 1; }
+diff --git a/scripts/upgrades/v6.9.45.sh b/scripts/upgrades/v6.9.45.sh
+index 3f60967..28ccff6 100755
+--- a/scripts/upgrades/v6.9.45.sh
++++ b/scripts/upgrades/v6.9.45.sh
+@@ -9,7 +9,7 @@ set -euo pipefail
+ 
+ OLD_VERSION="6.9.43"
+ NEW_VERSION="6.9.45"
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ 
+ echo "→ Working in $REPO_DIR"
+ [[ -d $REPO_DIR ]] || { echo "Repo not found"; exit 1; }
+diff --git a/scripts/upgrades/v6.9.46.sh b/scripts/upgrades/v6.9.46.sh
+index 7455cdd..b0bd751 100755
+--- a/scripts/upgrades/v6.9.46.sh
++++ b/scripts/upgrades/v6.9.46.sh
+@@ -16,7 +16,7 @@ shopt -s globstar nullglob
+ 
+ OLD_VERSION="6.9.45"
+ NEW_VERSION="6.9.47"
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ REPORT="rename_report_v${NEW_VERSION}.txt"
+ 
+ echo "→ Working in $REPO_DIR"
+diff --git a/scripts/upgrades/v6.9.47.sh b/scripts/upgrades/v6.9.47.sh
+index 7455cdd..b0bd751 100755
+--- a/scripts/upgrades/v6.9.47.sh
++++ b/scripts/upgrades/v6.9.47.sh
+@@ -16,7 +16,7 @@ shopt -s globstar nullglob
+ 
+ OLD_VERSION="6.9.45"
+ NEW_VERSION="6.9.47"
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ REPORT="rename_report_v${NEW_VERSION}.txt"
+ 
+ echo "→ Working in $REPO_DIR"
+diff --git a/v6.9.46 b/v6.9.46
+index 1a843fd..fb0ca50 100755
+--- a/v6.9.46
++++ b/v6.9.46
+@@ -9,7 +9,7 @@ OLD_VERSION="6.9.40"
+ NEW_VERSION="6.9.41"
+ 
+ # Determine repo location
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ echo "→ Working in $REPO_DIR"
+ [[ -d $REPO_DIR ]] || { echo "Repo not found"; exit 1; }
+ cd "$REPO_DIR"
+diff --git a/v6.9.47.sh b/v6.9.47.sh
+index 91a11ce..24f908b 100755
+--- a/v6.9.47.sh
++++ b/v6.9.47.sh
+@@ -20,7 +20,7 @@ shopt -s globstar nullglob
+ 
+ OLD_VERSION="6.9.46"
+ NEW_VERSION="6.9.47"
+-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
++REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
+ REPORT="cleanup_report_v${NEW_VERSION}.txt"
+ LINT="lint_report_v${NEW_VERSION}.txt"
+ 
