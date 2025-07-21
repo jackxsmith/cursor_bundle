@@ -2,12 +2,12 @@
 97abcf5f479451d89bfb411e4f6a71acae6a99ab refs/heads/release/v6.9.60
 20db855da069a1eb9db8cc089c943b45d10b7ccd refs/heads/release/v6.9.61
 8d8b0f2b439f9a2e89c35710bd32e626c8cb2758 refs/heads/release/v6.9.62
-ccb66f7f41b6d03dff16a2f0be5f1c17c03683e1 refs/heads/release/v6.9.71
+ccb66f7f41b6d03dff16a2f0be5f1c17c03683e1 refs/heads/release/v6.9.72
 98734a966ca00092805052cbe6e93935bae28a0f refs/remotes/origin/main
 97abcf5f479451d89bfb411e4f6a71acae6a99ab refs/remotes/origin/release/v6.9.60
 20db855da069a1eb9db8cc089c943b45d10b7ccd refs/remotes/origin/release/v6.9.61
 8d8b0f2b439f9a2e89c35710bd32e626c8cb2758 refs/remotes/origin/release/v6.9.62
-ccb66f7f41b6d03dff16a2f0be5f1c17c03683e1 refs/remotes/origin/release/v6.9.71
+ccb66f7f41b6d03dff16a2f0be5f1c17c03683e1 refs/remotes/origin/release/v6.9.72
 2fede9c20af1614fdb7fe652dd1dee0e08061455 refs/tags/v6.9.39
 7edab0cd2de59bac4256ae9cea258d20944bde17 refs/tags/v6.9.40
 a72d83ad46afa260c596122ec7afae6a26b5a5ed refs/tags/v6.9.41
@@ -21,4 +21,4 @@ a16d8490ea11ebfe19533000c2bbbeb514f9e0da refs/tags/v6.9.45
 97abcf5f479451d89bfb411e4f6a71acae6a99ab refs/tags/v6.9.60
 20db855da069a1eb9db8cc089c943b45d10b7ccd refs/tags/v6.9.61
 8d8b0f2b439f9a2e89c35710bd32e626c8cb2758 refs/tags/v6.9.62
-ccb66f7f41b6d03dff16a2f0be5f1c17c03683e1 refs/tags/v6.9.71
+ccb66f7f41b6d03dff16a2f0be5f1c17c03683e1 refs/tags/v6.9.72
