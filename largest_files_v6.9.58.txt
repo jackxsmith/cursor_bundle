@@ -1,0 +1,21 @@
+### Top 20 largest files (in bytes):
+10485764 ./cursor.AppImage
+10485764 ./01-appimage.AppImage
+708437 ./original_bundle.zip
+49991 ./diff-6.9.56-to-6.9.57.patch
+44846 ./diff-6.9.57-to-6.9.58.patch
+41346 ./diff-6.9.55-to-6.9.56.patch
+25466 ./diff-6.9.54-to-6.9.55.patch
+20496 ./get-docker.sh
+17366 ./git_log_6.9.58_v6.9.58.txt
+17366 ./git_log_6.9.58.txt
+16045 ./git_log_6.9.57_v6.9.58.txt
+13964 ./22-test_cursor_suite_enhanced.sh
+13163 ./14-install_enhanced.sh
+10608 ./22-test_cursor_suite_fixed.sh
+8638 ./diff-6.9.53-to-6.9.54.patch
+8315 ./scripts/upgrades/v6.9.40.sh
+8044 ./02-launcher_enhanced.sh
+6787 ./git_metadata_6.9.58_v6.9.58.txt
+6787 ./git_metadata_6.9.58.txt
+6326 ./git_metadata_6.9.57_v6.9.58.txt

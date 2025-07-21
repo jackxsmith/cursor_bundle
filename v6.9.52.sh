@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# v6.9.52.sh
+# v6.9.58.sh
 #
 # Purpose
 # -------
-# • Bump project from 6.9.51 → 6.9.52.
+# • Bump project from 6.9.58 → 6.9.58.
 # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
-#   logical file (the latest, suffixed _v6.9.52) and deleting superseded logs,
+#   logical file (the latest, suffixed _v6.9.58) and deleting superseded logs,
 #   tarballs, reports, etc.  This covers all older suffixes from 6.9.35 up
-#   through 6.9.51.
+#   through 6.9.58.
 # • Update version strings before any renames to avoid missing‑file warnings.
 # • Run a quick lint pass (Ruff for Python, ShellCheck for Bash) and store
-#   results in `lint_report_v6.9.52.txt`.
+#   results in `lint_report_v6.9.58.txt`.
 # • Commit on a new branch named after the version, tag the commit, and
 #   automatically push both the branch and tag to the `origin` remote.
 #
@@ -19,8 +19,8 @@
 set -euo pipefail
 shopt -s globstar nullglob
 
-OLD_VERSION="6.9.51"
-NEW_VERSION="6.9.52"
+OLD_VERSION="6.9.58"
+NEW_VERSION="6.9.58"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
 REPORT="cleanup_report_v${NEW_VERSION}.txt"
 LINT="lint_report_v${NEW_VERSION}.txt"
@@ -110,12 +110,12 @@ echo "lint report saved to $LINT" >>"$REPORT"
 # 5. Policies update
 ###############################################################################
 cat > "21-policies_v$NEW_VERSION.txt" <<'EOF'
-# Policies v6.9.52
-* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.52`.  Older duplicates (v6.9.35–51) are removed.
+# Policies v6.9.58
+* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.58`.  Older duplicates (v6.9.35–51) are removed.
 * Version strings are updated before renaming, preventing missing‑file warnings.
 * The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
-* Lint results are written to `lint_report_v6.9.52.txt`.
-* Commits are made on a new branch named `v6.9.52`; this branch and the associated tag are pushed to the `origin` remote.
+* Lint results are written to `lint_report_v6.9.58.txt`.
+* Commits are made on a new branch named `v6.9.58`; this branch and the associated tag are pushed to the `origin` remote.
 EOF
 echo "new   21-policies_v$NEW_VERSION.txt" >>"$REPORT"
 

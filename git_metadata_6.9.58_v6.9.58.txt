@@ -1,0 +1,96 @@
+### git log (50 commits):
+* e188936fa2fb20dd887a0d5b3db392613369edbe (HEAD -> release/v6.9.58, tag: v6.9.58, origin/release/v6.9.58) chore: full cleanup & bump to v6.9.58 (one artefact per version)
+* 581c08f34292e1e4b1a679b08e6d0fa770ff2b1a (tag: v6.9.56, origin/release/v6.9.56, release/v6.9.56) chore: full cleanup & bump to v6.9.56 (one artefact per version)
+* f21a6fb2fc7a7cd2005f09154a5937dbfb724822 (tag: v6.9.55, origin/release/v6.9.55, release/v6.9.55) chore: full cleanup & bump to v6.9.55 (one artefact per version)
+* 72b7140ba9781a074e660a5b324c8f32b7309833 (tag: v6.9.54, origin/release/v6.9.54, release/v6.9.54) chore: full cleanup & bump to v6.9.54 (one artefact per version)
+* f9e2ce75520d332b5c667e20e020c854cf923e47 (origin/release/v6.9.53, release/v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+* 91fc59c371bf32656c90fe3e3b78b878254252ac chore: full cleanup & bump to v6.9.53 (one artefact per version)
+* cd265f0cadd8322ad3035b86e15bbd58a78c0e5d (tag: v6.9.53, v6.9.53) chore: full cleanup & bump to v6.9.53 (one artefact per version)
+* 5dd527d18c283763261078a6334e4dfd8deddf6b (v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+* dc74efc26bab314a22e94c97de58a22f9b307870 chore: full cleanup & bump to v6.9.52 (one artefact per version)
+* 8c3d6223254b4ba291cae6eef92aeb8f0bdef2c3 (tag: v6.9.52) chore: full cleanup & bump to v6.9.52 (one artefact per version)
+* eb3d8f42764a093c960ff10adfa9687d1bd3fd5c (tag: v6.9.51, origin/main, main) chore: full cleanup & bump to v6.9.51 (one artefact per version)
+* 411e440f1aaddcb538f41a3daf434349083090a2 fix: rename misnamed upgrade scripts to match version numbers
+* e9390206e12882213a90938e87018e0673424fab fix: rename misnamed upgrade scripts to match version numbers
+* 98734a966ca00092805052cbe6e93935bae28a0f (tag: v6.9.47) chore: full cleanup & bump to v6.9.47 (one artefact per version)
+* 0898a8442bda697dd920af7f4eae96e5fff9c9bb (tag: v6.9.46) chore: path cleanup & bump to v6.9.46
+* a16d8490ea11ebfe19533000c2bbbeb514f9e0da (tag: v6.9.45) chore: enforce version suffixes on artefacts & bump to v6.9.45
+* 2a13fefbea518189cd52bb50db06cff5f8eaae08 (tag: v6.9.44) chore: normalise artefact names & bump to v6.9.44
+* 22db70566601d1265a4312f9ca99b331f10b54d8 (tag: v6.9.43) feat: upgrade to v6.9.43 with k6 performance test scaffolding
+* e5b11e4424a39c70055ab44a6cb14d825c0b03c5 (tag: v6.9.42) feat: upgrade to v6.9.42 with signing & SBOM scaffolding
+* a72d83ad46afa260c596122ec7afae6a26b5a5ed (tag: v6.9.41) feat: upgrade to v6.9.41 with mutation‑test & coverage targets
+* 9017acdea0f6271c048a11413a174d96d0d9e585 feat: upgrade to v6.9.40 with mutation testing & coverage scaffolding
+* 7edab0cd2de59bac4256ae9cea258d20944bde17 (tag: v6.9.40) feat: upgrade to v6.9.40 with mutation testing and coverage scaffolding
+* d2fbf86cc8492bbc94f94c51d4be8aca11f57669 feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+* 2fede9c20af1614fdb7fe652dd1dee0e08061455 (tag: v6.9.39) feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+* c0784455be699c2fefa1f76ed70b308ed596f525 feat: upgrade to 6.9.35, add enterprise tools and policies
+* 5b12546c0a2a1a7337ff01d500eebf2484b6ec88 chore: upgrade version from 6.9.33 to 6.9.34 and update policies
+* 1520be6624b9956ecf0845a085bccb8e8fb9dbd4 docs: update policies file to instruct running upgrade script without sudo
+* 7a72e003d6e8177fce5d775b80185a088f4078fa chore: upgrade bundle from 6.9.32 to 6.9.33
+* b5a7cfc1d081b502a1b8e9b4fd27f2a483df372d chore: remove v6.9.31 duplicate files and cleanup logs
+* 3cd0b6bdb31df7148cbcc24ba46a0fdad67d3f0d Initial commit for Cursor bundle v6.9.32
+
+### git show-ref:
+eb3d8f42764a093c960ff10adfa9687d1bd3fd5c refs/heads/main
+f9e2ce75520d332b5c667e20e020c854cf923e47 refs/heads/release/v6.9.53
+72b7140ba9781a074e660a5b324c8f32b7309833 refs/heads/release/v6.9.54
+f21a6fb2fc7a7cd2005f09154a5937dbfb724822 refs/heads/release/v6.9.55
+581c08f34292e1e4b1a679b08e6d0fa770ff2b1a refs/heads/release/v6.9.56
+e188936fa2fb20dd887a0d5b3db392613369edbe refs/heads/release/v6.9.58
+5dd527d18c283763261078a6334e4dfd8deddf6b refs/heads/v6.9.52
+cd265f0cadd8322ad3035b86e15bbd58a78c0e5d refs/heads/v6.9.53
+eb3d8f42764a093c960ff10adfa9687d1bd3fd5c refs/remotes/origin/main
+f9e2ce75520d332b5c667e20e020c854cf923e47 refs/remotes/origin/release/v6.9.53
+72b7140ba9781a074e660a5b324c8f32b7309833 refs/remotes/origin/release/v6.9.54
+f21a6fb2fc7a7cd2005f09154a5937dbfb724822 refs/remotes/origin/release/v6.9.55
+581c08f34292e1e4b1a679b08e6d0fa770ff2b1a refs/remotes/origin/release/v6.9.56
+e188936fa2fb20dd887a0d5b3db392613369edbe refs/remotes/origin/release/v6.9.58
+2fede9c20af1614fdb7fe652dd1dee0e08061455 refs/tags/v6.9.39
+7edab0cd2de59bac4256ae9cea258d20944bde17 refs/tags/v6.9.40
+a72d83ad46afa260c596122ec7afae6a26b5a5ed refs/tags/v6.9.41
+e5b11e4424a39c70055ab44a6cb14d825c0b03c5 refs/tags/v6.9.42
+22db70566601d1265a4312f9ca99b331f10b54d8 refs/tags/v6.9.43
+2a13fefbea518189cd52bb50db06cff5f8eaae08 refs/tags/v6.9.44
+a16d8490ea11ebfe19533000c2bbbeb514f9e0da refs/tags/v6.9.45
+0898a8442bda697dd920af7f4eae96e5fff9c9bb refs/tags/v6.9.46
+98734a966ca00092805052cbe6e93935bae28a0f refs/tags/v6.9.47
+eb3d8f42764a093c960ff10adfa9687d1bd3fd5c refs/tags/v6.9.51
+8c3d6223254b4ba291cae6eef92aeb8f0bdef2c3 refs/tags/v6.9.52
+cd265f0cadd8322ad3035b86e15bbd58a78c0e5d refs/tags/v6.9.53
+72b7140ba9781a074e660a5b324c8f32b7309833 refs/tags/v6.9.54
+f21a6fb2fc7a7cd2005f09154a5937dbfb724822 refs/tags/v6.9.55
+581c08f34292e1e4b1a679b08e6d0fa770ff2b1a refs/tags/v6.9.56
+e188936fa2fb20dd887a0d5b3db392613369edbe refs/tags/v6.9.58
+
+### git remote -v:
+origin	git@github.com:jackxsmith/cursor_bundle.git (fetch)
+origin	git@github.com:jackxsmith/cursor_bundle.git (push)
+
+### git config (sanitised):
+safe.directory=/home/jj/Downloads
+safe.directory=/home/jj/Downloads
+safe.directory=/home/jj/Downloads
+safe.directory=/home/jj/Downloads
+safe.directory=/home/jj/Downloads
+safe.directory=/home/jj/Downloads
+safe.directory=/home/jj
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+user.name=Jack X. Smith
+user.email=jackxsmith@example.com
+remote.origin.url=git@github.com:jackxsmith/cursor_bundle.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.main.remote=origin
+branch.main.merge=refs/heads/main
+branch.release/v6.9.53.remote=origin
+branch.release/v6.9.53.merge=refs/heads/release/v6.9.53
+branch.release/v6.9.54.remote=origin
+branch.release/v6.9.54.merge=refs/heads/release/v6.9.54
+branch.release/v6.9.55.remote=origin
+branch.release/v6.9.55.merge=refs/heads/release/v6.9.55
+branch.release/v6.9.56.remote=origin
+branch.release/v6.9.56.merge=refs/heads/release/v6.9.56
+branch.release/v6.9.58.remote=origin
+branch.release/v6.9.58.merge=refs/heads/release/v6.9.58
