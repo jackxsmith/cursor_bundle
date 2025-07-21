@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # bump.sh
 # One‑command release helper:
-#   • bumps version (arg 1, e.g. 6.9.81)  
+#   • bumps version (arg 1, e.g. 6.9.84)  
 #   • opens / merges PR, syncs protected branches  
 #   • auto‑patches CI workflow once to ignore mutation‑test failures  
 #   • leaves main & release branch on the same commit, keeps release branch
 #
 # Usage:
 #   chmod +x bump.sh        # once
-#   ./bump.sh 6.9.81        # bump to next version
+#   ./bump.sh 6.9.84        # bump to next version
 #   # Optionally:
 #   #   export GH_TOKEN=github_pat_xxx
 # ---------------------------------------------------------------------------
