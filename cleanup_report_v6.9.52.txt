@@ -1,3 +1,0 @@
-ver  updated text files
-lint report saved to lint_report_v6.9.52.txt
-new   21-policies_v6.9.52.txt
