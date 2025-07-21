@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# v6.9.57.sh
+# v6.9.58.sh
 #
 # Purpose
 # -------
-# • Bump project from 6.9.46 → 6.9.57
+# • Bump project from 6.9.46 → 6.9.58
 # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
-#   logical file (the latest, suffixed _v6.9.57) and deleting superseded logs,
+#   logical file (the latest, suffixed _v6.9.58) and deleting superseded logs,
 #   tarballs, reports, etc.
 # • Eliminate “missing‑file” warnings by updating version strings *before* any
 #   renames, and by checking each path exists before operating on it.
 # • Run a quick lint check (Ruff for Python, ShellCheck for Bash) and store
-#   results in `lint_report_v6.9.57.txt`.
+#   results in `lint_report_v6.9.58.txt`.
 # • Commit and tag locally (no automatic push).
 #
 # Safe to re‑run: skips moves if src=dst, skips deletes if file already gone.
@@ -19,7 +19,7 @@ set -euo pipefail
 shopt -s globstar nullglob
 
 OLD_VERSION="6.9.46"
-NEW_VERSION="6.9.57"
+NEW_VERSION="6.9.58"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
 REPORT="cleanup_report_v${NEW_VERSION}.txt"
 LINT="lint_report_v${NEW_VERSION}.txt"

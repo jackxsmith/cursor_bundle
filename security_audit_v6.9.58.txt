@@ -1,0 +1,3 @@
+No npm project detected or npm not installed; skipping npm audit.
+
+Safety not installed; skipping Python security audit.
