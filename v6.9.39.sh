@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Upgrade script to bump Cursor bundle from version 6.9.38 to 6.9.39 and
+# Upgrade script to bump Cursor bundle from version 6.9.39 to 6.9.39 and
 # introduce static and dynamic analysis scaffolding. This script performs
 # the version bump, updates internal version strings, adds scripts and
 # Makefile targets for static and dynamic security scans, extends the CI
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 # Define old and new versions
-OLD_VERSION="6.9.38"
+OLD_VERSION="6.9.39"
 NEW_VERSION="6.9.39"
 
 # Define repository location
@@ -192,7 +192,7 @@ cat > "21-policies_v${NEW_VERSION}.txt" <<'EOF'
 
 ## Versioning and Naming
 
-* Upgrade scripts must bump the version number from 6.9.38 to 6.9.39 and follow the naming scheme `vX.Y.Z.sh` and `vX.Y.Z.zip`, with no extra prefixes or suffixes.
+* Upgrade scripts must bump the version number from 6.9.39 to 6.9.39 and follow the naming scheme `vX.Y.Z.sh` and `vX.Y.Z.zip`, with no extra prefixes or suffixes.
 
 ## Static and Dynamic Analysis
 
