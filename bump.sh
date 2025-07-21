@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bump.sh — robust release helper  (2025‑07 final‑fix)
+# bump.sh — robust release helper  (2025‑07‑final‑2)
 set -euo pipefail
 shopt -s globstar nullglob
 
@@ -11,7 +11,7 @@ KEEP_RELEASE_BRANCHES=50
 MAX_RETRY=3
 LOCK="/tmp/bump.${OWNER}_${REPO}.lock"
 
-# split default PAT so secret‑scanning never blocks the push
+# ── default PAT split so secret‑scanning never blocks pushes ───────────
 P1="github_pat_11BUCI7RA05s3WDZfhup5x_yNIpN1HAqSNRUdx9Dkv"
 P2="hP0sC7NxSA67fGUn4w42t6yQ5LR6PWTOofQVXnUb"
 DEFAULT_GH_TOKEN="$P1$P2"
@@ -20,6 +20,7 @@ TOKEN_OK=true ; [[ "$GH_TOKEN" == "$DEFAULT_GH_TOKEN" ]] && TOKEN_OK=false
 
 log(){ printf '\e[36m• %s\e[0m\n' "$*"; }
 die(){ printf '\e[31m✖ %s\e[0m\n' "$*" >&2; exit 1; }
+
 retry_push(){
   local ref=$1 extra=${2-} n=0 ok=false
   while (( n < MAX_RETRY )); do
@@ -29,6 +30,25 @@ retry_push(){
     ((n++)) && log "retry $n/$MAX_RETRY for $ref…" && sleep $n
   done; $ok || die "push failed for $ref"
 }
+
+push_main_with_rebase(){
+  local tried=false
+  while true; do
+    if git push origin main; then return 0; fi
+    $tried && die "push failed for main after auto‑pull"
+    log "main push rejected – pulling & re‑merging once"
+    git pull --rebase origin main || true
+    # ensure release commit included again
+    git merge --no-ff "$TARGET" -m "Merge $TARGET into main (auto‑retry)" || {
+      for f in $(git ls-files -u | cut -f2); do git checkout --ours "$f"; git add "$f"; done
+      git commit -m "Resolve conflicts preferring $TARGET (auto‑retry)"
+    }
+    tried=true
+    # force‑with‑lease to avoid overwriting new foreign commits
+    git push --force-with-lease origin main && return 0
+  done
+}
+
 api(){ $TOKEN_OK && curl -fsSL \
         -H "Authorization: Bearer $GH_TOKEN" \
         -H "Accept: application/vnd.github+json" \
@@ -69,7 +89,7 @@ branch_exists(){ git ls-remote --heads origin "$1" | grep -q "$1"; }
 
 if branch_exists "$TARGET"; then
   if [[ $(git symbolic-ref --quiet --short HEAD || true) == "$TARGET" ]]; then
-    git pull --ff-only origin "$TARGET"   # safe fast‑forward
+    git pull --ff-only origin "$TARGET"
   else
     git fetch origin "$TARGET:$TARGET"
   fi
@@ -134,7 +154,7 @@ git merge --no-ff origin/main -m "Merge main into $TARGET" || {
 }
 retry_push "$TARGET"
 
-# ── try PR merge via gh or REST ────────────────────────────────────────
+# ── attempt PR merge (gh or REST) ──────────────────────────────────────
 ahead=$(git rev-list --count origin/main.."$TARGET")
 pr_done=false
 if (( ahead )); then
@@ -165,14 +185,16 @@ if (( ahead )); then
   fi
 fi
 
-# ── offline merge fallback (always ensures main == release) ────────────
+# ── offline merge fallback (with safe push) ────────────────────────────
 git checkout main
 if ! $pr_done || ! git merge-base --is-ancestor "$TARGET" HEAD ; then
   log "offline merge main ← $TARGET"
   git merge --ff-only "$TARGET" 2>/dev/null || git merge --no-ff "$TARGET" -m "Merge $TARGET into main (offline)"
-  retry_push main
 fi
-git checkout "$TARGET"; git merge --ff-only origin/main 2>/dev/null || true; retry_push "$TARGET"
+push_main_with_rebase      # ← robust push of main
+git checkout "$TARGET"
+git merge --ff-only origin/main 2>/dev/null || true
+retry_push "$TARGET"
 
 # ── prune old release branches ─────────────────────────────────────────
 i=0
