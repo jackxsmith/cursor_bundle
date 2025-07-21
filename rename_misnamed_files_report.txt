@@ -1,0 +1,4 @@
+mv    v6.9.46 → scripts/upgrades/v6.9.41.sh
+mv    scripts/upgrades/v6.9.43.sh → scripts/upgrades/v6.9.40.sh
+mv    scripts/upgrades/v6.9.44.sh → scripts/upgrades/v6.9.45.sh
+mv    scripts/upgrades/v6.9.46.sh → scripts/upgrades/v6.9.47.sh
