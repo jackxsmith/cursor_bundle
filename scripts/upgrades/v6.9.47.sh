@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# v6.9.57.sh  (fixed)
+# v6.9.58.sh  (fixed)
 #
-# Bump 6.9.45 → 6.9.57 **and** normalise every path.
+# Bump 6.9.45 → 6.9.58 **and** normalise every path.
 # – Moves old upgrade scripts to scripts/upgrades/  (kept as‑is)
-# – Renames files containing 6.9.45 → 6.9.57
+# – Renames files containing 6.9.45 → 6.9.58
 # – Removes stray 6.9.(35‑44) fragments
-# – Appends _v6.9.57 suffix to logs / artefacts lacking it
-# – Generates rename_report_v6.9.57.txt
+# – Appends _v6.9.58 suffix to logs / artefacts lacking it
+# – Generates rename_report_v6.9.58.txt
 #
 # Re‑run safely; skips mv when src == dst and ignores scripts/upgrades/*
 # No auto‑push.
@@ -15,7 +15,7 @@ set -euo pipefail
 shopt -s globstar nullglob
 
 OLD_VERSION="6.9.45"
-NEW_VERSION="6.9.57"
+NEW_VERSION="6.9.58"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
 REPORT="rename_report_v${NEW_VERSION}.txt"
 

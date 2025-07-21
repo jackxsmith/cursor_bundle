@@ -14,7 +14,7 @@ NEW_VERSION="6.9.40"
 
 # Define repository location
 DOWNLOADS_DIR="$HOME/Downloads"
-REPO_DIR="$DOWNLOADS_DIR/cursor_bundle_v6.9.32"
+REPO_DIR="$DOWNLOADS_DIR/cursor_bundle"
 
 if [[ ! -d "$REPO_DIR" ]]; then
   echo "Repository directory $REPO_DIR not found. Ensure the bundle is extracted and try again."

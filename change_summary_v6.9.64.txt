@@ -1,0 +1,89 @@
+commit 1b623a99b2346e6e2245f3310ab724152378e054
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: full cleanup & bump to v6.9.51 (one artefact per version)
+
+commit b86ffa7ea9a396197ae7b0fd242336a0c04b0b81
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    fix: rename misnamed upgrade scripts to match version numbers
+
+commit 98734a966ca00092805052cbe6e93935bae28a0f
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: full cleanup & bump to v6.9.47 (one artefact per version)
+
+commit 0898a8442bda697dd920af7f4eae96e5fff9c9bb
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: path cleanup & bump to v6.9.46
+
+commit a16d8490ea11ebfe19533000c2bbbeb514f9e0da
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: enforce version suffixes on artefacts & bump to v6.9.45
+
+commit 2a13fefbea518189cd52bb50db06cff5f8eaae08
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: normalise artefact names & bump to v6.9.44
+
+commit 22db70566601d1265a4312f9ca99b331f10b54d8
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.43 with k6 performance test scaffolding
+
+commit e5b11e4424a39c70055ab44a6cb14d825c0b03c5
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.42 with signing & SBOM scaffolding
+
+commit a72d83ad46afa260c596122ec7afae6a26b5a5ed
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.41 with mutation‑test & coverage targets
+
+commit 9017acdea0f6271c048a11413a174d96d0d9e585
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.40 with mutation testing & coverage scaffolding
+
+commit 7edab0cd2de59bac4256ae9cea258d20944bde17
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.40 with mutation testing and coverage scaffolding
+
+commit d2fbf86cc8492bbc94f94c51d4be8aca11f57669
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+
+commit 2fede9c20af1614fdb7fe652dd1dee0e08061455
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to v6.9.39 with static and dynamic analysis scaffolding
+
+commit c0784455be699c2fefa1f76ed70b308ed596f525
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    feat: upgrade to 6.9.35, add enterprise tools and policies
+
+commit 5b12546c0a2a1a7337ff01d500eebf2484b6ec88
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: upgrade version from 6.9.33 to 6.9.34 and update policies
+
+commit 1520be6624b9956ecf0845a085bccb8e8fb9dbd4
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    docs: update policies file to instruct running upgrade script without sudo
+
+commit 7a72e003d6e8177fce5d775b80185a088f4078fa
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: upgrade bundle from 6.9.32 to 6.9.33
+
+commit b5a7cfc1d081b502a1b8e9b4fd27f2a483df372d
+Author: Jack X. Smith <jackxsmith@example.com>
+
+    chore: remove v6.9.31 duplicate files and cleanup logs
