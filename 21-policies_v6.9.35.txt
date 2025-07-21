@@ -2,7 +2,7 @@
 
 ## Versioning and Release Files
 
-Every time you update this repository, increment the version number sequentially (e.g., 6.9.34 → 6.9.35, then 6.9.35 → 6.9.36, etc.). All executable scripts and archives **must** follow the naming format  or .
+Every time you update this repository, increment the version number sequentially (e.g., 6.9.34 → 6.9.35, then 6.9.35 → 6.9.37, etc.). All executable scripts and archives **must** follow the naming format  or .
 
 ## Upgrade Script Usage
 

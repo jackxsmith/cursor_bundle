@@ -1,16 +1,21 @@
-# Top-level Makefile providing common targets
-
-.PHONY: lint test release
+.PHONY: lint test security release
 
 lint:
 	@echo "Running linters..."
-	@shellcheck $(shell find . -type f -name '*.sh')
+	# Add lint commands (shellcheck, ruff, etc.) here
 
-# Placeholder test target
- test:
-	@echo "Running tests..."
-	@echo "(no tests defined)"
+test:
+	bash scripts/run_tests.sh
 
-release: lint test
-	@echo "Running release build..."
-	@bash scripts/build_release.sh
+security:
+	@echo "Running security scans..."
+	# Add security scanning commands here
+
+release:
+	bash scripts/build_release.sh
+
+static-analysis:
+	bash scripts/static_analysis.sh
+
+dynamic-scan:
+	bash scripts/dynamic_security_scan.sh
