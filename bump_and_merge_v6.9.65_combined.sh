@@ -79,14 +79,21 @@ elif $USE_SSH && command -v gh >/dev/null; then
     fi
     echo "PR #$PR created."
   fi
-  if gh pr merge --help 2>&1 | grep -q -- '--yes'; then
-    gh pr merge "$PR" --merge --auto --yes && MERGED_OK=true
+  merge_cmd(){
+    if gh pr merge --help 2>&1 | grep -q -- '--yes'; then
+      gh pr merge "$PR" --merge --yes "$@"
+    else
+      printf "y\n" | gh pr merge "$PR" --merge "$@"
+    fi
+  }
+
+  # Try auto‑merge first, fallback to plain merge
+  if merge_cmd --auto; then
+    MERGED_OK=true
   else
-    set +o pipefail
-    printf "y\n" | gh pr merge "$PR" --merge --auto && MERGED_OK=true
-    set -o pipefail
+    echo "Auto‑merge not allowed – retrying plain merge …"
+    merge_cmd && MERGED_OK=true || echo "gh merge failed."
   fi
-elif $TOKEN_ACTIVE; then
   PR_JSON=$(api "$API/repos/$OWNER/$REPO/pulls?head=$OWNER:$TARGET&state=open")
   PR=$(echo "$PR_JSON"|grep -m1 -o '"number":[0-9]*'|cut -d: -f2||true)
   [[ -z $PR ]] && PR=$(api -X POST -d "$(printf '{"title":"Release v%s","head":"%s","base":"main"}' "$NEW_VERSION" "$TARGET")" "$API/repos/$OWNER/$REPO/pulls"|grep -m1 -o '"number":[0-9]*'|cut -d: -f2)
