@@ -9,7 +9,7 @@ set -euo pipefail
 
 OLD_VERSION="6.9.43"
 NEW_VERSION="6.9.45"
-REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
+REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
 
 echo "→ Working in $REPO_DIR"
 [[ -d $REPO_DIR ]] || { echo "Repo not found"; exit 1; }
