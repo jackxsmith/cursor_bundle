@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# v6.9.55.sh
+# v6.9.56.sh
 #
 # Purpose
 # -------
-# • Bump project from 6.9.50 → 6.9.55.
+# • Bump project from 6.9.50 → 6.9.56.
 # • Remove *all* obsolete or duplicate artefacts, leaving exactly one copy per
-#   logical file (the latest, suffixed _v6.9.55) and deleting superseded logs,
+#   logical file (the latest, suffixed _v6.9.56) and deleting superseded logs,
 #   tarballs, reports, etc.  This covers all older suffixes from 6.9.35 up
 #   through 6.9.50.
 # • Update version strings before any renames to avoid missing‑file warnings.
 # • Run a quick lint pass (Ruff for Python, ShellCheck for Bash) and store
-#   results in `lint_report_v6.9.55.txt`.
+#   results in `lint_report_v6.9.56.txt`.
 # • Commit, tag and automatically push to the `origin` remote.
 #
 # Safe to re‑run: skips moves if src=dst, skips deletes if file already gone.
@@ -19,7 +19,7 @@ set -euo pipefail
 shopt -s globstar nullglob
 
 OLD_VERSION="6.9.50"
-NEW_VERSION="6.9.55"
+NEW_VERSION="6.9.56"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle_v6.9.32}"
 REPORT="cleanup_report_v${NEW_VERSION}.txt"
 LINT="lint_report_v${NEW_VERSION}.txt"
@@ -96,11 +96,11 @@ echo "lint report saved to $LINT" >>"$REPORT"
 # 5. Policies update
 ###############################################################################
 cat > "21-policies_v$NEW_VERSION.txt" <<'EOF'
-# Policies v6.9.55
-* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.55`.  Older duplicates (v6.9.35–50) are removed.
+# Policies v6.9.56
+* Exactly one artefact/log is kept for each logical file, suffixed `_v6.9.56`.  Older duplicates (v6.9.35–50) are removed.
 * Version strings are updated before renaming, preventing missing‑file warnings.
 * The script is idempotent: it skips moves if the source and destination are the same, and checks that files exist before acting.
-* Lint results are written to `lint_report_v6.9.55.txt`.
+* Lint results are written to `lint_report_v6.9.56.txt`.
 * Commit, tag and push to the `origin` remote are done automatically at the end.
 EOF
 echo "new   21-policies_v$NEW_VERSION.txt" >>"$REPORT"
