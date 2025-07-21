@@ -117,7 +117,11 @@ if $USE_SSH && command -v gh >/dev/null; then
     fi
     echo "PR #$PR created."
   fi
-  gh pr merge "$PR" --merge --auto -y || echo "gh merge failed."
+  if gh pr merge --help 2>&1 | grep -q -- '--yes'; then
+    gh pr merge "$PR" --merge --auto --yes
+  else
+    yes | gh pr merge "$PR" --merge --auto
+  fi || echo "gh merge failed."
 elif $TOKEN_ACTIVE; then
   PR_JSON=$(api "$API/repos/$OWNER/$REPO/pulls?head=$OWNER:$TARGET&state=open")
   PR=$(echo "$PR_JSON" | grep -m1 -o '"number":[0-9]*' | cut -d: -f2 || true)
