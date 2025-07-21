@@ -1,3 +1,4 @@
+cp   /home/jj/Downloads/cursor_bundle_v6.9.32/../cursor_bundle.zip → original_bundle.zip
 ver  updated text files
 lint report saved to lint_report_v6.9.53.txt
 new   21-policies_v6.9.53.txt
