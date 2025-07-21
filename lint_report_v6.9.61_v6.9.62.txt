@@ -1,2 +1,0 @@
-Ruff not installed.
-ShellCheck not installed.

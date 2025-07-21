@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
-# v6.9.62.sh
+# v6.9.63.sh
 #
 # Purpose
 # -------
-# • Bump project from 6.9.59 → 6.9.62.
+# • Bump project from 6.9.59 → 6.9.63.
 # • Remove obsolete or duplicate artefacts, keeping exactly one copy per logical
-#   file suffixed _v6.9.62, while preserving all files starting with `ci_workflows_`.
+#   file suffixed _v6.9.63, while preserving all files starting with `ci_workflows_`.
 # • Update version strings before renaming.
-# • Run lint (Ruff + ShellCheck) and store results in `lint_report_v6.9.62.txt`.
+# • Run lint (Ruff + ShellCheck) and store results in `lint_report_v6.9.63.txt`.
 # • Copy the original bundle archive into the repo as `original_bundle.zip`.
 # • Generate diff, README, git log, extended git metadata, webhook template,
 #   and a full diagnostics suite (tests, builds, static analysis, deps, env, change
 #   summary, performance placeholder, CI workflows, code metrics, TODO/FIXME, largest files, security audit).
-# • Commit on `release/v6.9.62`, tag `v6.9.62`, and push both to origin.
+# • Commit on `release/v6.9.63`, tag `v6.9.63`, and push both to origin.
 # • Workaround: create zero-length placeholder CI tarballs from v6.9.59
 #   to satisfy Git’s diff filter.
 
@@ -20,7 +20,7 @@ set -euo pipefail
 shopt -s globstar nullglob
 
 OLD_VERSION="6.9.59"
-NEW_VERSION="6.9.62"
+NEW_VERSION="6.9.63"
 REPO_DIR="${1:-$HOME/Downloads/cursor_bundle}"
 REPORT="cleanup_report_v${NEW_VERSION}.txt"
 LINT="lint_report_v${NEW_VERSION}.txt"
@@ -120,10 +120,10 @@ fi
 echo "lint report saved to $LINT" >>"$REPORT"
 
 ###############################################################################
-# 5. Policies (v6.9.62)
+# 5. Policies (v6.9.63)
 ###############################################################################
 cat > "21-policies_v$NEW_VERSION.txt" <<'EOF'
-# Policies v6.9.62
+# Policies v6.9.63
 * Use `release/<version>` for branches and `v<version>` for tags.
 * Consolidate patterns in `find` expressions on one line to avoid unmatched parentheses.
 * Align here‑doc delimiters at column 1 for proper variable expansion.
@@ -131,11 +131,11 @@ cat > "21-policies_v$NEW_VERSION.txt" <<'EOF'
 * Close every `if` with a matching `fi`; do not use `end`.
 * Create scripts using safe methods (e.g. Python, `printf`) rather than `cat <<EOF`.
 * Check tool availability (pytest, npm, bandit, safety, pylint, etc.) before use and report when missing.
-* Keep exactly one artefact/log per logical file with suffix `_v6.9.62`, removing older duplicates—except for all files starting with `ci_workflows_`, which are preserved.
+* Keep exactly one artefact/log per logical file with suffix `_v6.9.63`, removing older duplicates—except for all files starting with `ci_workflows_`, which are preserved.
 * Update version strings before renaming to avoid missing‑file warnings.
 * This script is idempotent: it skips moves if src=dst and verifies file existence before acting.
-* Lint results are written to `lint_report_v6.9.62.txt`.
-* Commits are made on `release/v6.9.62` and tagged `v6.9.62`.
+* Lint results are written to `lint_report_v6.9.63.txt`.
+* Commits are made on `release/v6.9.63` and tagged `v6.9.63`.
 * Comprehensive diagnostics (diff, logs, metadata, dependencies, environment, tests, builds, static analysis, performance placeholder, CI workflows, README, webhook template, code metrics, TODO/FIXME, largest files, security audit) are generated and committed with this branch.
 EOF
 echo "new   21-policies_v$NEW_VERSION.txt" >>"$REPORT"

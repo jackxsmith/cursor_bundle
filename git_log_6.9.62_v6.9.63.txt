@@ -1,41 +1,41 @@
-74ab68f (HEAD -> release/v6.9.62, tag: v6.9.62, origin/release/v6.9.62) chore: cleanup & bump to v6.9.62 (auto‑merge script)
- ....txt => 21-policies_v6.9.60_v6.9.61_v6.9.62.txt |    4 +-
- ..._v6.9.61.txt => 21-policies_v6.9.61_v6.9.62.txt |    4 +-
- 21-policies_v6.9.62.txt                            |    4 +
+74ab68f (HEAD -> release/v6.9.63, tag: v6.9.63, origin/release/v6.9.63) chore: cleanup & bump to v6.9.63 (auto‑merge script)
+ ....txt => 21-policies_v6.9.60_v6.9.61_v6.9.63.txt |    4 +-
+ ..._v6.9.61.txt => 21-policies_v6.9.61_v6.9.63.txt |    4 +-
+ 21-policies_v6.9.63.txt                            |    4 +
  README.md                                          |    2 +-
  VERSION                                            |    2 +-
- ...61.txt => build_log_v6.9.60_v6.9.61_v6.9.62.txt |    0
+ ...61.txt => build_log_v6.9.60_v6.9.61_v6.9.63.txt |    0
  bump_and_merge.sh                                  |  177 ++
- ...t => change_summary_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ....9.61.txt => change_summary_v6.9.61_v6.9.62.txt |    0
- change_summary_v6.9.62.txt                         |    0
+ ...t => change_summary_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ....9.61.txt => change_summary_v6.9.61_v6.9.63.txt |    0
+ change_summary_v6.9.63.txt                         |    0
  ci_workflows_v6.9.61.tar_v6.9.61.gz                |    0
- ci_workflows_v6.9.62.tar.gz                        |  Bin 0 -> 638 bytes
+ ci_workflows_v6.9.63.tar.gz                        |  Bin 0 -> 638 bytes
  cleanup_report_v6.9.60_v6.9.61.txt                 |    9 -
- cleanup_report_v6.9.60_v6.9.61_v6.9.62.txt         |    9 +
+ cleanup_report_v6.9.60_v6.9.61_v6.9.63.txt         |    9 +
  cleanup_report_v6.9.61.txt                         |   23 -
- cleanup_report_v6.9.61_v6.9.62.txt                 |   23 +
- cleanup_report_v6.9.62.txt                         |   27 +
- ...txt => code_metrics_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ...txt => dependencies_v6.9.60_v6.9.61_v6.9.62.txt |    0
- diff-6.9.61-to-6.9.62.patch                        | 2180 ++++++++++++++++++++
- ....txt => environment_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ...t => git_log_6.9.60_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ....9.61.txt => git_log_6.9.60_v6.9.61_v6.9.62.txt |    0
- git_log_6.9.61.txt => git_log_6.9.61_v6.9.62.txt   |    0
- git_log_6.9.62.txt                                 |  497 +++++
- ...git_metadata_6.9.60_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ....txt => git_metadata_6.9.60_v6.9.61_v6.9.62.txt |    0
- ...a_6.9.61.txt => git_metadata_6.9.61_v6.9.62.txt |    0
- git_metadata_6.9.62.txt                            |   18 +
- ....txt => lint_report_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ..._v6.9.61.txt => lint_report_v6.9.61_v6.9.62.txt |    0
- lint_report_v6.9.62.txt                            |    2 +
- ....txt => performance_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ... => static_analysis_v6.9.60_v6.9.61_v6.9.62.txt |    0
- ...txt => test_results_v6.9.60_v6.9.61_v6.9.62.txt |    0
+ cleanup_report_v6.9.61_v6.9.63.txt                 |   23 +
+ cleanup_report_v6.9.63.txt                         |   27 +
+ ...txt => code_metrics_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ...txt => dependencies_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ diff-6.9.61-to-6.9.63.patch                        | 2180 ++++++++++++++++++++
+ ....txt => environment_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ...t => git_log_6.9.60_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ....9.61.txt => git_log_6.9.60_v6.9.61_v6.9.63.txt |    0
+ git_log_6.9.61.txt => git_log_6.9.61_v6.9.63.txt   |    0
+ git_log_6.9.63.txt                                 |  497 +++++
+ ...git_metadata_6.9.60_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ....txt => git_metadata_6.9.60_v6.9.61_v6.9.63.txt |    0
+ ...a_6.9.61.txt => git_metadata_6.9.61_v6.9.63.txt |    0
+ git_metadata_6.9.63.txt                            |   18 +
+ ....txt => lint_report_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ..._v6.9.61.txt => lint_report_v6.9.61_v6.9.63.txt |    0
+ lint_report_v6.9.63.txt                            |    2 +
+ ....txt => performance_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ... => static_analysis_v6.9.60_v6.9.61_v6.9.63.txt |    0
+ ...txt => test_results_v6.9.60_v6.9.61_v6.9.63.txt |    0
  v60.sh                                             |   22 +-
- ... => webhook_config_v6.9.60_v6.9.61_v6.9.62.json |    0
+ ... => webhook_config_v6.9.60_v6.9.61_v6.9.63.json |    0
  37 files changed, 2954 insertions(+), 49 deletions(-)
 20db855 (tag: v6.9.61, origin/release/v6.9.61, release/v6.9.61) chore: cleanup & bump to v6.9.61 (auto‑remote fix)
  ..._v6.9.60.txt => 21-policies_v6.9.60_v6.9.61.txt |    4 +-
