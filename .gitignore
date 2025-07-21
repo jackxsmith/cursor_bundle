@@ -8,8 +8,8 @@ diff-6.9.57-to-6.9.58.patch
 diff-6.9.59-to-6.9.60.patch
 diff-6.9.60-to-6.9.61.patch
 diff-6.9.61-to-6.9.62.patch
-diff-6.9.62-to-6.9.80.patch
-diff-6.9.80-to-6.9.64.patch
+diff-6.9.62-to-6.9.81.patch
+diff-6.9.81-to-6.9.64.patch
 git_log_6.9.57_v6.9.58.txt
 git_log_6.9.58.txt
 git_log_6.9.58_v6.9.58.txt
@@ -17,7 +17,7 @@ git_log_6.9.60_v6.9.64.txt
 git_log_6.9.61_v6.9.64.txt
 git_log_6.9.62_v6.9.64.txt
 git_log_6.9.64.txt
-git_log_6.9.80_v6.9.64.txt
+git_log_6.9.81_v6.9.64.txt
 git_metadata_6.9.57_v6.9.58.txt
 git_metadata_6.9.58.txt
 git_metadata_6.9.58_v6.9.58.txt
@@ -25,7 +25,7 @@ git_metadata_6.9.60_v6.9.64.txt
 git_metadata_6.9.61_v6.9.64.txt
 git_metadata_6.9.62_v6.9.64.txt
 git_metadata_6.9.64.txt
-git_metadata_6.9.80_v6.9.64.txt
+git_metadata_6.9.81_v6.9.64.txt
 cleanup_report_v6.9.58.txt
 cleanup_report_v6.9.64.txt
 lint_report_v6.9.58.txt
@@ -58,8 +58,13 @@ ci_workflows_v6.9.61.tar_v6.9.61.gz
 ci_workflows_v6.9.62.tar.gz
 ci_workflows_v6.9.62.tar_v6.9.62.gz
 ci_workflows_v6.9.64.tar.gz
-ci_workflows_v6.9.80.tar.gz
-ci_workflows_v6.9.80.tar_v6.9.80.gz
+ci_workflows_v6.9.81.tar.gz
+ci_workflows_v6.9.81.tar_v6.9.81.gz
+*.tar.gz
+*.tar_v*.gz
+diff-*.patch
+## auto‑clean (bump.sh)
+
 *.tar.gz
 *.tar_v*.gz
 diff-*.patch
