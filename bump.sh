@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bump.sh — robust release helper (v2025‑07‑final)
+# bump.sh — robust release helper  (2025‑07 final‑fix)
 set -euo pipefail
 shopt -s globstar nullglob
 
@@ -11,7 +11,7 @@ KEEP_RELEASE_BRANCHES=50
 MAX_RETRY=3
 LOCK="/tmp/bump.${OWNER}_${REPO}.lock"
 
-# split default PAT so secret‑scanning never blocks push
+# split default PAT so secret‑scanning never blocks the push
 P1="github_pat_11BUCI7RA05s3WDZfhup5x_yNIpN1HAqSNRUdx9Dkv"
 P2="hP0sC7NxSA67fGUn4w42t6yQ5LR6PWTOofQVXnUb"
 DEFAULT_GH_TOKEN="$P1$P2"
@@ -20,7 +20,7 @@ TOKEN_OK=true ; [[ "$GH_TOKEN" == "$DEFAULT_GH_TOKEN" ]] && TOKEN_OK=false
 
 log(){ printf '\e[36m• %s\e[0m\n' "$*"; }
 die(){ printf '\e[31m✖ %s\e[0m\n' "$*" >&2; exit 1; }
-retry_push(){                                  # retry_push <ref> [extra‑git‑args]
+retry_push(){
   local ref=$1 extra=${2-} n=0 ok=false
   while (( n < MAX_RETRY )); do
     git push $extra origin "$ref" --follow-tags && ok=true || ok=false
@@ -49,7 +49,7 @@ if ! git diff-index --quiet HEAD --; then
   retry_push "$cur"
 fi
 
-# ── remote auth ────────────────────────────────────────────────────────
+# ── remote auth (SSH → PAT if needed) ──────────────────────────────────
 SSH_URL="git@github.com:$OWNER/$REPO.git"
 HTTPS_URL="https://x-access-token@github.com/$OWNER/$REPO.git"
 export GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1
@@ -63,21 +63,28 @@ if ! $USE_SSH && $TOKEN_OK; then
   git ls-remote origin &>/dev/null || die "cannot auth to GitHub"
 fi
 
-# ── prepare release branch ─────────────────────────────────────────────
+# ── prepare release branch (safe for re‑runs) ──────────────────────────
 TARGET="release/v$NEW_VERSION"
 branch_exists(){ git ls-remote --heads origin "$1" | grep -q "$1"; }
+
 if branch_exists "$TARGET"; then
-  git fetch origin "$TARGET:$TARGET"
+  if [[ $(git symbolic-ref --quiet --short HEAD || true) == "$TARGET" ]]; then
+    git pull --ff-only origin "$TARGET"   # safe fast‑forward
+  else
+    git fetch origin "$TARGET:$TARGET"
+  fi
 else
-  git fetch origin main && git checkout -B "$TARGET" origin/main
+  git fetch origin main
+  git checkout -B "$TARGET" origin/main
   retry_push "$TARGET"
 fi
 git checkout "$TARGET"
 
-# ── housekeeping (delete artefacts + ensure .gitignore) ────────────────
+# ── housekeeping (remove artefacts, maintain .gitignore) ───────────────
 CLEAN=( bump_and_merge_* v*.sh diff-6*.patch git_log_* git_metadata_* *_report_v*.txt
         build_log_* change_summary_* code_metrics_* dependencies_* lint_report_*
-        performance_* static_analysis_* test_results_* todo_fixme_* ci_workflows_v*.tar* )
+        performance_* static_analysis_* test_results_* todo_fixme_*
+        ci_workflows_v*.tar* )
 for p in "${CLEAN[@]}"; do git rm -f $p 2>/dev/null || true; done
 GI=.gitignore; TAG='## auto‑clean (bump.sh)'
 if [[ ! -f $GI ]] || ! grep -q "$TAG" "$GI"; then
@@ -86,7 +93,7 @@ if [[ ! -f $GI ]] || ! grep -q "$TAG" "$GI"; then
 fi
 git diff --cached --quiet || { git commit -m "chore: repo housekeeping"; retry_push "$TARGET"; }
 
-# ── (once) patch CI workflow ‑ tolerant mutation‑test step ─────────────
+# ── patch CI once (mutation‑test tolerant) ─────────────────────────────
 WF=".github/workflows/ci.yml"; CI_TAG="### auto‑patch mutation‑test"
 if [[ -f $WF && ! $(grep -F "$CI_TAG" -m1 "$WF" || true) ]]; then
   awk -v tag="$CI_TAG" '
@@ -127,7 +134,7 @@ git merge --no-ff origin/main -m "Merge main into $TARGET" || {
 }
 retry_push "$TARGET"
 
-# ── attempt PR merge (gh or REST) ──────────────────────────────────────
+# ── try PR merge via gh or REST ────────────────────────────────────────
 ahead=$(git rev-list --count origin/main.."$TARGET")
 pr_done=false
 if (( ahead )); then
@@ -158,10 +165,9 @@ if (( ahead )); then
   fi
 fi
 
-# ── offline merge fallback (robust) ────────────────────────────────────
+# ── offline merge fallback (always ensures main == release) ────────────
 git checkout main
-BEHIND=false; git merge-base --is-ancestor "$TARGET" HEAD || BEHIND=true
-if ! $pr_done || $BEHIND; then
+if ! $pr_done || ! git merge-base --is-ancestor "$TARGET" HEAD ; then
   log "offline merge main ← $TARGET"
   git merge --ff-only "$TARGET" 2>/dev/null || git merge --no-ff "$TARGET" -m "Merge $TARGET into main (offline)"
   retry_push main
