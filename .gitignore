@@ -63,3 +63,8 @@ ci_workflows_v6.9.80.tar_v6.9.80.gz
 *.tar.gz
 *.tar_v*.gz
 diff-*.patch
+## auto‑clean (bump.sh)
+
+*.tar.gz
+*.tar_v*.gz
+diff-*.patch
