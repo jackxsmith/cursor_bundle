@@ -1,0 +1,22 @@
+# Policies for version 6.9.40
+
+## Versioning and Naming
+
+* Upgrade scripts must bump the version number from 6.9.39 to 6.9.40 and follow the naming pattern `vX.Y.Z.sh` and `vX.Y.Z.zip`, with no additional prefixes or suffixes.
+
+## Mutation Testing and Coverage
+
+* A mutation testing script (`scripts/mutation_test.sh`) has been added. It uses `mutmut` to run mutation tests against the Python codebase. If `mutmut` is not installed, the script exits gracefully. Mutation results are stored in `mutation_report.txt`. Consider adding thresholds and failing builds based on mutation scores.
+* A coverage generation script (`scripts/generate_coverage.sh`) has been added. It uses pytest and pytest-cov to generate `coverage.xml` and an HTML report in `htmlcov/`. Integrate coverage thresholds in CI as needed.
+* Makefile targets `mutation-test` and `coverage-report` invoke these scripts.
+* The CI workflow now includes `mutation-test` and `coverage-report` jobs. Ensure these jobs pass (or set acceptable thresholds) before merging.
+
+## Upgrade Procedure
+
+1. Run this upgrade script using `bash` (not `sudo`).
+2. After running, execute the test harness (`scripts/run_tests.sh`), cross-platform install tests (`make install-tests`), static and dynamic analyses (`make static-analysis` and `make dynamic-scan`), mutation tests (`make mutation-test`), and coverage report (`make coverage-report`). Review reports and address issues.
+3. Commit and tag the changes if not already done, then push using `git push origin main --follow-tags`.
+
+## Continuous Integration
+
+* The CI pipeline now runs mutation testing and coverage reporting in addition to previous jobs. Failures in these jobs should block merges.

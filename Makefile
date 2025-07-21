@@ -19,3 +19,9 @@ static-analysis:
 
 dynamic-scan:
 	bash scripts/dynamic_security_scan.sh
+
+mutation-test:
+	bash scripts/mutation_test.sh
+
+coverage-report:
+	bash scripts/generate_coverage.sh
