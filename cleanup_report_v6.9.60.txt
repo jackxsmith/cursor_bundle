@@ -1,9 +1,0 @@
-ver  updated text files
-mv   ./git_log_6.9.60.txt → ./git_log_6.9.60_v6.9.60.txt
-mv   ./git_metadata_6.9.60.txt → ./git_metadata_6.9.60_v6.9.60.txt
-lint report saved to lint_report_v6.9.60.txt
-new   21-policies_v6.9.60.txt
-new   diff-6.9.59-to-6.9.60.patch
-new   README.md
-new   git_metadata_6.9.60.txt
-new   ci_workflows_v6.9.60.tar.gz
