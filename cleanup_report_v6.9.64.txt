@@ -1,25 +1,25 @@
 ver  updated text files
-mv   ./21-policies_v6.9.65.txt → ./21-policies_v6.9.64.txt
-mv   ./build_log_v6.9.65.txt → ./build_log_v6.9.64.txt
-mv   ./change_summary_v6.9.65.txt → ./change_summary_v6.9.64.txt
-dup  removed ./cleanup_report_v6.9.65.txt
-mv   ./code_metrics_v6.9.65.txt → ./code_metrics_v6.9.64.txt
-mv   ./dependencies_v6.9.65.txt → ./dependencies_v6.9.64.txt
-mv   ./environment_v6.9.65.txt → ./environment_v6.9.64.txt
-mv   ./git_log_6.9.60_v6.9.65.txt → ./git_log_6.9.60_v6.9.64.txt
-mv   ./git_log_6.9.61_v6.9.65.txt → ./git_log_6.9.61_v6.9.64.txt
-mv   ./git_log_6.9.62_v6.9.65.txt → ./git_log_6.9.62_v6.9.64.txt
-mv   ./git_log_6.9.65.txt → ./git_log_6.9.65_v6.9.64.txt
-mv   ./git_metadata_6.9.60_v6.9.65.txt → ./git_metadata_6.9.60_v6.9.64.txt
-mv   ./git_metadata_6.9.61_v6.9.65.txt → ./git_metadata_6.9.61_v6.9.64.txt
-mv   ./git_metadata_6.9.62_v6.9.65.txt → ./git_metadata_6.9.62_v6.9.64.txt
-mv   ./git_metadata_6.9.65.txt → ./git_metadata_6.9.65_v6.9.64.txt
-mv   ./lint_report_v6.9.65.txt → ./lint_report_v6.9.64.txt
-mv   ./performance_v6.9.65.txt → ./performance_v6.9.64.txt
-mv   ./static_analysis_v6.9.65.txt → ./static_analysis_v6.9.64.txt
-mv   ./test_results_v6.9.65.txt → ./test_results_v6.9.64.txt
-mv   ./webhook_config_v6.9.65.json → ./webhook_config_v6.9.64.json
+mv   ./21-policies_v6.9.66.txt → ./21-policies_v6.9.64.txt
+mv   ./build_log_v6.9.66.txt → ./build_log_v6.9.64.txt
+mv   ./change_summary_v6.9.66.txt → ./change_summary_v6.9.64.txt
+dup  removed ./cleanup_report_v6.9.66.txt
+mv   ./code_metrics_v6.9.66.txt → ./code_metrics_v6.9.64.txt
+mv   ./dependencies_v6.9.66.txt → ./dependencies_v6.9.64.txt
+mv   ./environment_v6.9.66.txt → ./environment_v6.9.64.txt
+mv   ./git_log_6.9.60_v6.9.66.txt → ./git_log_6.9.60_v6.9.64.txt
+mv   ./git_log_6.9.61_v6.9.66.txt → ./git_log_6.9.61_v6.9.64.txt
+mv   ./git_log_6.9.62_v6.9.66.txt → ./git_log_6.9.62_v6.9.64.txt
+mv   ./git_log_6.9.66.txt → ./git_log_6.9.66_v6.9.64.txt
+mv   ./git_metadata_6.9.60_v6.9.66.txt → ./git_metadata_6.9.60_v6.9.64.txt
+mv   ./git_metadata_6.9.61_v6.9.66.txt → ./git_metadata_6.9.61_v6.9.64.txt
+mv   ./git_metadata_6.9.62_v6.9.66.txt → ./git_metadata_6.9.62_v6.9.64.txt
+mv   ./git_metadata_6.9.66.txt → ./git_metadata_6.9.66_v6.9.64.txt
+mv   ./lint_report_v6.9.66.txt → ./lint_report_v6.9.64.txt
+mv   ./performance_v6.9.66.txt → ./performance_v6.9.64.txt
+mv   ./static_analysis_v6.9.66.txt → ./static_analysis_v6.9.64.txt
+mv   ./test_results_v6.9.66.txt → ./test_results_v6.9.64.txt
+mv   ./webhook_config_v6.9.66.json → ./webhook_config_v6.9.64.json
 lint report saved to lint_report_v6.9.64.txt
 new   21-policies_v6.9.64.txt
-new   diff-6.9.65-to-6.9.64.patch
+new   diff-6.9.66-to-6.9.64.patch
 new   ci_workflows_v6.9.64.tar.gz
