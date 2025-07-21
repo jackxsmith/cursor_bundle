@@ -1,0 +1,23 @@
+ver  updated text files
+mv   ./21-policies_v6.9.60.txt → ./21-policies_v6.9.60_v6.9.62.txt
+mv   ./build_log_v6.9.60.txt → ./build_log_v6.9.60_v6.9.62.txt
+mv   ./change_summary_v6.9.60.txt → ./change_summary_v6.9.60_v6.9.62.txt
+mv   ./cleanup_report_v6.9.60.txt → ./cleanup_report_v6.9.60_v6.9.62.txt
+mv   ./code_metrics_v6.9.60.txt → ./code_metrics_v6.9.60_v6.9.62.txt
+mv   ./dependencies_v6.9.60.txt → ./dependencies_v6.9.60_v6.9.62.txt
+mv   ./environment_v6.9.60.txt → ./environment_v6.9.60_v6.9.62.txt
+mv   ./git_log_6.9.60.txt → ./git_log_6.9.60_v6.9.62.txt
+mv   ./git_log_6.9.60_v6.9.60.txt → ./git_log_6.9.60_v6.9.60_v6.9.62.txt
+mv   ./git_metadata_6.9.60.txt → ./git_metadata_6.9.60_v6.9.62.txt
+mv   ./git_metadata_6.9.60_v6.9.60.txt → ./git_metadata_6.9.60_v6.9.60_v6.9.62.txt
+mv   ./lint_report_v6.9.60.txt → ./lint_report_v6.9.60_v6.9.62.txt
+mv   ./performance_v6.9.60.txt → ./performance_v6.9.60_v6.9.62.txt
+mv   ./static_analysis_v6.9.60.txt → ./static_analysis_v6.9.60_v6.9.62.txt
+mv   ./test_results_v6.9.60.txt → ./test_results_v6.9.60_v6.9.62.txt
+mv   ./webhook_config_v6.9.60.json → ./webhook_config_v6.9.60_v6.9.62.json
+lint report saved to lint_report_v6.9.62.txt
+new   21-policies_v6.9.62.txt
+new   diff-6.9.60-to-6.9.62.patch
+new   README.md
+new   git_metadata_6.9.62.txt
+new   ci_workflows_v6.9.62.tar.gz

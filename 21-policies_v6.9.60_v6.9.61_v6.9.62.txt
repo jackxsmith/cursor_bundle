@@ -1,4 +1,4 @@
-Policies v6.9.61
-• Dedicated branch release/6.9.61, tag v6.9.61
+Policies v6.9.62
+• Dedicated branch release/6.9.62, tag v6.9.62
 • Preserve all ci_workflows_* files
 • Script idempotent; safe renames; verifies tool availability
