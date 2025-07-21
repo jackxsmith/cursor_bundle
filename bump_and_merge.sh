@@ -3,8 +3,8 @@
 #
 # Usage:
 #   ./bump_and_merge.sh                  # auto‑increments patch version
-#   ./bump_and_merge.sh 6.9.63 6.9.63    # explicit old/new
-#   ./bump_and_merge.sh 6.9.63 6.9.63 /path/to/repo
+#   ./bump_and_merge.sh 6.9.64 6.9.64    # explicit old/new
+#   ./bump_and_merge.sh 6.9.64 6.9.64 /path/to/repo
 #
 # Requires: git, bash 4+, optional gh (GitHub CLI) for auto‑merge
 

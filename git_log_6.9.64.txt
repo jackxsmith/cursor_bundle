@@ -1,0 +1,10 @@
+ccb66f7 chore: cleanup & bump to v6.9.63 (auto script v2)
+8d8b0f2 chore: cleanup & bump to v6.9.62 (auto‑merge script)
+74ab68f chore: cleanup & bump to v6.9.62 (auto‑merge script)
+20db855 chore: cleanup & bump to v6.9.61 (auto‑remote fix)
+97abcf5 chore: cleanup & bump to v6.9.60 (single artefact rule)
+1b623a9 chore: full cleanup & bump to v6.9.51 (one artefact per version)
+b86ffa7 fix: rename misnamed upgrade scripts to match version numbers
+98734a9 chore: full cleanup & bump to v6.9.47 (one artefact per version)
+0898a84 chore: path cleanup & bump to v6.9.46
+a16d849 chore: enforce version suffixes on artefacts & bump to v6.9.45
