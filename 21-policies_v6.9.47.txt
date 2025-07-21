@@ -1,0 +1,5 @@
+# Policies v6.9.47
+* There must be only one artefact/log per logical file, named *_v6.9.47.*
+* Older duplicates (_v6.9.35‑46) are deleted during upgrade.
+* Lint report stored at lint_report_v6.9.47.txt; CI must fail on critical issues.
+* Script re‑runnable; pushes done manually after review.

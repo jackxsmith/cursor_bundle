@@ -1,5 +1,0 @@
-# Policies v6.9.46
-* Every artefact/log ends with _v6.9.46.<ext>
-* Old upgrade scripts live in scripts/upgrades/ unchanged.
-* Script can be re‑run safely; skips duplicate moves.
-* Push manually after verification.
