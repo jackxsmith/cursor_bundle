@@ -1,9 +1,0 @@
-### TODO/FIXME references:
-./diff-6.9.57-to-6.9.58.patch:26:+* Extensive context files (diff, logs, metadata, dependencies, environment, tests, builds, static analysis, performance placeholder, CI workflows, README, webhook template, code metrics, TODO/FIXME report, largest files report, and security audit) are created and committed with this branch to aid in history inspection and debugging.
-./diff-6.9.57-to-6.9.58.patch:74:+- **todo_fixme_v6.9.58.txt** – list of TODO/FIXME comments found in the repository.
-./diff-6.9.57-to-6.9.58.patch:719:+### TODO/FIXME references:
-./diff-6.9.57-to-6.9.58.patch:720:+./21-policies_v6.9.58.txt:7:* Extensive context files (diff, logs, metadata, dependencies, environment, tests, builds, static analysis, performance placeholder, CI workflows, README, webhook template, code metrics, TODO/FIXME report, largest files report and security audit) are created and committed with this branch to aid in history inspection and debugging.
-./diff-6.9.57-to-6.9.58.patch:721:+./README.md:25:- **todo_fixme_v6.9.58.txt** – list of TODO/FIXME comments found in the repository.
-./diff-6.9.57-to-6.9.58.patch:722:+No TODO/FIXME markers found.
-./21-policies_v6.9.58.txt:7:* Extensive context files (diff, logs, metadata, dependencies, environment, tests, builds, static analysis, performance placeholder, CI workflows, README, webhook template, code metrics, TODO/FIXME report, largest files report, and security audit) are created and committed with this branch to aid in history inspection and debugging.
-./README.md:25:- **todo_fixme_v6.9.58.txt** – list of TODO/FIXME comments found in the repository.

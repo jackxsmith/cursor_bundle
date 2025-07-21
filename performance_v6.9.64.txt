@@ -1,1 +1,0 @@
-Performance profiling not available in this script.
