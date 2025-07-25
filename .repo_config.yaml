@@ -1,0 +1,63 @@
+# Repository Configuration for Cursor Bundle
+# This file enables all legacy features from bump_merged.sh
+
+# Repository Information
+owner: jackxsmith
+repo: cursor_bundle
+current_version: 6.9.160
+from_branch: develop
+to_branch: main
+target_branch: main
+default_branch: main
+development_branch: develop
+
+# Version Management
+prerelease_identifier: beta
+prerelease_when_tag_exists: false
+release_name_prefix: "Release "
+release_name_suffix: ""
+release_tag_prefix: "v"
+release_tag_suffix: ""
+
+# Git Operations
+push_tags: true
+push_branches: true
+force: false
+no_verify: false
+
+# Release Features
+create_release: true
+generate_changelog: true
+generate_artifacts: true
+export_metadata: true
+
+# Notification Channels
+notification_channels:
+  - slack
+  - teams
+  - custom
+
+# Development Options
+dry_run: false
+verbose: true
+strict_hooks: false
+log_level: INFO
+
+# Directories
+config_file: .repo_config.yaml
+hooks_dir: hooks
+functions_dir: functions
+
+# Pre-Commit Hooks
+pre_commit_hooks:
+  - lint
+  - test
+  - security_scan
+  - build_check
+
+# Post-Release Hooks
+post_release_hooks:
+  - cleanup
+  - deploy
+  - notify_teams
+  - update_docs

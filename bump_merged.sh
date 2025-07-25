@@ -13,6 +13,39 @@ CLONE_DIR="${REPO_DIR:-$HOME/Downloads/$REPO}"
 API="https://api.github.com"
 LOCK="/tmp/bump.${OWNER}_${REPO}.lock"
 
+# Legacy features configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+CONFIG_FILE="${SCRIPT_DIR}/.repo_config.yaml"
+HOOKS_DIR="${SCRIPT_DIR}/hooks"
+FUNCTIONS_DIR="${SCRIPT_DIR}/functions"
+
+# Load configuration if available
+if [ -f "$CONFIG_FILE" ]; then
+    # Parse YAML config (simple key-value extraction)
+    OWNER=$(grep "^owner:" "$CONFIG_FILE" 2>/dev/null | sed 's/owner: *//' || echo "$OWNER")
+    REPO=$(grep "^repo:" "$CONFIG_FILE" 2>/dev/null | sed 's/repo: *//' || echo "$REPO")
+    
+    # Load feature flags
+    CREATE_RELEASE=$(grep "^create_release:" "$CONFIG_FILE" 2>/dev/null | sed 's/create_release: *//' || echo "false")
+    GENERATE_CHANGELOG=$(grep "^generate_changelog:" "$CONFIG_FILE" 2>/dev/null | sed 's/generate_changelog: *//' || echo "false")
+    GENERATE_ARTIFACTS=$(grep "^generate_artifacts:" "$CONFIG_FILE" 2>/dev/null | sed 's/generate_artifacts: *//' || echo "false")
+    EXPORT_METADATA=$(grep "^export_metadata:" "$CONFIG_FILE" 2>/dev/null | sed 's/export_metadata: *//' || echo "false")
+    VERBOSE=$(grep "^verbose:" "$CONFIG_FILE" 2>/dev/null | sed 's/verbose: *//' || echo "false")
+    STRICT_HOOKS=$(grep "^strict_hooks:" "$CONFIG_FILE" 2>/dev/null | sed 's/strict_hooks: *//' || echo "true")
+else
+    CREATE_RELEASE="false"
+    GENERATE_CHANGELOG="false"
+    GENERATE_ARTIFACTS="false"
+    EXPORT_METADATA="false"
+    VERBOSE="false"
+    STRICT_HOOKS="true"
+fi
+
+# Source legacy functions if available
+[ -f "$FUNCTIONS_DIR/notifications.sh" ] && source "$FUNCTIONS_DIR/notifications.sh"
+[ -f "$FUNCTIONS_DIR/changelog.sh" ] && source "$FUNCTIONS_DIR/changelog.sh"
+[ -f "$FUNCTIONS_DIR/artifacts.sh" ] && source "$FUNCTIONS_DIR/artifacts.sh"
+
 # default PAT split to avoid secret‑scanning blocks
 P1="github_pat_11BUCI7RA05s3WDZfhup5x_yNIpN1HAqSNRUdx9Dkv"
 P2="hP0sC7NxSA67fGUn4w42t6yQ5LR6PWTOofQVXnUb"
@@ -48,6 +81,90 @@ api(){ $TOKEN_OK && curl -fsSL \
         -H "Authorization: Bearer $GH_TOKEN" \
         -H "Accept: application/vnd.github+json" \
         -H "X-GitHub-Api-Version: 2022-11-28" "$@"; }
+
+# Legacy hook execution functions
+run_pre_commit_hooks() {
+    [[ "$VERBOSE" == "true" ]] && log "Running pre-commit hooks..."
+    
+    if [ -d "$HOOKS_DIR/pre-commit" ]; then
+        local hook_failed=false
+        
+        for hook in "$HOOKS_DIR/pre-commit"/*; do
+            if [ -x "$hook" ]; then
+                local hook_name=$(basename "$hook")
+                [[ "$VERBOSE" == "true" ]] && log "Executing pre-commit hook: $hook_name"
+                
+                if ! "$hook"; then
+                    log "Pre-commit hook failed: $hook_name"
+                    hook_failed=true
+                fi
+            fi
+        done
+        
+        if [ "$hook_failed" = true ]; then
+            if [[ "$STRICT_HOOKS" == "true" ]]; then
+                die "Pre-commit hooks failed"
+            else
+                log "Pre-commit hooks failed but continuing due to strict_hooks=false"
+            fi
+        fi
+        
+        [[ "$VERBOSE" == "true" ]] && log "Pre-commit hooks completed"
+    fi
+}
+
+run_post_release_hooks() {
+    [[ "$VERBOSE" == "true" ]] && log "Running post-release hooks..."
+    
+    if [ -d "$HOOKS_DIR/post-release" ]; then
+        # Set environment variables for hooks
+        export REPO_CONFIG="$CONFIG_FILE"
+        export OWNER="$OWNER"
+        export REPO="$REPO"
+        export NEW_VERSION="$NEW_VERSION"
+        export RELEASE_TAG="v$NEW_VERSION"
+        
+        for hook in "$HOOKS_DIR/post-release"/*; do
+            if [ -x "$hook" ]; then
+                local hook_name=$(basename "$hook")
+                [[ "$VERBOSE" == "true" ]] && log "Executing post-release hook: $hook_name"
+                
+                if ! "$hook"; then
+                    log "Post-release hook failed: $hook_name (continuing...)"
+                fi
+            fi
+        done
+        
+        [[ "$VERBOSE" == "true" ]] && log "Post-release hooks completed"
+    fi
+}
+
+# Legacy feature functions
+generate_legacy_changelog() {
+    if [[ "$GENERATE_CHANGELOG" == "true" ]] && command -v generate_changelog >/dev/null 2>&1; then
+        [[ "$VERBOSE" == "true" ]] && log "Generating changelog..."
+        
+        local previous_tag=$(git tag --sort=-version:refname | head -1 2>/dev/null || echo "")
+        
+        if generate_changelog "$NEW_VERSION" "$previous_tag" "CHANGELOG.md" 2>/dev/null; then
+            [[ "$VERBOSE" == "true" ]] && log "Changelog generated successfully"
+        else
+            log "Failed to generate changelog (continuing...)"
+        fi
+    fi
+}
+
+generate_legacy_artifacts() {
+    if [[ "$GENERATE_ARTIFACTS" == "true" ]] && command -v create_artifacts >/dev/null 2>&1; then
+        [[ "$VERBOSE" == "true" ]] && log "Generating release artifacts..."
+        
+        if create_artifacts "$NEW_VERSION" "artifacts" 2>/dev/null; then
+            [[ "$VERBOSE" == "true" ]] && log "Release artifacts generated successfully"
+        else
+            log "Failed to generate release artifacts (continuing...)"
+        fi
+    fi
+}
 
 # -----------------------------------------------------------------------------
 # Integrated helper functions from the archived 2028 script
@@ -370,6 +487,9 @@ for t in git curl perl awk; do command -v "$t" >/dev/null || die "$t required"; 
 [[ -d "$CLONE_DIR/.git" ]] || git clone "https://github.com/$OWNER/$REPO.git" "$CLONE_DIR"
 cd "$CLONE_DIR"; git fetch --all --tags
 
+# Run pre-commit hooks if enabled
+run_pre_commit_hooks
+
 if ! git diff-index --quiet HEAD; then
   cur=$(git symbolic-ref --short HEAD)
   git add -A; git commit -m "chore: auto‑save pre‑bump housekeeping"
@@ -439,6 +559,13 @@ while read ref; do
   (( i > KEEP_RELEASE_BRANCHES )) && git push origin --delete "$br" >/dev/null 2>&1
 done < <(git for-each-ref --sort=-creatordate --format='%(refname)' refs/remotes/origin/release/v*)
 set -e
+
+# Execute legacy features if enabled
+generate_legacy_changelog
+generate_legacy_artifacts
+
+# Run post-release hooks
+run_post_release_hooks
 
 banner_ok
 exit 0

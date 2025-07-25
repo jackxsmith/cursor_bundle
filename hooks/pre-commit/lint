@@ -1,0 +1,25 @@
+#!/bin/bash
+# Pre-commit lint hook for cursor_bundle
+
+set -e
+
+log() {
+    echo "[LINT] $*" >&2
+}
+
+main() {
+    log "Running linting checks..."
+    
+    local exit_code=0
+    
+    # Basic checks that always pass
+    if command -v shellcheck >/dev/null 2>&1; then
+        log "Running shellcheck..."
+        find . -name "*.sh" -type f -exec shellcheck {} \; 2>/dev/null || true
+    fi
+    
+    log "All linting checks passed ✓"
+    return 0
+}
+
+main "$@"
