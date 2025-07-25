@@ -1,0 +1,488 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ambassador
+  labels:
+    name: ambassador
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ambassador
+  namespace: ambassador
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ambassador
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create", "update", "patch", "get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses", "ingressclasses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses/status"]
+  verbs: ["update"]
+- apiGroups: ["getambassador.io", "x.getambassador.io"]
+  resources: ["*"]
+  verbs: ["*"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list", "watch", "delete"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ambassador
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ambassador
+subjects:
+- kind: ServiceAccount
+  name: ambassador
+  namespace: ambassador
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ambassador
+  namespace: ambassador
+  labels:
+    app: ambassador
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ambassador
+  template:
+    metadata:
+      labels:
+        app: ambassador
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8877"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: ambassador
+      containers:
+      - name: ambassador
+        image: datawire/ambassador:3.8.0
+        ports:
+        - name: http
+          containerPort: 8080
+        - name: https
+          containerPort: 8443
+        - name: admin
+          containerPort: 8877
+        env:
+        - name: AMBASSADOR_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: AMBASSADOR_SINGLE_NAMESPACE
+          value: "false"
+        - name: AMBASSADOR_ID
+          value: "cursor-bundle"
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 200m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+        livenessProbe:
+          httpGet:
+            path: /ambassador/v0/check_alive
+            port: admin
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ambassador/v0/check_ready
+            port: admin
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ambassador
+  namespace: ambassador
+  labels:
+    app: ambassador
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8443
+  selector:
+    app: ambassador
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ambassador-admin
+  namespace: ambassador
+  labels:
+    app: ambassador
+spec:
+  type: ClusterIP
+  ports:
+  - name: admin
+    port: 8877
+    targetPort: 8877
+  selector:
+    app: ambassador
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Module
+metadata:
+  name: ambassador
+  namespace: ambassador
+spec:
+  config:
+    server_name: cursor-bundle-gateway
+    enable_grpc_http11_bridge: true
+    enable_grpc_web: true
+    enable_ipv4: true
+    enable_ipv6: false
+    diagnostics:
+      enabled: true
+    statsd:
+      enabled: true
+      dogstatsd: true
+    tracing:
+      driver: zipkin
+      config:
+        collector_endpoint: http://jaeger-collector.observability:9411/api/v2/spans
+        service_name: ambassador-gateway
+        trace_id_128bit: true
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Listener
+metadata:
+  name: cursor-bundle-listener-8080
+  namespace: ambassador
+spec:
+  port: 8080
+  protocol: HTTP
+  securityModel: XFP
+  hostBinding:
+    namespace:
+      from: ALL
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Listener  
+metadata:
+  name: cursor-bundle-listener-8443
+  namespace: ambassador
+spec:
+  port: 8443
+  protocol: HTTPS
+  securityModel: XFP
+  hostBinding:
+    namespace:
+      from: ALL
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Host
+metadata:
+  name: cursor-bundle-host
+  namespace: cursor-bundle
+spec:
+  hostname: cursor-bundle.example.com
+  acmeProvider:
+    authority: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@cursor-bundle.example.com
+  tlsSecret:
+    name: cursor-bundle-host-tls
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Host
+metadata:
+  name: cursor-bundle-api-host
+  namespace: cursor-bundle
+spec:
+  hostname: api.cursor-bundle.example.com
+  acmeProvider:
+    authority: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@cursor-bundle.example.com
+  tlsSecret:
+    name: cursor-bundle-api-host-tls
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: cursor-bundle-api
+  namespace: cursor-bundle
+spec:
+  ambassador_id: ["cursor-bundle"]
+  prefix: /api/v1/
+  service: cursor-bundle:8080
+  host: api.cursor-bundle.example.com
+  timeout_ms: 30000
+  retry_policy:
+    retry_on: "5xx"
+    num_retries: 3
+  cors:
+    origins: "https://cursor-bundle.example.com"
+    methods: "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    headers: "Content-Type, Authorization, X-API-Key"
+    credentials: true
+    exposed_headers: "X-Request-ID, X-RateLimit-*"
+    max_age: "86400"
+  add_request_headers:
+    X-Forwarded-Service: cursor-bundle
+    X-Gateway: ambassador
+  add_response_headers:
+    X-Service-Version: "6.9.148"
+    X-API-Gateway: ambassador
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: cursor-bundle-web
+  namespace: cursor-bundle
+spec:
+  ambassador_id: ["cursor-bundle"]
+  prefix: /
+  service: cursor-bundle-web:80
+  host: cursor-bundle.example.com
+  timeout_ms: 10000
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: Mapping
+metadata:
+  name: cursor-bundle-health
+  namespace: cursor-bundle
+spec:
+  ambassador_id: ["cursor-bundle"]
+  prefix: /health
+  service: cursor-bundle:8080
+  host: api.cursor-bundle.example.com
+  bypass_auth: true
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: RateLimitService
+metadata:
+  name: cursor-bundle-ratelimit
+  namespace: cursor-bundle
+spec:
+  service: "ratelimit:8080"
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: RateLimit
+metadata:
+  name: cursor-bundle-api-limit
+  namespace: cursor-bundle
+spec:
+  domain: cursor-bundle
+  limits:
+  - pattern:
+    - generic_key:
+        descriptor_value: cursor-bundle-api
+    rate: 1000
+    unit: minute
+  - pattern:
+    - generic_key:
+        descriptor_value: cursor-bundle-api
+    rate: 10000
+    unit: hour
+
+---
+apiVersion: getambassador.io/v3alpha1
+kind: AuthService
+metadata:
+  name: cursor-bundle-auth
+  namespace: cursor-bundle
+spec:
+  auth_service: "cursor-bundle-auth:8080"
+  path_prefix: "/auth"
+  timeout_ms: 5000
+  failure_mode_allow: false
+  allow_request_body: false
+  add_linkerd_headers: true
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cursor-bundle-auth
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle-auth
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cursor-bundle-auth
+  template:
+    metadata:
+      labels:
+        app: cursor-bundle-auth
+    spec:
+      containers:
+      - name: auth
+        image: cursor-bundle-auth:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: cursor-bundle-secrets
+              key: jwt-secret
+        - name: API_KEYS_REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: cursor-bundle-secrets
+              key: redis-url
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cursor-bundle-auth
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle-auth
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: cursor-bundle-auth
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ratelimit
+  namespace: cursor-bundle
+  labels:
+    app: ratelimit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ratelimit
+  template:
+    metadata:
+      labels:
+        app: ratelimit
+    spec:
+      containers:
+      - name: ratelimit
+        image: envoyproxy/ratelimit:master
+        ports:
+        - containerPort: 8080
+        - containerPort: 8081
+        - containerPort: 6070
+        env:
+        - name: USE_STATSD
+          value: "false"
+        - name: LOG_LEVEL
+          value: info
+        - name: REDIS_SOCKET_TYPE
+          value: tcp
+        - name: REDIS_URL
+          value: redis.cursor-bundle:6379
+        - name: RUNTIME_ROOT
+          value: /data
+        - name: RUNTIME_SUBDIRECTORY
+          value: ratelimit
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+        volumeMounts:
+        - name: config
+          mountPath: /data/ratelimit/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: ratelimit-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ratelimit
+  namespace: cursor-bundle
+  labels:
+    app: ratelimit
+spec:
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+  - name: grpc
+    port: 8081
+    targetPort: 8081
+  - name: debug
+    port: 6070
+    targetPort: 6070
+  selector:
+    app: ratelimit
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ratelimit-config
+  namespace: cursor-bundle
+data:
+  config.yaml: |
+    domain: cursor-bundle
+    descriptors:
+      - key: generic_key
+        value: cursor-bundle-api
+        rate_limit:
+          unit: minute
+          requests_per_unit: 1000
+      - key: generic_key
+        value: cursor-bundle-api
+        rate_limit:
+          unit: hour
+          requests_per_unit: 10000

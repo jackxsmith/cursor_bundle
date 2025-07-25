@@ -1,0 +1,407 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kong
+  labels:
+    name: kong
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kong-serviceaccount
+  namespace: kong
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kong-ingress
+rules:
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch", "create", "patch", "update"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingresses/status"]
+  verbs: ["update"]
+- apiGroups: ["configuration.konghq.com"]
+  resources: ["*"]
+  verbs: ["*"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kong-ingress
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kong-ingress
+subjects:
+- kind: ServiceAccount
+  name: kong-serviceaccount
+  namespace: kong
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: kong
+data:
+  kong.conf: |
+    # Kong configuration for API Gateway
+    proxy_listen = 0.0.0.0:8000
+    proxy_listen_ssl = 0.0.0.0:8443
+    admin_listen = 0.0.0.0:8001
+    
+    # Database
+    database = postgres
+    pg_host = postgresql.kong
+    pg_port = 5432
+    pg_database = kong
+    pg_user = kong
+    pg_password = kong
+    
+    # Logging
+    log_level = info
+    proxy_access_log = /dev/stdout
+    proxy_error_log = /dev/stderr
+    admin_access_log = /dev/stdout
+    admin_error_log = /dev/stderr
+    
+    # Performance
+    worker_processes = auto
+    worker_connections = 4096
+    
+    # Security
+    trusted_ips = 0.0.0.0/0,::/0
+    real_ip_header = X-Real-IP
+    real_ip_recursive = on
+    
+    # Plugins
+    plugins = bundled,rate-limiting,cors,jwt,oauth2,acl,basic-auth,key-auth,ldap-auth,hmac-auth,ip-restriction,request-size-limiting,response-ratelimiting,prometheus,datadog,zipkin,opentelemetry
+    
+    # OpenTelemetry
+    tracing_instrumentations = all
+    tracing_sampling_rate = 0.1
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong-gateway
+  namespace: kong
+  labels:
+    app: kong-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kong-gateway
+  template:
+    metadata:
+      labels:
+        app: kong-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8100"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: kong-serviceaccount
+      initContainers:
+      - name: kong-migrations
+        image: kong:3.4.2
+        command: ["kong", "migrations", "bootstrap"]
+        env:
+        - name: KONG_DATABASE
+          value: "postgres"
+        - name: KONG_PG_HOST
+          value: "postgresql.kong"
+        - name: KONG_PG_PORT
+          value: "5432"
+        - name: KONG_PG_DATABASE
+          value: "kong"
+        - name: KONG_PG_USER
+          value: "kong"
+        - name: KONG_PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kong-postgres-secret
+              key: password
+      containers:
+      - name: kong
+        image: kong:3.4.2
+        ports:
+        - name: proxy
+          containerPort: 8000
+          protocol: TCP
+        - name: proxy-ssl
+          containerPort: 8443
+          protocol: TCP
+        - name: admin
+          containerPort: 8001
+          protocol: TCP
+        - name: admin-ssl
+          containerPort: 8444
+          protocol: TCP
+        - name: metrics
+          containerPort: 8100
+          protocol: TCP
+        env:
+        - name: KONG_DATABASE
+          value: "postgres"
+        - name: KONG_PG_HOST
+          value: "postgresql.kong"
+        - name: KONG_PG_PORT
+          value: "5432"
+        - name: KONG_PG_DATABASE
+          value: "kong"
+        - name: KONG_PG_USER
+          value: "kong"
+        - name: KONG_PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kong-postgres-secret
+              key: password
+        - name: KONG_PROXY_LISTEN
+          value: "0.0.0.0:8000"
+        - name: KONG_PROXY_LISTEN_SSL
+          value: "0.0.0.0:8443"
+        - name: KONG_ADMIN_LISTEN
+          value: "0.0.0.0:8001"
+        - name: KONG_ADMIN_LISTEN_SSL
+          value: "0.0.0.0:8444"
+        - name: KONG_LOG_LEVEL
+          value: "info"
+        - name: KONG_PLUGINS
+          value: "bundled,rate-limiting,cors,jwt,oauth2,acl,basic-auth,key-auth,ldap-auth,hmac-auth,ip-restriction,request-size-limiting,response-ratelimiting,prometheus,datadog,zipkin,opentelemetry"
+        - name: KONG_STATUS_LISTEN
+          value: "0.0.0.0:8100"
+        - name: KONG_TRACING_INSTRUMENTATIONS
+          value: "all"
+        - name: KONG_TRACING_SAMPLING_RATE
+          value: "0.1"
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 200m
+          limits:
+            memory: 512Mi
+            cpu: 500m
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8100
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8100
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      - name: kong-ingress-controller
+        image: kong/kubernetes-ingress-controller:2.12
+        args:
+        - /manager
+        - --election-namespace=kong
+        - --ingress-class=kong
+        - --log-level=info
+        - --publish-service=kong/kong-proxy
+        env:
+        - name: CONTROLLER_KONG_ADMIN_URL
+          value: "http://localhost:8001"
+        - name: CONTROLLER_PUBLISH_SERVICE
+          value: "kong/kong-proxy"
+        - name: CONTROLLER_INGRESS_CLASS
+          value: "kong"
+        - name: CONTROLLER_ELECTION_NAMESPACE
+          value: "kong"
+        - name: CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY
+          value: "true"
+        resources:
+          requests:
+            memory: 128Mi
+            cpu: 100m
+          limits:
+            memory: 256Mi
+            cpu: 200m
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10254
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 10254
+          initialDelaySeconds: 10
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+  namespace: kong
+  labels:
+    app: kong-gateway
+    component: proxy
+spec:
+  type: LoadBalancer
+  ports:
+  - name: proxy
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: proxy-ssl
+    port: 443
+    targetPort: 8443
+    protocol: TCP
+  selector:
+    app: kong-gateway
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: kong
+  labels:
+    app: kong-gateway
+    component: admin
+spec:
+  type: ClusterIP
+  ports:
+  - name: admin
+    port: 8001
+    targetPort: 8001
+    protocol: TCP
+  - name: admin-ssl
+    port: 8444
+    targetPort: 8444
+    protocol: TCP
+  selector:
+    app: kong-gateway
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-status
+  namespace: kong
+  labels:
+    app: kong-gateway
+    component: status
+spec:
+  type: ClusterIP
+  ports:
+  - name: status
+    port: 8100
+    targetPort: 8100
+    protocol: TCP
+  selector:
+    app: kong-gateway
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kong-postgres-secret
+  namespace: kong
+type: Opaque
+data:
+  password: a29uZw== # base64 encoded "kong"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: kong
+  labels:
+    app: postgresql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgresql
+  template:
+    metadata:
+      labels:
+        app: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: postgres:15
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        env:
+        - name: POSTGRES_DB
+          value: "kong"
+        - name: POSTGRES_USER
+          value: "kong"
+        - name: POSTGRES_PASSWORD
+          value: "kong"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
+        resources:
+          requests:
+            memory: 256Mi
+            cpu: 100m
+          limits:
+            memory: 512Mi
+            cpu: 200m
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - kong
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - kong
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: kong
+  labels:
+    app: postgresql
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgres
+    port: 5432
+    targetPort: 5432
+    protocol: TCP
+  selector:
+    app: postgresql
