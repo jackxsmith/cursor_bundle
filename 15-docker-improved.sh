@@ -2,7 +2,7 @@
 
 # =============================================================================
 # CURSOR IDE ENTERPRISE DOCKER ORCHESTRATION FRAMEWORK
-# Version: 09-zenity-improved-v2.sh
+# Version: 16-tracker-improved-v2.sh
 # Description: Advanced containerized deployment system for Cursor IDE
 # Author: Enterprise Development Team
 # License: MIT
@@ -17,7 +17,7 @@ IFS=$'\n\t'
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_VERSION="09-zenity-improved-v2.sh"
+readonly SCRIPT_VERSION="16-tracker-improved-v2.sh"
 readonly CURSOR_VERSION="6.9.35"
 readonly TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
 
@@ -296,7 +296,7 @@ generate_base_dockerfile() {
 FROM ubuntu:22.04
 
 LABEL maintainer="Enterprise Development Team"
-LABEL version="09-zenity-improved-v2.sh"
+LABEL version="16-tracker-improved-v2.sh"
 LABEL description="Cursor IDE Enterprise Base Container"
 
 # Prevent interactive prompts during installation
