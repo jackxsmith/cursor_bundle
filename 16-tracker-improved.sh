@@ -2,7 +2,7 @@
 
 # =============================================================================
 # CURSOR IDE ENTERPRISE CODE ANALYSIS AND TRACKING FRAMEWORK
-# Version: 6.9.226
+# Version: 6.9.227
 # Description: Advanced code analysis, dependency tracking, and quality assurance system
 # Author: Enterprise Development Team
 # License: MIT
@@ -17,7 +17,7 @@ IFS=$'\n\t'
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_VERSION="6.9.226"
+readonly SCRIPT_VERSION="6.9.227"
 readonly CURSOR_VERSION="6.9.35"
 readonly TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
 
@@ -227,7 +227,7 @@ initialize_configuration() {
     # Main configuration file
     cat > "$CONFIG_DIR/tracker.conf" << 'EOF'
 # Cursor IDE Code Tracker Configuration
-# Version: 6.9.226
+# Version: 6.9.227
 
 [analysis]
 enable_function_analysis=true
