@@ -8,6 +8,7 @@ metadata:
     version: v6.9.163
 spec:
   replicas: 3
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: cursor-bundle
@@ -25,16 +26,34 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
         prometheus.io/path: "/metrics"
+        sidecar.istio.io/inject: "true"
+        sidecar.istio.io/proxyCPULimit: "100m"
+        sidecar.istio.io/proxyMemoryLimit: "128Mi"
+        fluentbit.io/parser: "json"
     spec:
       serviceAccountName: cursor-bundle
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
+        runAsGroup: 1000
         fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: cursor-bundle
         image: cursor-bundle:v6.9.163
         imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          runAsGroup: 1000
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
         ports:
         - name: http
           containerPort: 8080
@@ -61,6 +80,14 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        - name: CLUSTER_NAME
+          value: "cursor-bundle-cluster"
+        - name: JAEGER_AGENT_HOST
+          value: "jaeger-agent.observability.svc.cluster.local"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "http://opentelemetry-collector.observability.svc.cluster.local:4317"
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: "service.name=cursor-bundle,service.version=v6.9.163,k8s.cluster.name=cursor-bundle-cluster"
         resources:
           requests:
             memory: "256Mi"
@@ -72,18 +99,35 @@ spec:
           httpGet:
             path: /health
             port: http
+            httpHeaders:
+            - name: X-Health-Check
+              value: "liveness"
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 3
+          successThreshold: 1
         readinessProbe:
           httpGet:
             path: /ready
             port: http
+            httpHeaders:
+            - name: X-Health-Check
+              value: "readiness"
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
           failureThreshold: 3
+          successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 10
+          successThreshold: 1
         volumeMounts:
         - name: config
           mountPath: /app/config
@@ -91,13 +135,30 @@ spec:
         - name: secrets
           mountPath: /app/secrets
           readOnly: true
+        - name: tmp
+          mountPath: /tmp
+        - name: cache
+          mountPath: /app/cache
+        - name: logs
+          mountPath: /app/logs
       volumes:
       - name: config
         configMap:
           name: cursor-bundle-config
+          defaultMode: 0444
       - name: secrets
         secret:
           secretName: cursor-bundle-secrets
+          defaultMode: 0400
+      - name: tmp
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: cache
+        emptyDir:
+          sizeLimit: 2Gi
+      - name: logs
+        emptyDir:
+          sizeLimit: 1Gi
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -110,3 +171,24 @@ spec:
                   values:
                   - cursor-bundle
               topologyKey: kubernetes.io/hostname
+          - weight: 50
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cursor-bundle
+              topologyKey: topology.kubernetes.io/zone
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+      - key: "node.kubernetes.io/not-ready"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      - key: "node.kubernetes.io/unreachable"
+        operator: "Exists"
+        effect: "NoExecute"
+        tolerationSeconds: 300
+      terminationGracePeriodSeconds: 60

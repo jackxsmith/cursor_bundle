@@ -46,15 +46,40 @@ fi
 [ -f "$FUNCTIONS_DIR/changelog.sh" ] && source "$FUNCTIONS_DIR/changelog.sh"
 [ -f "$FUNCTIONS_DIR/artifacts.sh" ] && source "$FUNCTIONS_DIR/artifacts.sh"
 
-# default PAT split to avoid secret‑scanning blocks
-P1="github_pat_11BUCI7RA05s3WDZfhup5x_yNIpN1HAqSNRUdx9Dkv"
-P2="hP0sC7NxSA67fGUn4w42t6yQ5LR6PWTOofQVXnUb"
-DEFAULT_GH_TOKEN="$P1$P2"
-GH_TOKEN="${GH_TOKEN:-$DEFAULT_GH_TOKEN}"
-TOKEN_OK=true ; [[ "$GH_TOKEN" == "$DEFAULT_GH_TOKEN" ]] && TOKEN_OK=false
+# GitHub token from environment or file
+if [ -f "$HOME/.github_pat" ]; then
+    GH_TOKEN="$(cat "$HOME/.github_pat" 2>/dev/null || echo "")"
+else
+    GH_TOKEN="${GH_TOKEN:-}"
+fi
 
-log(){ printf '\e[36m• %s\e[0m\n' "$*"; }
-die(){ printf '\e[31m✖ %s\e[0m\n' "$*" >&2; exit 1; }
+# Validate token is available
+if [ -z "$GH_TOKEN" ]; then
+    echo "Warning: No GitHub token found. Set GH_TOKEN environment variable or create ~/.github_pat file"
+    echo "GitHub API operations will be limited"
+    TOKEN_OK=false
+else
+    TOKEN_OK=true
+fi
+
+# Enhanced logging functions
+log() {
+    local level="${1:-INFO}"
+    local message="$*"
+    local timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
+    
+    case "$level" in
+        INFO|*) printf '\e[36m[%s] • %s\e[0m\n' "$timestamp" "$message" ;;
+        WARN) printf '\e[33m[%s] ⚠ %s\e[0m\n' "$timestamp" "$message" ;;
+        ERROR) printf '\e[31m[%s] ✖ %s\e[0m\n' "$timestamp" "$message" >&2 ;;
+        DEBUG) [[ "$VERBOSE" == "true" ]] && printf '\e[90m[%s] 🔧 %s\e[0m\n' "$timestamp" "$message" ;;
+    esac
+}
+
+die() {
+    log "ERROR" "$*"
+    exit 1
+}
 banner_ok(){
   printf "\e[32m✔ v%s released; repo clean; branches identical; kept last %s releases.\e[0m\n" \
          "$NEW_VERSION" "$KEEP_RELEASE_BRANCHES"

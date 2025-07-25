@@ -7,12 +7,19 @@ plugin: rate-limiting
 config:
   minute: 1000
   hour: 10000
+  day: 50000
   policy: redis
-  redis_host: redis.cursor-bundle
+  redis_host: redis.cursor-bundle.svc.cluster.local
   redis_port: 6379
   redis_timeout: 2000
   redis_password: ""
   redis_database: 1
+  fault_tolerant: true
+  hide_client_headers: false
+  limit_by: consumer
+  header_name: X-RateLimit-Limit
+  path: /
+  sync_rate: 5
 
 ---
 apiVersion: configuration.konghq.com/v1
@@ -156,7 +163,7 @@ config:
     X-Service-Name: cursor-bundle-api
   resource_attributes:
     service.name: cursor-bundle-api
-    service.version: "6.9.148"
+    service.version: "v6.9.163"
     service.namespace: cursor-bundle
   batch_span_processor:
     max_export_batch_size: 200
@@ -173,7 +180,11 @@ plugin: response-transformer
 config:
   add:
     headers:
-    - "X-Service-Version:6.9.148"
+    - "X-Service-Version:v6.9.163"
+    - "X-Content-Type-Options:nosniff"
+    - "X-Frame-Options:DENY"
+    - "X-XSS-Protection:1; mode=block"
+    - "Strict-Transport-Security:max-age=31536000; includeSubDomains"
     - "X-API-Gateway:kong"
     - "X-Request-ID:$(headers.x-request-id)"
   remove:
@@ -381,3 +392,66 @@ config:
     max_export_batch_size: 200
     export_timeout_ms: 30000
     inactive_timeout_ms: 5000
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-request-validator
+  namespace: cursor-bundle
+plugin: request-validator
+config:
+  allowed_content_types:
+  - application/json
+  - application/x-www-form-urlencoded
+  - multipart/form-data
+  version: draft4
+  body_schema: |
+    {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "email": {"type": "string", "format": "email"}
+      }
+    }
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-bot-detection
+  namespace: cursor-bundle
+plugin: bot-detection
+config:
+  blacklist: 
+  - "curl*"
+  - "wget*"
+  - "*bot*"
+  - "*crawler*"
+  - "*spider*"
+  whitelist: []
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-correlation-id
+  namespace: cursor-bundle
+plugin: correlation-id
+config:
+  header_name: "X-Correlation-ID"
+  generator: "uuid#counter"
+  echo_downstream: true
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-canary
+  namespace: cursor-bundle
+plugin: canary
+config:
+  percentage: 10
+  upstream_host: "cursor-bundle-canary.cursor-bundle.svc.cluster.local"
+  upstream_port: 8080
+  upstream_uri: "/"

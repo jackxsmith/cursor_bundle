@@ -18,11 +18,21 @@ data:
       level: info
       format: json
       output: stdout
+      structured: true
+      trace_id: true
+      correlation_id: true
     
     metrics:
       enabled: true
       port: 9090
       path: /metrics
+      collect_interval: 15
+      histogram_buckets: [0.001, 0.01, 0.1, 0.5, 1, 2.5, 5, 10]
+      custom_metrics:
+        - requests_total
+        - response_time_seconds
+        - active_connections
+        - error_rate
     
     health:
       enabled: true
@@ -31,14 +41,49 @@ data:
     
     cache:
       type: redis
+      host: redis.cursor-bundle.svc.cluster.local
+      port: 6379
       ttl: 300
       max_size: 1000
+      pool_size: 10
+      timeout: 5
+      retry_attempts: 3
     
     security:
       cors_enabled: true
-      cors_origins: ["*"]
+      cors_origins: ["https://*.cursor-bundle.example.com"]
+      cors_methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+      cors_headers: ["Authorization", "Content-Type", "X-Requested-With"]
       rate_limit: 100
       rate_window: 60
+      jwt_enabled: true
+      api_key_required: false
+      csrf_protection: true
+      security_headers:
+        x_frame_options: DENY
+        x_content_type_options: nosniff
+        x_xss_protection: "1; mode=block"
+        strict_transport_security: "max-age=31536000; includeSubDomains"
+    
+    observability:
+      tracing:
+        enabled: true
+        service_name: cursor-bundle
+        service_version: v6.9.163
+        trace_ratio: 0.1
+        jaeger_endpoint: "http://jaeger-collector.observability.svc.cluster.local:14268/api/traces"
+        otlp_endpoint: "http://opentelemetry-collector.observability.svc.cluster.local:4317"
+      
+      monitoring:
+        prometheus_enabled: true
+        grafana_enabled: true
+        alertmanager_enabled: true
+        custom_dashboards: true
+      
+      logging:
+        fluentbit_enabled: true
+        log_aggregation: true
+        log_retention_days: 30
   
   nginx.conf: |
     server {
@@ -56,7 +101,13 @@ data:
         location /metrics {
             proxy_pass http://cursor-bundle:9090/metrics;
             allow 10.0.0.0/8;
+            allow 172.16.0.0/12;
+            allow 192.168.0.0/16;
             deny all;
+            
+            # Security headers
+            add_header X-Content-Type-Options nosniff;
+            add_header X-Frame-Options DENY;
         }
         
         location /health {

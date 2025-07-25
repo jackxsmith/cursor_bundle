@@ -1,23 +1,54 @@
-name: CI
+name: Enhanced CI Pipeline
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
+  schedule:
+    - cron: '0 2 * * *'  # Daily security scans
+  workflow_dispatch:
+    inputs:
+      run_full_test_suite:
+        description: 'Run full test suite including performance tests'
+        type: boolean
+        default: false
 
 env:
   PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  GO_VERSION: '1.21'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    strategy:
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+        include:
+          - os: ubuntu-latest
+            platform: linux/amd64
+          - os: ubuntu-20.04
+            platform: linux/amd64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      sha: ${{ steps.version.outputs.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version info
+        id: version
+        run: |
+          echo "version=$(cat VERSION || echo 'unknown')" >> $GITHUB_OUTPUT
+          echo "sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+          echo "date=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -39,15 +70,31 @@ jobs:
           pip install bandit safety shellcheck-py || true
           echo "Dependencies installed successfully"
 
-      - name: Security scan
+      - name: Advanced security scan
         run: |
-          echo "Running security scans..."
+          echo "Running comprehensive security scans..."
+          
+          # Create security report directory
+          mkdir -p security-reports
+          
           # Run our custom security scan hook
           if [ -x hooks/pre-commit/security_scan ]; then
-            ./hooks/pre-commit/security_scan || echo "Security scan completed with warnings"
-          else
-            echo "Security scan hook not found, skipping"
+            ./hooks/pre-commit/security_scan 2>&1 | tee security-reports/custom-scan.log || echo "Custom security scan completed with warnings"
           fi
+          
+          # Additional security checks
+          echo "Checking for hardcoded secrets..."
+          find . -type f -name "*.sh" -o -name "*.py" -o -name "*.js" -o -name "*.yml" -o -name "*.yaml" | \
+            xargs grep -l "password\|secret\|token\|key" 2>/dev/null | \
+            head -10 > security-reports/potential-secrets.txt || echo "No obvious secrets found"
+          
+          # Check file permissions
+          echo "Auditing file permissions..."
+          find . -type f -perm /111 -name "*.sh" | head -20 > security-reports/executable-scripts.txt
+          
+          # Summary
+          echo "Security scan summary:"
+          wc -l security-reports/*.txt 2>/dev/null || echo "No security issues files created"
         continue-on-error: true
 
       - name: Run linting
@@ -220,6 +267,56 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: security-report
+          name: security-report-${{ matrix.os }}
           path: security/security_report.txt
           retention-days: 30
+
+  container-security:
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        run: |
+          docker build -t cursor-bundle-test:latest .
+
+      - name: Generate SBOM
+        run: |
+          # Install syft for SBOM generation
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          
+          # Generate SBOM
+          mkdir -p sbom
+          syft cursor-bundle-test:latest -o json > sbom/sbom.json
+          syft cursor-bundle-test:latest -o spdx > sbom/sbom.spdx
+          echo "Generated SBOM files:"
+          ls -la sbom/
+
+      - name: Container vulnerability scan
+        run: |
+          # Install grype for vulnerability scanning
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          
+          # Scan for vulnerabilities
+          mkdir -p vulns
+          grype cursor-bundle-test:latest -o json > vulns/vulnerabilities.json || true
+          grype cursor-bundle-test:latest -o table > vulns/vulnerabilities.txt || true
+          
+          echo "Vulnerability scan results:"
+          head -20 vulns/vulnerabilities.txt || echo "No vulnerabilities file generated"
+
+      - name: Upload SBOM and vulnerability reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-security-reports
+          path: |
+            sbom/
+            vulns/
+          retention-days: 90
