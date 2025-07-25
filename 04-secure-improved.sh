@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🛡️ CURSOR BUNDLE SECURITY FRAMEWORK v6.9.208 - DRAMATICALLY IMPROVED
+# 🛡️ CURSOR BUNDLE SECURITY FRAMEWORK v6.9.209 - DRAMATICALLY IMPROVED
 # Enterprise-grade security manager with advanced protection features
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === SECURITY CONFIGURATION ===
-readonly SCRIPT_VERSION="6.9.208"
+readonly SCRIPT_VERSION="6.9.209"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
