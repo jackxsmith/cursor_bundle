@@ -1,7 +1,7 @@
 {
   "test_suite": {
     "name": "Cursor Bundle Advanced Test Suite",
-    "version": "tracker-system-v2",
+    "version": "policycheck-framework-v2",
     "description": "Comprehensive testing framework with policy enforcement, performance monitoring, and security validation"
   },
   "execution": {

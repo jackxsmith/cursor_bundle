@@ -2,7 +2,7 @@
 
 # =============================================================================
 # CURSOR IDE ENTERPRISE INSTALLATION FRAMEWORK
-# Version: tracker-system-v2
+# Version: policycheck-framework-v2
 # Description: Advanced enterprise-grade installation system for Cursor IDE
 # Author: Enterprise Development Team
 # License: MIT
@@ -17,7 +17,7 @@ IFS=$'\n\t'
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_VERSION="tracker-system-v2"
+readonly SCRIPT_VERSION="policycheck-framework-v2"
 readonly CURSOR_VERSION="6.9.35"
 readonly TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
 
@@ -300,7 +300,7 @@ initialize_configuration() {
     if [[ "$DRY_RUN" != "true" ]]; then
         cat > "$MAIN_CONFIG" << 'EOF'
 # Cursor IDE Enterprise Installer Configuration
-# Version: tracker-system-v2
+# Version: policycheck-framework-v2
 
 [general]
 installation_timeout=3600
