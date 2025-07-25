@@ -1,7 +1,7 @@
 {
   "test_suite": "Cursor Bundle Test Suite",
-  "version": "posttest-framework-v2",
-  "script_version": "posttest-framework-v2",
+  "version": "install-framework-v2",
+  "script_version": "install-framework-v2",
   "timestamp": "20250725_114909",
   "environment": {
     "os": "Linux",

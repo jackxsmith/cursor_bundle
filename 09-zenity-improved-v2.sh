@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🌟 CURSOR BUNDLE QUANTUM ZENITY GUI INSTALLER posttest-framework-v2 - SECOND GENERATION
+# 🌟 CURSOR BUNDLE QUANTUM ZENITY GUI INSTALLER install-framework-v2 - SECOND GENERATION
 # Revolutionary quantum-enhanced Zenity GUI installer with AI-driven user experience
 # 
 # 🚀 BREAKTHROUGH FEATURES:
