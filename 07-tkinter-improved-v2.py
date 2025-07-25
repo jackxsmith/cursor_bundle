@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 CURSOR BUNDLE ENTERPRISE GUI INSTALLER vinstall-framework-v2 - SECOND GENERATION
+🚀 CURSOR BUNDLE ENTERPRISE GUI INSTALLER vdocker-deployment-v2 - SECOND GENERATION
 Next-generation enterprise installation framework with AI-powered features and quantum-ready architecture
 
 🌟 REVOLUTIONARY FEATURES:
@@ -124,7 +124,7 @@ ConfigType = Dict[str, Any]
 InstallationProfile = namedtuple('InstallationProfile', ['name', 'components', 'config'])
 
 # Constants
-VERSION = "install-framework-v2"
+VERSION = "docker-deployment-v2"
 APP_NAME = "Cursor Bundle Enterprise Installer"
 COMPANY_NAME = "Enterprise Software Solutions"
 COPYRIGHT = f"© 2025 {COMPANY_NAME}. All rights reserved."
