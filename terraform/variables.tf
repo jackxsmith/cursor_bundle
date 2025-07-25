@@ -19,7 +19,7 @@ variable "environment" {
 variable "app_version" {
   description = "Application version"
   type        = string
-  default     = "6.9.158"
+  default     = "6.9.160"
 }
 
 variable "git_commit" {
