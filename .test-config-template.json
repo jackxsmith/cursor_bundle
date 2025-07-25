@@ -1,7 +1,7 @@
 {
   "test_suite": {
     "name": "Cursor Bundle Advanced Test Suite",
-    "version": "posttest-framework-v2",
+    "version": "install-framework-v2",
     "description": "Comprehensive testing framework with policy enforcement, performance monitoring, and security validation"
   },
   "execution": {
