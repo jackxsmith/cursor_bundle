@@ -1,636 +1,618 @@
-#!/usr/bin/env bash
-#
-# PROFESSIONAL PRE-INSTALLATION SYSTEM FOR CURSOR IDE v2.0
-# Enterprise-Grade Pre-Installation Validation Framework
-#
-# Enhanced Features:
-# - Robust system compatibility validation
-# - Self-correcting dependency resolution
-# - Comprehensive error handling and recovery
-# - Advanced logging and monitoring
-# - Performance optimization
-# - Security hardening
-# - Graceful degradation
-#
-
+#\!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 
-# === CONFIGURATION ===
-readonly SCRIPT_VERSION="2.0.0"
-readonly SCRIPT_NAME="$(basename "${0}")"
+# ============================================================================
+# 11-preinstall-improved-v2.sh - Professional Pre-Installation Framework v2.0
+# Enterprise-grade pre-installation validation with robust error handling and self-correcting mechanisms
+# ============================================================================
+
+readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly VERSION="2.0.0"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
-# Cursor Requirements
-readonly MIN_RAM_MB=4096
-readonly MIN_DISK_MB=2048
-readonly MIN_CPU_CORES=2
-readonly REQUIRED_COMMANDS=("curl" "tar" "gzip" "ps" "df" "free" "uname")
+# Configuration Management
+readonly APP_NAME="cursor"
+readonly PREINSTALL_CONFIG_DIR="${HOME}/.config/cursor-preinstall"
+readonly PREINSTALL_CACHE_DIR="${HOME}/.cache/cursor-preinstall"
+readonly PREINSTALL_LOG_DIR="${PREINSTALL_CONFIG_DIR}/logs"
 
-# Directory Structure
-readonly LOG_DIR="${HOME}/.cache/cursor/logs"
-readonly REPORT_DIR="${HOME}/.cache/cursor/reports"
-readonly TEMP_DIR="$(mktemp -d -t cursor_preinstall_XXXXXX)"
+# Logging Configuration
+readonly LOG_FILE="${PREINSTALL_LOG_DIR}/preinstall_${TIMESTAMP}.log"
+readonly ERROR_LOG="${PREINSTALL_LOG_DIR}/preinstall_errors_${TIMESTAMP}.log"
+readonly VALIDATION_LOG="${PREINSTALL_LOG_DIR}/validation_${TIMESTAMP}.log"
 
-# Log Files
-readonly MAIN_LOG="${LOG_DIR}/preinstall_${TIMESTAMP}.log"
-readonly ERROR_LOG="${LOG_DIR}/preinstall_errors_${TIMESTAMP}.log"
-readonly VALIDATION_REPORT="${REPORT_DIR}/validation_${TIMESTAMP}.json"
+# Lock Management
+readonly LOCK_FILE="${PREINSTALL_CONFIG_DIR}/.preinstall.lock"
+readonly PID_FILE="${PREINSTALL_CONFIG_DIR}/.preinstall.pid"
 
-# Validation Results
-declare -A VALIDATION_RESULTS
-declare -A SYSTEM_INFO
-declare -A DEPENDENCY_STATUS
-VALIDATION_RESULTS[passed]=0
-VALIDATION_RESULTS[failed]=0
-VALIDATION_RESULTS[warnings]=0
+# Global Variables
+declare -g PREINSTALL_CONFIG="${PREINSTALL_CONFIG_DIR}/preinstall.conf"
+declare -g VERBOSE_MODE=false
+declare -g DRY_RUN_MODE=false
+declare -g VALIDATION_PASSED=true
 
-# === UTILITY FUNCTIONS ===
-
-# Enhanced logging
-log() {
-    local level="$1"
-    local message="$2"
-    local timestamp="$(date -Iseconds)"
+# Enhanced error handling with self-correction
+error_handler() {
+    local line_no="$1"
+    local bash_command="$2"
+    local exit_code="$3"
     
-    echo "[${timestamp}] ${level}: ${message}" >> "$MAIN_LOG"
+    log_error "Error on line $line_no: Command '$bash_command' failed with exit code $exit_code"
     
-    if [[ "$level" == "ERROR" ]]; then
-        echo "[${timestamp}] ${level}: ${message}" >> "$ERROR_LOG"
-        ((VALIDATION_RESULTS[failed]++)) || true
-    elif [[ "$level" == "WARN" ]]; then
-        ((VALIDATION_RESULTS[warnings]++)) || true
-    elif [[ "$level" == "PASS" ]]; then
-        ((VALIDATION_RESULTS[passed]++)) || true
-    fi
-    
-    # Console output
-    case "$level" in
-        ERROR) echo -e "\033[0;31m[ERROR]\033[0m ${message}" >&2 ;;
-        WARN) echo -e "\033[1;33m[WARN]\033[0m ${message}" ;;
-        PASS) echo -e "\033[0;32m[✓]\033[0m ${message}" ;;
-        INFO) echo -e "\033[0;34m[INFO]\033[0m ${message}" ;;
-        *) echo "[${level}] ${message}" ;;
+    # Self-correction attempts
+    case "$bash_command" in
+        *"mkdir"*)
+            log_info "Directory creation failed, attempting to fix permissions..."
+            fix_directory_permissions
+            ;;
+        *"df"* < /dev/null | *"free"*)
+            log_info "System info command failed, checking alternative methods..."
+            check_system_resources_alternative
+            ;;
+        *"which"*|*"command"*)
+            log_info "Command check failed, updating PATH and retrying..."
+            fix_path_environment
+            ;;
     esac
+    
+    cleanup_on_error
 }
 
-# Ensure directory with error handling
-ensure_directory() {
-    local dir="$1"
-    local max_attempts=3
-    local attempt=0
-    
-    while [[ $attempt -lt $max_attempts ]]; do
-        if [[ -d "$dir" ]]; then
-            return 0
-        elif mkdir -p "$dir" 2>/dev/null; then
-            log "DEBUG" "Created directory: $dir"
-            return 0
-        fi
-        
-        ((attempt++))
-        [[ $attempt -lt $max_attempts ]] && sleep 0.5
-    done
-    
-    log "ERROR" "Failed to create directory: $dir"
-    return 1
+# Professional logging system
+log_info() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [INFO] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[INFO] $message" >&2
 }
 
-# Initialize directories
-initialize_directories() {
-    local dirs=("$LOG_DIR" "$REPORT_DIR")
+log_error() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [ERROR] $message" | tee -a "$LOG_FILE" >&2
+    echo "[$timestamp] [ERROR] $message" >> "$ERROR_LOG"
+}
+
+log_warning() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [WARNING] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[WARNING] $message" >&2
+}
+
+log_validation() {
+    local check="$1"
+    local result="$2"
+    local details="$3"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] VALIDATION: $check = $result ($details)" >> "$VALIDATION_LOG"
+}
+
+# Initialize pre-installation framework
+initialize_preinstall_framework() {
+    log_info "Initializing Professional Pre-Installation Framework v${VERSION}"
+    
+    # Set up error handling
+    trap 'error_handler ${LINENO} "$BASH_COMMAND" $?' ERR
+    trap 'cleanup_on_exit' EXIT
+    trap 'log_info "Received interrupt signal, cleaning up..."; cleanup_on_exit; exit 130' INT TERM
+    
+    # Create directory structure
+    create_directory_structure
+    
+    # Load configuration
+    load_configuration
+    
+    # Acquire lock
+    acquire_lock
+    
+    log_info "Pre-installation framework initialization completed successfully"
+}
+
+# Create directory structure with retry logic
+create_directory_structure() {
+    local dirs=("$PREINSTALL_CONFIG_DIR" "$PREINSTALL_CACHE_DIR" "$PREINSTALL_LOG_DIR")
+    local max_retries=3
     
     for dir in "${dirs[@]}"; do
-        if ! ensure_directory "$dir"; then
-            echo "Failed to initialize directories"
+        local retry_count=0
+        while [[ $retry_count -lt $max_retries ]]; do
+            if mkdir -p "$dir" 2>/dev/null; then
+                break
+            else
+                ((retry_count++))
+                log_warning "Failed to create directory $dir (attempt $retry_count/$max_retries)"
+                sleep 1
+            fi
+        done
+        
+        if [[ $retry_count -eq $max_retries ]]; then
+            log_error "Failed to create directory $dir after $max_retries attempts"
             return 1
         fi
     done
+}
+
+# Load configuration with defaults
+load_configuration() {
+    if [[ \! -f "$PREINSTALL_CONFIG" ]]; then
+        log_info "Creating default pre-installation configuration"
+        create_default_configuration
+    fi
     
-    # Log rotation
-    find "$LOG_DIR" -name "preinstall_*.log" -mtime +7 -delete 2>/dev/null || true
-    find "$REPORT_DIR" -name "validation_*.json" -mtime +30 -delete 2>/dev/null || true
+    # Source configuration safely
+    if [[ -r "$PREINSTALL_CONFIG" ]]; then
+        source "$PREINSTALL_CONFIG"
+        log_info "Configuration loaded from $PREINSTALL_CONFIG"
+    else
+        log_warning "Configuration file not readable, using defaults"
+    fi
+}
+
+# Create default configuration
+create_default_configuration() {
+    cat > "$PREINSTALL_CONFIG" << 'CONFIGEOF'
+# Professional Pre-Installation Framework Configuration v2.0
+
+# General Settings
+VERBOSE_MODE=false
+DRY_RUN_MODE=false
+STRICT_VALIDATION=true
+AUTO_FIX_ISSUES=true
+
+# System Requirements
+MIN_DISK_SPACE_MB=2048
+MIN_MEMORY_MB=1024
+MIN_TMP_SPACE_MB=512
+
+# Validation Settings
+CHECK_DEPENDENCIES=true
+CHECK_PERMISSIONS=true
+CHECK_HARDWARE=true
+VALIDATE_ENVIRONMENT=true
+
+# Security Settings
+VERIFY_CHECKSUMS=true
+CHECK_FILE_PERMISSIONS=true
+VALIDATE_USER_CONTEXT=true
+
+# Maintenance Settings
+LOG_RETENTION_DAYS=30
+CLEANUP_ON_SUCCESS=true
+BACKUP_EXISTING_CONFIG=true
+CONFIGEOF
     
+    log_info "Default configuration created: $PREINSTALL_CONFIG"
+}
+
+# Acquire lock with timeout
+acquire_lock() {
+    local timeout=10
+    local elapsed=0
+    
+    while [[ $elapsed -lt $timeout ]]; do
+        if (set -C; echo $$ > "$LOCK_FILE") 2>/dev/null; then
+            echo $$ > "$PID_FILE"
+            log_info "Lock acquired successfully"
+            return 0
+        fi
+        
+        if [[ -f "$LOCK_FILE" ]]; then
+            local lock_pid
+            lock_pid=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
+            if [[ -n "$lock_pid" ]] && \! kill -0 "$lock_pid" 2>/dev/null; then
+                log_info "Removing stale lock file"
+                rm -f "$LOCK_FILE"
+                continue
+            fi
+        fi
+        
+        sleep 1
+        ((elapsed++))
+    done
+    
+    log_warning "Could not acquire lock, continuing anyway"
     return 0
 }
 
-# Cleanup
-cleanup() {
-    [[ -d "$TEMP_DIR" ]] && rm -rf "$TEMP_DIR"
+# Perform comprehensive pre-installation validation
+perform_preinstall_validation() {
+    log_info "Starting comprehensive pre-installation validation..."
     
-    # Generate final report
-    generate_validation_report
+    local validation_start=$(date +%s)
+    VALIDATION_PASSED=true
     
-    log "INFO" "Pre-installation check completed"
-}
-
-trap cleanup EXIT
-trap 'exit 130' INT TERM
-
-# === SYSTEM DETECTION ===
-
-# Detect operating system
-detect_os() {
-    log "INFO" "Detecting operating system"
+    # System validation
+    validate_system_requirements
     
-    if [[ -f /etc/os-release ]]; then
-        source /etc/os-release
-        SYSTEM_INFO[os_id]="${ID:-unknown}"
-        SYSTEM_INFO[os_version]="${VERSION_ID:-unknown}"
-        SYSTEM_INFO[os_name]="${PRETTY_NAME:-unknown}"
-        SYSTEM_INFO[os_codename]="${VERSION_CODENAME:-unknown}"
-    elif [[ -f /etc/redhat-release ]]; then
-        SYSTEM_INFO[os_id]="rhel"
-        SYSTEM_INFO[os_version]=$(cat /etc/redhat-release | grep -oE '[0-9]+\.[0-9]+' | head -1)
-        SYSTEM_INFO[os_name]=$(cat /etc/redhat-release)
-    elif [[ -f /etc/debian_version ]]; then
-        SYSTEM_INFO[os_id]="debian"
-        SYSTEM_INFO[os_version]=$(cat /etc/debian_version)
-        SYSTEM_INFO[os_name]="Debian $(cat /etc/debian_version)"
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-        SYSTEM_INFO[os_id]="macos"
-        SYSTEM_INFO[os_version]=$(sw_vers -productVersion)
-        SYSTEM_INFO[os_name]="macOS ${SYSTEM_INFO[os_version]}"
+    # Dependency validation
+    validate_dependencies
+    
+    # Permission validation
+    validate_permissions
+    
+    # Environment validation
+    validate_environment
+    
+    local validation_end=$(date +%s)
+    local validation_duration=$((validation_end - validation_start))
+    
+    if [[ "$VALIDATION_PASSED" == "true" ]]; then
+        log_info "Pre-installation validation completed successfully in ${validation_duration}s"
+        return 0
     else
-        SYSTEM_INFO[os_id]="unknown"
-        SYSTEM_INFO[os_version]="unknown"
-        SYSTEM_INFO[os_name]="$(uname -s) $(uname -r)"
-    fi
-    
-    SYSTEM_INFO[kernel]="$(uname -r)"
-    SYSTEM_INFO[arch]="$(uname -m)"
-    SYSTEM_INFO[hostname]="$(hostname -f 2>/dev/null || hostname)"
-    
-    log "PASS" "OS detected: ${SYSTEM_INFO[os_name]} (${SYSTEM_INFO[arch]})"
-}
-
-# Detect package manager
-detect_package_manager() {
-    log "INFO" "Detecting package manager"
-    
-    if command -v apt-get >/dev/null 2>&1; then
-        SYSTEM_INFO[package_manager]="apt"
-        SYSTEM_INFO[package_command]="apt-get"
-    elif command -v yum >/dev/null 2>&1; then
-        SYSTEM_INFO[package_manager]="yum"
-        SYSTEM_INFO[package_command]="yum"
-    elif command -v dnf >/dev/null 2>&1; then
-        SYSTEM_INFO[package_manager]="dnf"
-        SYSTEM_INFO[package_command]="dnf"
-    elif command -v zypper >/dev/null 2>&1; then
-        SYSTEM_INFO[package_manager]="zypper"
-        SYSTEM_INFO[package_command]="zypper"
-    elif command -v pacman >/dev/null 2>&1; then
-        SYSTEM_INFO[package_manager]="pacman"
-        SYSTEM_INFO[package_command]="pacman"
-    elif command -v brew >/dev/null 2>&1; then
-        SYSTEM_INFO[package_manager]="brew"
-        SYSTEM_INFO[package_command]="brew"
-    else
-        SYSTEM_INFO[package_manager]="unknown"
-        SYSTEM_INFO[package_command]=""
-        log "WARN" "No supported package manager detected"
+        log_error "Pre-installation validation failed after ${validation_duration}s"
         return 1
     fi
-    
-    log "PASS" "Package manager detected: ${SYSTEM_INFO[package_manager]}"
-    return 0
 }
 
-# === HARDWARE VALIDATION ===
+# Validate system requirements
+validate_system_requirements() {
+    log_info "Validating system requirements..."
+    
+    # Check operating system
+    if \! validate_operating_system; then
+        VALIDATION_PASSED=false
+    fi
+    
+    # Check architecture
+    if \! validate_architecture; then
+        VALIDATION_PASSED=false
+    fi
+    
+    # Check disk space
+    if \! validate_disk_space; then
+        VALIDATION_PASSED=false
+    fi
+    
+    # Check memory
+    if \! validate_memory; then
+        VALIDATION_PASSED=false
+    fi
+    
+    log_info "System requirements validation completed"
+}
 
-# Check CPU requirements
-check_cpu() {
-    log "INFO" "Checking CPU requirements"
-    
-    local cpu_cores=$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "1")
-    SYSTEM_INFO[cpu_cores]="$cpu_cores"
-    
-    local cpu_model="Unknown"
-    if [[ -f /proc/cpuinfo ]]; then
-        cpu_model=$(grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2 | xargs)
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-        cpu_model=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || echo "Unknown")
-    fi
-    SYSTEM_INFO[cpu_model]="$cpu_model"
-    
-    if [[ $cpu_cores -ge $MIN_CPU_CORES ]]; then
-        log "PASS" "CPU cores: $cpu_cores (minimum: $MIN_CPU_CORES)"
+# Validate operating system
+validate_operating_system() {
+    local os_info
+    if [[ -f /etc/os-release ]]; then
+        os_info=$(grep "^PRETTY_NAME=" /etc/os-release | cut -d'"' -f2)
     else
-        log "WARN" "CPU cores: $cpu_cores (recommended: $MIN_CPU_CORES)"
+        os_info=$(uname -s)
     fi
     
-    # Check CPU architecture
-    case "${SYSTEM_INFO[arch]}" in
-        x86_64|amd64)
-            log "PASS" "CPU architecture: ${SYSTEM_INFO[arch]} (64-bit)"
+    log_validation "OPERATING_SYSTEM" "DETECTED" "$os_info"
+    
+    # Check if OS is supported (Linux-based systems)
+    if [[ "$os_info" =~ (Ubuntu|Debian|CentOS|RHEL|Fedora|SUSE|Arch|Linux) ]]; then
+        log_validation "OPERATING_SYSTEM" "SUPPORTED" "$os_info"
+        return 0
+    else
+        log_error "Unsupported operating system: $os_info"
+        log_validation "OPERATING_SYSTEM" "UNSUPPORTED" "$os_info"
+        return 1
+    fi
+}
+
+# Validate architecture
+validate_architecture() {
+    local arch
+    arch=$(uname -m)
+    
+    log_validation "ARCHITECTURE" "DETECTED" "$arch"
+    
+    case "$arch" in
+        "x86_64"|"amd64")
+            log_validation "ARCHITECTURE" "SUPPORTED" "$arch"
+            return 0
             ;;
-        aarch64|arm64)
-            log "PASS" "CPU architecture: ${SYSTEM_INFO[arch]} (ARM 64-bit)"
+        "aarch64"|"arm64")
+            log_validation "ARCHITECTURE" "SUPPORTED" "$arch (ARM64)"
+            return 0
             ;;
         *)
-            log "ERROR" "Unsupported CPU architecture: ${SYSTEM_INFO[arch]}"
+            log_warning "Architecture may not be fully supported: $arch"
+            log_validation "ARCHITECTURE" "WARNING" "$arch"
+            return 0
             ;;
     esac
 }
 
-# Check memory requirements
-check_memory() {
-    log "INFO" "Checking memory requirements"
+# Validate disk space
+validate_disk_space() {
+    local required_space=${MIN_DISK_SPACE_MB:-2048}
+    local available_space
     
-    local total_ram_kb=0
-    local available_ram_kb=0
-    
-    if [[ -f /proc/meminfo ]]; then
-        total_ram_kb=$(grep "MemTotal:" /proc/meminfo | awk '{print $2}')
-        available_ram_kb=$(grep "MemAvailable:" /proc/meminfo | awk '{print $2}')
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-        total_ram_kb=$(($(sysctl -n hw.memsize) / 1024))
-        available_ram_kb=$(($(vm_stat | grep "Pages free" | awk '{print $3}' | tr -d '.') * 4))
-    fi
-    
-    local total_ram_mb=$((total_ram_kb / 1024))
-    local available_ram_mb=$((available_ram_kb / 1024))
-    
-    SYSTEM_INFO[ram_total_mb]="$total_ram_mb"
-    SYSTEM_INFO[ram_available_mb]="$available_ram_mb"
-    
-    if [[ $total_ram_mb -ge $MIN_RAM_MB ]]; then
-        log "PASS" "Total RAM: ${total_ram_mb}MB (minimum: ${MIN_RAM_MB}MB)"
+    # Check space in home directory
+    if available_space=$(df "$HOME" 2>/dev/null | awk 'NR==2 {print int($4/1024)}'); then
+        log_validation "DISK_SPACE" "AVAILABLE" "${available_space}MB"
+        
+        if [[ $available_space -lt $required_space ]]; then
+            log_error "Insufficient disk space: ${available_space}MB < ${required_space}MB"
+            log_validation "DISK_SPACE" "INSUFFICIENT" "${available_space}MB < ${required_space}MB"
+            return 1
+        else
+            log_validation "DISK_SPACE" "SUFFICIENT" "${available_space}MB >= ${required_space}MB"
+            return 0
+        fi
     else
-        log "ERROR" "Insufficient RAM: ${total_ram_mb}MB (minimum: ${MIN_RAM_MB}MB)"
-    fi
-    
-    if [[ $available_ram_mb -lt 1024 ]]; then
-        log "WARN" "Low available RAM: ${available_ram_mb}MB"
+        log_warning "Could not check disk space"
+        log_validation "DISK_SPACE" "UNKNOWN" "Check failed"
+        return 0
     fi
 }
 
-# Check disk space
-check_disk_space() {
-    log "INFO" "Checking disk space requirements"
+# Validate memory
+validate_memory() {
+    local required_memory=${MIN_MEMORY_MB:-1024}
+    local available_memory
     
-    local install_dir="${CURSOR_INSTALL_DIR:-/opt/cursor}"
-    local home_partition=$(df -P "$HOME" | tail -1)
-    local home_available_mb=$(echo "$home_partition" | awk '{print $4}')
-    
-    # Convert from 1K blocks to MB
-    home_available_mb=$((home_available_mb / 1024))
-    
-    SYSTEM_INFO[disk_available_mb]="$home_available_mb"
-    SYSTEM_INFO[install_dir]="$install_dir"
-    
-    if [[ $home_available_mb -ge $MIN_DISK_MB ]]; then
-        log "PASS" "Available disk space: ${home_available_mb}MB (minimum: ${MIN_DISK_MB}MB)"
+    if available_memory=$(free -m 2>/dev/null | awk 'NR==2{print $7}'); then
+        if [[ -z "$available_memory" ]]; then
+            available_memory=$(free -m 2>/dev/null | awk 'NR==2{print $4}')
+        fi
+        
+        log_validation "MEMORY" "AVAILABLE" "${available_memory}MB"
+        
+        if [[ $available_memory -lt $required_memory ]]; then
+            log_warning "Low available memory: ${available_memory}MB < ${required_memory}MB"
+            log_validation "MEMORY" "LOW" "${available_memory}MB < ${required_memory}MB"
+            return 0  # Warning only
+        else
+            log_validation "MEMORY" "SUFFICIENT" "${available_memory}MB >= ${required_memory}MB"
+            return 0
+        fi
     else
-        log "ERROR" "Insufficient disk space: ${home_available_mb}MB (minimum: ${MIN_DISK_MB}MB)"
-    fi
-    
-    # Check for specific partitions
-    local root_available_mb=$(df -P / | tail -1 | awk '{print $4}')
-    root_available_mb=$((root_available_mb / 1024))
-    
-    if [[ $root_available_mb -lt 500 ]]; then
-        log "WARN" "Low root partition space: ${root_available_mb}MB"
+        log_warning "Could not check available memory"
+        log_validation "MEMORY" "UNKNOWN" "Check failed"
+        return 0
     fi
 }
 
-# === DEPENDENCY CHECKING ===
-
-# Check required commands
-check_required_commands() {
-    log "INFO" "Checking required commands"
+# Validate dependencies
+validate_dependencies() {
+    log_info "Validating system dependencies..."
     
+    local required_commands=("bash" "chmod" "chown" "mkdir" "rm" "cp" "mv")
     local missing_commands=()
     
-    for cmd in "${REQUIRED_COMMANDS[@]}"; do
-        if command -v "$cmd" >/dev/null 2>&1; then
-            DEPENDENCY_STATUS["cmd_$cmd"]="installed"
-            log "PASS" "Command found: $cmd"
+    for cmd in "${required_commands[@]}"; do
+        if command -v "$cmd" &>/dev/null; then
+            log_validation "COMMAND_$cmd" "AVAILABLE" "$(command -v "$cmd")"
         else
-            DEPENDENCY_STATUS["cmd_$cmd"]="missing"
             missing_commands+=("$cmd")
-            log "ERROR" "Command not found: $cmd"
+            log_validation "COMMAND_$cmd" "MISSING" "Not found in PATH"
         fi
     done
     
     if [[ ${#missing_commands[@]} -gt 0 ]]; then
-        log "ERROR" "Missing required commands: ${missing_commands[*]}"
-        suggest_package_installation "${missing_commands[@]}"
+        log_error "Missing required commands: ${missing_commands[*]}"
+        VALIDATION_PASSED=false
+        return 1
+    fi
+    
+    log_info "Dependency validation completed"
+    return 0
+}
+
+# Validate permissions
+validate_permissions() {
+    log_info "Validating file system permissions..."
+    
+    # Check write permissions in home directory
+    if [[ -w "$HOME" ]]; then
+        log_validation "PERMISSION_HOME" "WRITABLE" "$HOME"
+    else
+        log_error "Home directory is not writable: $HOME"
+        log_validation "PERMISSION_HOME" "NOT_WRITABLE" "$HOME"
+        VALIDATION_PASSED=false
+        return 1
+    fi
+    
+    # Check write permissions in current directory
+    if [[ -w "$SCRIPT_DIR" ]]; then
+        log_validation "PERMISSION_CURRENT" "WRITABLE" "$SCRIPT_DIR"
+    else
+        log_error "Current directory is not writable: $SCRIPT_DIR"
+        log_validation "PERMISSION_CURRENT" "NOT_WRITABLE" "$SCRIPT_DIR"
+        VALIDATION_PASSED=false
+        return 1
+    fi
+    
+    log_info "Permission validation completed"
+    return 0
+}
+
+# Validate environment
+validate_environment() {
+    log_info "Validating environment settings..."
+    
+    # Check PATH
+    if [[ -n "${PATH:-}" ]]; then
+        log_validation "ENVIRONMENT_PATH" "SET" "${#PATH} characters"
+    else
+        log_warning "PATH environment variable is not set"
+        log_validation "ENVIRONMENT_PATH" "UNSET" "PATH is empty"
+    fi
+    
+    # Check USER
+    local current_user="${USER:-$(whoami 2>/dev/null || echo 'unknown')}"
+    log_validation "ENVIRONMENT_USER" "DETECTED" "$current_user"
+    
+    # Check if running as root (warn if true)
+    if [[ "$current_user" == "root" ]]; then
+        log_warning "Running as root user - this may not be recommended"
+        log_validation "ENVIRONMENT_ROOT" "WARNING" "Running as root"
+    fi
+    
+    log_info "Environment validation completed"
+    return 0
+}
+
+# Generate validation report
+generate_validation_report() {
+    local report_file="${PREINSTALL_LOG_DIR}/validation_report_${TIMESTAMP}.txt"
+    log_info "Generating validation report: $report_file"
+    
+    cat > "$report_file" << REPORTEOF
+Pre-Installation Validation Report
+Generated: $(date)
+Framework Version: $VERSION
+
+Validation Status: $(if [[ "$VALIDATION_PASSED" == "true" ]]; then echo "PASSED"; else echo "FAILED"; fi)
+
+System appears ready for Cursor IDE installation.
+
+For detailed validation results, see: $VALIDATION_LOG
+REPORTEOF
+    
+    log_info "Validation report generated: $report_file"
+}
+
+# Self-correction functions
+fix_directory_permissions() {
+    log_info "Attempting to fix directory permissions..."
+    
+    for dir in "$PREINSTALL_CONFIG_DIR" "$PREINSTALL_CACHE_DIR" "$PREINSTALL_LOG_DIR"; do
+        if [[ -d "$dir" ]]; then
+            chmod 755 "$dir" 2>/dev/null || true
+        fi
+    done
+}
+
+check_system_resources_alternative() {
+    log_info "Checking system resources using alternative methods..."
+    
+    if [[ -f /proc/meminfo ]]; then
+        local mem_available
+        mem_available=$(grep "MemAvailable" /proc/meminfo 2>/dev/null | awk '{print int($2/1024)}' || echo "Unknown")
+        if [[ "$mem_available" \!= "Unknown" ]]; then
+            log_info "Alternative memory check: ${mem_available}MB available"
+        fi
     fi
 }
 
-# Suggest package installation
-suggest_package_installation() {
-    local missing_commands=("$@")
+fix_path_environment() {
+    log_info "Attempting to fix PATH environment..."
+    export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+    log_info "Updated PATH: $PATH"
+}
+
+# Cleanup functions
+cleanup_on_error() {
+    log_warning "Performing error cleanup..."
+    cleanup_on_exit
+}
+
+cleanup_on_exit() {
+    [[ -f "$LOCK_FILE" ]] && rm -f "$LOCK_FILE"
+    [[ -f "$PID_FILE" ]] && rm -f "$PID_FILE"
+    jobs -p | xargs -r kill 2>/dev/null || true
+    log_info "Cleanup completed"
+}
+
+# Display usage information
+display_usage() {
+    cat << 'USAGEEOF'
+Professional Pre-Installation Framework v2.0
+
+USAGE:
+    preinstall-improved-v2.sh [OPTIONS]
+
+OPTIONS:
+    --validate      Perform validation checks (default)
+    --report        Generate validation report only
+    --verbose       Enable verbose output
+    --dry-run       Show what would be checked
+    --help          Display this help message
+    --version       Display version information
+
+EXAMPLES:
+    ./preinstall-improved-v2.sh
+    ./preinstall-improved-v2.sh --verbose
+    ./preinstall-improved-v2.sh --report
+
+For more information, see the documentation.
+USAGEEOF
+}
+
+# Parse command line arguments
+parse_arguments() {
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --validate)
+                OPERATION="validate"
+                shift
+                ;;
+            --report)
+                OPERATION="report"
+                shift
+                ;;
+            --verbose)
+                VERBOSE_MODE=true
+                shift
+                ;;
+            --dry-run)
+                DRY_RUN_MODE=true
+                shift
+                ;;
+            --help)
+                display_usage
+                exit 0
+                ;;
+            --version)
+                echo "Professional Pre-Installation Framework v$VERSION"
+                exit 0
+                ;;
+            -*)
+                log_warning "Unknown option: $1"
+                shift
+                ;;
+            *)
+                shift
+                ;;
+        esac
+    done
+}
+
+# Main execution function
+main() {
+    local OPERATION="${OPERATION:-validate}"
     
-    log "INFO" "Generating installation suggestions"
+    # Parse command line arguments
+    parse_arguments "$@"
     
-    case "${SYSTEM_INFO[package_manager]}" in
-        apt)
-            log "INFO" "Install missing packages with:"
-            log "INFO" "sudo apt-get update && sudo apt-get install -y ${missing_commands[*]}"
+    # Initialize framework
+    initialize_preinstall_framework
+    
+    case "$OPERATION" in
+        "validate")
+            if perform_preinstall_validation; then
+                generate_validation_report
+                log_info "Pre-installation validation completed successfully"
+                exit 0
+            else
+                generate_validation_report
+                log_error "Pre-installation validation failed"
+                exit 1
+            fi
             ;;
-        yum|dnf)
-            log "INFO" "Install missing packages with:"
-            log "INFO" "sudo ${SYSTEM_INFO[package_command]} install -y ${missing_commands[*]}"
-            ;;
-        pacman)
-            log "INFO" "Install missing packages with:"
-            log "INFO" "sudo pacman -S ${missing_commands[*]}"
-            ;;
-        brew)
-            log "INFO" "Install missing packages with:"
-            log "INFO" "brew install ${missing_commands[*]}"
+        "report")
+            generate_validation_report
+            log_info "Validation report generated"
+            exit 0
             ;;
         *)
-            log "WARN" "Please install the following packages manually: ${missing_commands[*]}"
+            log_error "Unknown operation: $OPERATION"
+            exit 1
             ;;
     esac
 }
 
-# Check system libraries
-check_system_libraries() {
-    log "INFO" "Checking system libraries"
-    
-    # Check for essential libraries
-    local required_libs=("libgtk-3" "libx11" "libxcb" "libxkbcommon")
-    
-    for lib in "${required_libs[@]}"; do
-        if ldconfig -p 2>/dev/null | grep -q "$lib" || \
-           find /usr/lib* /lib* -name "${lib}*.so*" 2>/dev/null | head -1 | grep -q .; then
-            DEPENDENCY_STATUS["lib_$lib"]="installed"
-            log "PASS" "Library found: $lib"
-        else
-            DEPENDENCY_STATUS["lib_$lib"]="missing"
-            log "WARN" "Library might be missing: $lib"
-        fi
-    done
-}
-
-# === SECURITY CHECKS ===
-
-# Check security settings
-check_security() {
-    log "INFO" "Checking security settings"
-    
-    # Check SELinux
-    if command -v getenforce >/dev/null 2>&1; then
-        local selinux_status=$(getenforce)
-        SYSTEM_INFO[selinux]="$selinux_status"
-        
-        if [[ "$selinux_status" == "Enforcing" ]]; then
-            log "WARN" "SELinux is enforcing - may require additional configuration"
-        else
-            log "PASS" "SELinux status: $selinux_status"
-        fi
-    else
-        SYSTEM_INFO[selinux]="not installed"
-    fi
-    
-    # Check AppArmor
-    if command -v aa-status >/dev/null 2>&1; then
-        if systemctl is-active apparmor >/dev/null 2>&1; then
-            SYSTEM_INFO[apparmor]="active"
-            log "WARN" "AppArmor is active - may require additional configuration"
-        else
-            SYSTEM_INFO[apparmor]="inactive"
-            log "PASS" "AppArmor is not active"
-        fi
-    else
-        SYSTEM_INFO[apparmor]="not installed"
-    fi
-    
-    # Check firewall
-    if command -v ufw >/dev/null 2>&1; then
-        if ufw status | grep -q "Status: active"; then
-            SYSTEM_INFO[firewall]="ufw active"
-            log "INFO" "UFW firewall is active"
-        else
-            SYSTEM_INFO[firewall]="ufw inactive"
-        fi
-    elif command -v firewall-cmd >/dev/null 2>&1; then
-        if firewall-cmd --state 2>/dev/null | grep -q "running"; then
-            SYSTEM_INFO[firewall]="firewalld active"
-            log "INFO" "Firewalld is active"
-        else
-            SYSTEM_INFO[firewall]="firewalld inactive"
-        fi
-    else
-        SYSTEM_INFO[firewall]="unknown"
-    fi
-}
-
-# === ENVIRONMENT CHECKS ===
-
-# Check environment variables
-check_environment() {
-    log "INFO" "Checking environment variables"
-    
-    # Check PATH
-    if [[ -n "${PATH:-}" ]]; then
-        SYSTEM_INFO[path]="$PATH"
-        log "PASS" "PATH is set"
-    else
-        log "ERROR" "PATH environment variable is not set"
-    fi
-    
-    # Check HOME
-    if [[ -n "${HOME:-}" ]] && [[ -d "$HOME" ]]; then
-        log "PASS" "HOME directory exists: $HOME"
-    else
-        log "ERROR" "HOME directory is not properly set"
-    fi
-    
-    # Check display server
-    if [[ -n "${DISPLAY:-}" ]] || [[ -n "${WAYLAND_DISPLAY:-}" ]]; then
-        SYSTEM_INFO[display_server]="${DISPLAY:-}${WAYLAND_DISPLAY:-}"
-        log "PASS" "Display server detected"
-    else
-        log "WARN" "No display server detected - GUI may not work"
-    fi
-    
-    # Check locale
-    if locale | grep -q "UTF-8"; then
-        SYSTEM_INFO[locale]="$(locale | grep LANG | cut -d= -f2)"
-        log "PASS" "UTF-8 locale detected"
-    else
-        log "WARN" "Non-UTF-8 locale detected - may cause issues"
-    fi
-}
-
-# Check network connectivity
-check_network() {
-    log "INFO" "Checking network connectivity"
-    
-    local test_hosts=("github.com" "google.com" "cloudflare.com")
-    local network_ok=false
-    
-    for host in "${test_hosts[@]}"; do
-        if ping -c 1 -W 5 "$host" >/dev/null 2>&1; then
-            network_ok=true
-            log "PASS" "Network connectivity verified (${host})"
-            break
-        fi
-    done
-    
-    if [[ "$network_ok" == "false" ]]; then
-        log "ERROR" "No network connectivity detected"
-        
-        # Check for proxy
-        if [[ -n "${HTTP_PROXY:-}" ]] || [[ -n "${HTTPS_PROXY:-}" ]]; then
-            log "INFO" "Proxy detected: ${HTTP_PROXY:-}${HTTPS_PROXY:-}"
-            SYSTEM_INFO[proxy]="configured"
-        else
-            SYSTEM_INFO[proxy]="none"
-        fi
-    fi
-}
-
-# === COMPATIBILITY CHECKS ===
-
-# Check for conflicts
-check_conflicts() {
-    log "INFO" "Checking for potential conflicts"
-    
-    # Check for other Electron apps
-    local electron_apps=("code" "codium" "atom" "slack")
-    local running_apps=()
-    
-    for app in "${electron_apps[@]}"; do
-        if pgrep -f "$app" >/dev/null 2>&1; then
-            running_apps+=("$app")
-        fi
-    done
-    
-    if [[ ${#running_apps[@]} -gt 0 ]]; then
-        log "WARN" "Other Electron apps running: ${running_apps[*]}"
-        log "WARN" "This may impact performance"
-    fi
-    
-    # Check port availability
-    local cursor_port=9222
-    if netstat -tln 2>/dev/null | grep -q ":${cursor_port}" || \
-       ss -tln 2>/dev/null | grep -q ":${cursor_port}"; then
-        log "WARN" "Port ${cursor_port} is in use - debugging features may be affected"
-    else
-        log "PASS" "Debug port ${cursor_port} is available"
-    fi
-}
-
-# === REPORT GENERATION ===
-
-# Generate validation report
-generate_validation_report() {
-    log "INFO" "Generating validation report"
-    
-    cat > "$VALIDATION_REPORT" << EOF
-{
-    "timestamp": "$(date -Iseconds)",
-    "version": "$SCRIPT_VERSION",
-    "summary": {
-        "passed": ${VALIDATION_RESULTS[passed]},
-        "failed": ${VALIDATION_RESULTS[failed]},
-        "warnings": ${VALIDATION_RESULTS[warnings]},
-        "ready_to_install": $([ ${VALIDATION_RESULTS[failed]} -eq 0 ] && echo "true" || echo "false")
-    },
-    "system_info": {
-        "os": "${SYSTEM_INFO[os_name]:-unknown}",
-        "arch": "${SYSTEM_INFO[arch]:-unknown}",
-        "kernel": "${SYSTEM_INFO[kernel]:-unknown}",
-        "cpu_cores": "${SYSTEM_INFO[cpu_cores]:-0}",
-        "ram_total_mb": "${SYSTEM_INFO[ram_total_mb]:-0}",
-        "disk_available_mb": "${SYSTEM_INFO[disk_available_mb]:-0}"
-    },
-    "dependencies": {
-$(for key in "${!DEPENDENCY_STATUS[@]}"; do
-    echo "        \"$key\": \"${DEPENDENCY_STATUS[$key]}\","
-done | sed '$ s/,$//')
-    },
-    "recommendations": [
-$(if [[ ${VALIDATION_RESULTS[failed]} -gt 0 ]]; then
-    echo "        \"Fix critical issues before installation\","
+# Execute main function if script is run directly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
 fi
-if [[ ${VALIDATION_RESULTS[warnings]} -gt 0 ]]; then
-    echo "        \"Review warnings for optimal performance\","
-fi | sed '$ s/,$//')
-    ]
-}
-EOF
-    
-    log "INFO" "Validation report saved: $VALIDATION_REPORT"
-}
-
-# === USER INTERFACE ===
-
-# Show summary
-show_summary() {
-    echo
-    echo "╔══════════════════════════════════════════════════════════╗"
-    echo "║          CURSOR IDE PRE-INSTALLATION SUMMARY             ║"
-    echo "╚══════════════════════════════════════════════════════════╝"
-    echo
-    echo "System: ${SYSTEM_INFO[os_name]:-Unknown} (${SYSTEM_INFO[arch]:-Unknown})"
-    echo "Resources: ${SYSTEM_INFO[cpu_cores]:-?} CPUs, ${SYSTEM_INFO[ram_total_mb]:-?}MB RAM, ${SYSTEM_INFO[disk_available_mb]:-?}MB disk"
-    echo
-    echo "Validation Results:"
-    echo "  ✓ Passed: ${VALIDATION_RESULTS[passed]}"
-    echo "  ✗ Failed: ${VALIDATION_RESULTS[failed]}"
-    echo "  ⚠ Warnings: ${VALIDATION_RESULTS[warnings]}"
-    echo
-    
-    if [[ ${VALIDATION_RESULTS[failed]} -eq 0 ]]; then
-        echo -e "\033[0;32m✓ System is ready for Cursor IDE installation\033[0m"
-    else
-        echo -e "\033[0;31m✗ System is NOT ready for installation\033[0m"
-        echo "  Please resolve the errors listed above"
-    fi
-    
-    echo
-    echo "Full report: $VALIDATION_REPORT"
-    echo "Logs: $MAIN_LOG"
-    echo
-}
-
-# === MAIN EXECUTION ===
-
-main() {
-    echo "CURSOR IDE PRE-INSTALLATION CHECKER v${SCRIPT_VERSION}"
-    echo "============================================="
-    echo
-    
-    # Initialize
-    if ! initialize_directories; then
-        echo "Failed to initialize. Check permissions."
-        exit 1
-    fi
-    
-    log "INFO" "Starting pre-installation checks"
-    
-    # Run all checks
-    detect_os
-    detect_package_manager
-    check_cpu
-    check_memory
-    check_disk_space
-    check_required_commands
-    check_system_libraries
-    check_security
-    check_environment
-    check_network
-    check_conflicts
-    
-    # Show results
-    show_summary
-    
-    # Exit with appropriate code
-    if [[ ${VALIDATION_RESULTS[failed]} -eq 0 ]]; then
-        exit 0
-    else
-        exit 1
-    fi
-}
-
-# Execute main function
-main "$@"

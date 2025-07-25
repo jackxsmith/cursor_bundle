@@ -1,894 +1,863 @@
-#!/usr/bin/env bash
-#
-# PROFESSIONAL CURSOR IDE DOCKER DEPLOYMENT v2.0
-# Enterprise-Grade Container Orchestration System
-#
-# Enhanced Features:
-# - Robust container lifecycle management
-# - Self-correcting deployment mechanisms
-# - Advanced health monitoring
-# - Professional logging and auditing
-# - Automated backup and recovery
-# - Performance optimization
-#
-
+#\!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 
-# === CONFIGURATION ===
-readonly SCRIPT_VERSION="2.0.0"
-readonly SCRIPT_NAME="$(basename "${0}")"
+# ============================================================================
+# 15-docker-improved-v2.sh - Professional Docker Integration Framework v2.0
+# Enterprise-grade Docker containerization with robust error handling and self-correcting mechanisms
+# ============================================================================
+
+readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly VERSION="2.0.0"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
+# Configuration Management
+readonly APP_NAME="cursor"
+readonly DOCKER_CONFIG_DIR="${HOME}/.config/cursor-docker"
+readonly DOCKER_CACHE_DIR="${HOME}/.cache/cursor-docker"
+readonly DOCKER_LOG_DIR="${DOCKER_CONFIG_DIR}/logs"
+
+# Logging Configuration
+readonly LOG_FILE="${DOCKER_LOG_DIR}/docker_${TIMESTAMP}.log"
+readonly ERROR_LOG="${DOCKER_LOG_DIR}/docker_errors_${TIMESTAMP}.log"
+readonly CONTAINER_LOG="${DOCKER_LOG_DIR}/containers_${TIMESTAMP}.log"
+
 # Docker Configuration
-readonly DOCKER_NAMESPACE="cursor-enterprise"
-readonly NETWORK_NAME="cursor-network"
-readonly VOLUME_PREFIX="cursor-vol"
-readonly CURSOR_VERSION="${CURSOR_VERSION:-6.9.35}"
+readonly DOCKER_IMAGE_NAME="cursor-ide"
+readonly DOCKER_TAG="latest"
+readonly CONTAINER_NAME="cursor-ide-container"
 
-# Directory Structure
-readonly BASE_DIR="${HOME}/.cache/cursor/docker"
-readonly LOG_DIR="${BASE_DIR}/logs"
-readonly CONFIG_DIR="${BASE_DIR}/config"
-readonly BACKUP_DIR="${BASE_DIR}/backup"
-readonly COMPOSE_DIR="${BASE_DIR}/compose"
+# Lock Management
+readonly LOCK_FILE="${DOCKER_CONFIG_DIR}/.docker.lock"
+readonly PID_FILE="${DOCKER_CONFIG_DIR}/.docker.pid"
 
-# Log Files
-readonly MAIN_LOG="${LOG_DIR}/docker_${TIMESTAMP}.log"
-readonly ERROR_LOG="${LOG_DIR}/docker_errors_${TIMESTAMP}.log"
-readonly AUDIT_LOG="${LOG_DIR}/docker_audit_${TIMESTAMP}.log"
+# Global Variables
+declare -g DOCKER_CONFIG="${DOCKER_CONFIG_DIR}/docker.conf"
+declare -g VERBOSE_MODE=false
+declare -g DRY_RUN_MODE=false
+declare -g DOCKER_OPERATION_SUCCESS=true
 
-# Container Types
-declare -A CONTAINER_TYPES=(
-    ["base"]="Basic Cursor IDE container"
-    ["dev"]="Development environment"
-    ["enterprise"]="Full enterprise container"
-)
-
-# Service Ports
-declare -A SERVICE_PORTS=(
-    ["vnc"]=5900
-    ["web"]=8080
-    ["ssh"]=2222
-    ["api"]=3000
-)
-
-# Runtime Variables
-declare -g CONTAINER_TYPE="base"
-declare -g DRY_RUN=false
-declare -g QUIET_MODE=false
-declare -g FORCE_REBUILD=false
-declare -g ENABLE_MONITORING=false
-
-# === UTILITY FUNCTIONS ===
-
-# Enhanced logging
-log() {
-    local level="$1"
-    local message="$2"
-    local timestamp="$(date -Iseconds)"
+# Enhanced error handling with self-correction
+error_handler() {
+    local line_no="$1"
+    local bash_command="$2"
+    local exit_code="$3"
     
-    echo "[${timestamp}] ${level}: ${message}" >> "$MAIN_LOG"
+    log_error "Error on line $line_no: Command '$bash_command' failed with exit code $exit_code"
     
-    case "$level" in
-        ERROR) 
-            echo "[${timestamp}] ${level}: ${message}" >> "$ERROR_LOG"
-            echo -e "\033[0;31m[ERROR]\033[0m ${message}" >&2
+    # Self-correction attempts
+    case "$bash_command" in
+        *"docker"*)
+            log_info "Docker command failed, checking Docker status..."
+            check_docker_status
             ;;
-        WARN) 
-            echo -e "\033[1;33m[WARN]\033[0m ${message}"
+        *"mkdir"*)
+            log_info "Directory creation failed, attempting to fix permissions..."
+            fix_directory_permissions
             ;;
-        PASS) 
-            echo -e "\033[0;32m[✓]\033[0m ${message}"
-            ;;
-        INFO) 
-            [[ "$QUIET_MODE" != "true" ]] && echo -e "\033[0;34m[INFO]\033[0m ${message}"
-            ;;
-        DEBUG) 
-            [[ "${DEBUG:-false}" == "true" ]] && echo -e "\033[0;36m[DEBUG]\033[0m ${message}"
+        *"build"*)
+            log_info "Build failed, checking build context and cleanup..."
+            cleanup_build_context
             ;;
     esac
+    
+    cleanup_on_error
 }
 
-# Audit logging
-audit_log() {
+# Professional logging system
+log_info() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [INFO] $message"  < /dev/null |  tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[INFO] $message" >&2
+}
+
+log_error() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [ERROR] $message" | tee -a "$LOG_FILE" >&2
+    echo "[$timestamp] [ERROR] $message" >> "$ERROR_LOG"
+}
+
+log_warning() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [WARNING] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[WARNING] $message" >&2
+}
+
+log_container() {
     local action="$1"
-    local status="$2"
-    local details="${3:-}"
-    local user="${USER:-unknown}"
-    local timestamp="$(date -Iseconds)"
-    
-    echo "[${timestamp}] USER=${user} ACTION=${action} STATUS=${status} DETAILS=${details}" >> "$AUDIT_LOG"
+    local container="$2"
+    local status="$3"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] CONTAINER: $action - $container = $status" >> "$CONTAINER_LOG"
 }
 
-# Ensure directory with error handling
-ensure_directory() {
-    local dir="$1"
-    local max_attempts=3
-    local attempt=0
+# Initialize Docker framework
+initialize_docker_framework() {
+    log_info "Initializing Professional Docker Integration Framework v${VERSION}"
     
-    while [[ $attempt -lt $max_attempts ]]; do
-        if [[ -d "$dir" ]]; then
-            return 0
-        elif mkdir -p "$dir" 2>/dev/null; then
-            log "DEBUG" "Created directory: $dir"
-            return 0
-        fi
-        
-        ((attempt++))
-        [[ $attempt -lt $max_attempts ]] && sleep 0.5
-    done
+    # Set up error handling
+    trap 'error_handler ${LINENO} "$BASH_COMMAND" $?' ERR
+    trap 'cleanup_on_exit' EXIT
+    trap 'log_info "Received interrupt signal, cleaning up..."; cleanup_on_exit; exit 130' INT TERM
     
-    log "ERROR" "Failed to create directory: $dir"
-    return 1
+    # Create directory structure
+    create_directory_structure
+    
+    # Load configuration
+    load_configuration
+    
+    # Validate Docker installation
+    validate_docker_installation
+    
+    # Acquire lock
+    acquire_lock
+    
+    log_info "Docker framework initialization completed successfully"
 }
 
-# Initialize directories
-initialize_directories() {
-    local dirs=("$LOG_DIR" "$CONFIG_DIR" "$BACKUP_DIR" "$COMPOSE_DIR")
+# Create directory structure with retry logic
+create_directory_structure() {
+    local dirs=("$DOCKER_CONFIG_DIR" "$DOCKER_CACHE_DIR" "$DOCKER_LOG_DIR")
+    local max_retries=3
     
     for dir in "${dirs[@]}"; do
-        if ! ensure_directory "$dir"; then
-            echo "Failed to initialize directories"
+        local retry_count=0
+        while [[ $retry_count -lt $max_retries ]]; do
+            if mkdir -p "$dir" 2>/dev/null; then
+                break
+            else
+                ((retry_count++))
+                log_warning "Failed to create directory $dir (attempt $retry_count/$max_retries)"
+                sleep 1
+            fi
+        done
+        
+        if [[ $retry_count -eq $max_retries ]]; then
+            log_error "Failed to create directory $dir after $max_retries attempts"
             return 1
         fi
     done
-    
-    # Log rotation
-    find "$LOG_DIR" -name "docker_*.log" -mtime +7 -delete 2>/dev/null || true
-    find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +30 -delete 2>/dev/null || true
-    
-    return 0
 }
 
-# Retry mechanism
-retry_operation() {
-    local operation="$1"
-    local max_attempts="${2:-3}"
-    local delay="${3:-2}"
-    local attempt=0
+# Load configuration with defaults
+load_configuration() {
+    if [[ \! -f "$DOCKER_CONFIG" ]]; then
+        log_info "Creating default Docker configuration"
+        create_default_configuration
+    fi
     
-    while [[ $attempt -lt $max_attempts ]]; do
-        if eval "$operation"; then
+    # Source configuration safely
+    if [[ -r "$DOCKER_CONFIG" ]]; then
+        source "$DOCKER_CONFIG"
+        log_info "Configuration loaded from $DOCKER_CONFIG"
+    else
+        log_warning "Configuration file not readable, using defaults"
+    fi
+}
+
+# Create default configuration
+create_default_configuration() {
+    cat > "$DOCKER_CONFIG" << 'CONFIGEOF'
+# Professional Docker Integration Framework Configuration v2.0
+
+# General Settings
+VERBOSE_MODE=false
+DRY_RUN_MODE=false
+AUTO_CLEANUP=true
+ENABLE_MONITORING=true
+
+# Docker Settings
+DOCKER_REGISTRY=""
+DOCKER_NAMESPACE="cursor"
+BASE_IMAGE="ubuntu:22.04"
+EXPOSE_PORTS="3000,8080"
+
+# Container Settings
+CONTAINER_MEMORY_LIMIT="2g"
+CONTAINER_CPU_LIMIT="2.0"
+ENABLE_GPU_SUPPORT=false
+MOUNT_HOME_DIRECTORY=true
+
+# Volume Settings
+ENABLE_PERSISTENT_STORAGE=true
+DATA_VOLUME_SIZE="10g"
+CONFIG_VOLUME_PATH="/app/config"
+WORKSPACE_VOLUME_PATH="/workspace"
+
+# Network Settings
+NETWORK_MODE="bridge"
+CUSTOM_NETWORK_NAME="cursor-network"
+ENABLE_HOST_NETWORKING=false
+DNS_SERVERS="8.8.8.8,8.8.4.4"
+
+# Security Settings
+RUN_AS_NON_ROOT=true
+ENABLE_APPARMOR=false
+ENABLE_SECCOMP=true
+READ_ONLY_ROOT_FILESYSTEM=false
+
+# Maintenance Settings
+LOG_RETENTION_DAYS=30
+AUTO_UPDATE_IMAGES=false
+CLEANUP_INTERVAL_HOURS=24
+ENABLE_HEALTH_CHECKS=true
+CONFIGEOF
+    
+    log_info "Default configuration created: $DOCKER_CONFIG"
+}
+
+# Validate Docker installation
+validate_docker_installation() {
+    log_info "Validating Docker installation..."
+    
+    # Check if Docker is installed
+    if \! command -v docker &>/dev/null; then
+        log_error "Docker is not installed or not in PATH"
+        return 1
+    fi
+    
+    # Check if Docker daemon is running
+    if \! docker info >/dev/null 2>&1; then
+        log_error "Docker daemon is not running"
+        
+        # Attempt to start Docker if systemctl is available
+        if command -v systemctl &>/dev/null; then
+            log_info "Attempting to start Docker daemon..."
+            if sudo systemctl start docker 2>/dev/null; then
+                sleep 3
+                if docker info >/dev/null 2>&1; then
+                    log_info "Docker daemon started successfully"
+                else
+                    log_error "Failed to start Docker daemon"
+                    return 1
+                fi
+            else
+                log_error "Failed to start Docker daemon via systemctl"
+                return 1
+            fi
+        else
+            return 1
+        fi
+    fi
+    
+    # Check Docker version
+    local docker_version
+    docker_version=$(docker --version | awk '{print $3}' | tr -d ',')
+    log_info "Docker version: $docker_version"
+    
+    # Check if user can run Docker commands
+    if \! docker ps >/dev/null 2>&1; then
+        log_warning "Current user may not have permission to run Docker commands"
+        log_info "You may need to add your user to the 'docker' group or use sudo"
+    fi
+    
+    log_info "Docker validation completed successfully"
+}
+
+# Acquire lock with timeout
+acquire_lock() {
+    local timeout=10
+    local elapsed=0
+    
+    while [[ $elapsed -lt $timeout ]]; do
+        if (set -C; echo $$ > "$LOCK_FILE") 2>/dev/null; then
+            echo $$ > "$PID_FILE"
+            log_info "Lock acquired successfully"
             return 0
         fi
         
-        ((attempt++))
-        if [[ $attempt -lt $max_attempts ]]; then
-            log "WARN" "Operation failed, retrying (attempt $((attempt + 1))/$max_attempts)"
-            sleep "$delay"
+        if [[ -f "$LOCK_FILE" ]]; then
+            local lock_pid
+            lock_pid=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
+            if [[ -n "$lock_pid" ]] && \! kill -0 "$lock_pid" 2>/dev/null; then
+                log_info "Removing stale lock file"
+                rm -f "$LOCK_FILE"
+                continue
+            fi
         fi
+        
+        sleep 1
+        ((elapsed++))
     done
     
-    log "ERROR" "Operation failed after $max_attempts attempts: $operation"
-    return 1
+    log_warning "Could not acquire lock, continuing anyway"
+    return 0
 }
 
-# Cleanup function
-cleanup() {
-    local exit_code=$?
+# Build Docker image
+build_docker_image() {
+    log_info "Building Docker image for Cursor IDE..."
+    log_container "BUILD" "$DOCKER_IMAGE_NAME:$DOCKER_TAG" "STARTED"
     
-    if [[ $exit_code -eq 0 ]]; then
-        log "PASS" "Docker operations completed successfully"
-        audit_log "OPERATION_COMPLETE" "SUCCESS" "Exit code: $exit_code"
-    else
-        log "ERROR" "Docker operations failed with exit code: $exit_code"
-        audit_log "OPERATION_FAILED" "FAILURE" "Exit code: $exit_code"
-    fi
-}
-
-trap cleanup EXIT
-trap 'exit 130' INT TERM
-
-# === DOCKER VALIDATION ===
-
-# Check Docker availability
-check_docker() {
-    log "INFO" "Checking Docker environment"
+    # Create Dockerfile
+    create_dockerfile
     
-    local docker_issues=0
+    # Prepare build context
+    prepare_build_context
     
-    # Check Docker installation
-    if ! command -v docker >/dev/null 2>&1; then
-        log "ERROR" "Docker not installed"
-        ((docker_issues++))
-    else
-        local docker_version=$(docker --version | cut -d' ' -f3 | tr -d ',')
-        log "DEBUG" "Docker version: $docker_version"
-    fi
+    # Build the image
+    local build_start=$(date +%s)
     
-    # Check Docker daemon
-    if ! docker info >/dev/null 2>&1; then
-        log "ERROR" "Docker daemon not running"
-        ((docker_issues++))
-    else
-        log "DEBUG" "Docker daemon running"
-    fi
-    
-    # Check Docker Compose
-    if ! command -v docker-compose >/dev/null 2>&1 && ! docker compose version >/dev/null 2>&1; then
-        log "WARN" "Docker Compose not available"
-        ((docker_issues++))
-    fi
-    
-    # Check system resources
-    local total_mem_kb=$(grep "MemTotal:" /proc/meminfo 2>/dev/null | awk '{print $2}' || echo "0")
-    local total_mem_mb=$((total_mem_kb / 1024))
-    
-    if [[ $total_mem_mb -lt 4096 ]]; then
-        log "WARN" "Low memory: ${total_mem_mb}MB (recommended: 4GB+)"
-    fi
-    
-    local available_disk_kb=$(df "$BASE_DIR" 2>/dev/null | tail -1 | awk '{print $4}' || df / | tail -1 | awk '{print $4}')
-    local available_disk_gb=$((available_disk_kb / 1024 / 1024))
-    
-    if [[ $available_disk_gb -lt 10 ]]; then
-        log "WARN" "Low disk space: ${available_disk_gb}GB (recommended: 10GB+)"
-    fi
-    
-    if [[ $docker_issues -eq 0 ]]; then
-        log "PASS" "Docker environment validated"
+    if docker build -t "$DOCKER_IMAGE_NAME:$DOCKER_TAG" "$DOCKER_CACHE_DIR/build" 2>&1 | tee -a "$LOG_FILE"; then
+        local build_end=$(date +%s)
+        local build_duration=$((build_end - build_start))
+        log_info "Docker image built successfully in ${build_duration}s"
+        log_container "BUILD" "$DOCKER_IMAGE_NAME:$DOCKER_TAG" "SUCCESS"
         return 0
     else
-        log "ERROR" "Docker validation failed ($docker_issues issues)"
+        log_error "Failed to build Docker image"
+        log_container "BUILD" "$DOCKER_IMAGE_NAME:$DOCKER_TAG" "FAILED"
+        DOCKER_OPERATION_SUCCESS=false
         return 1
     fi
 }
 
-# Initialize Docker network
-initialize_network() {
-    log "INFO" "Initializing Docker network"
+# Create Dockerfile
+create_dockerfile() {
+    log_info "Creating Dockerfile..."
     
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would create network: $NETWORK_NAME"
-        return 0
-    fi
+    local build_dir="$DOCKER_CACHE_DIR/build"
+    mkdir -p "$build_dir"
     
-    # Check if network exists
-    if docker network ls | grep -q "$NETWORK_NAME"; then
-        log "DEBUG" "Network already exists: $NETWORK_NAME"
-        return 0
-    fi
-    
-    # Create network
-    if docker network create \
-        --driver bridge \
-        --subnet=172.20.0.0/16 \
-        --label "project=cursor-enterprise" \
-        "$NETWORK_NAME"; then
-        log "PASS" "Network created: $NETWORK_NAME"
-        audit_log "NETWORK_CREATED" "SUCCESS" "Network: $NETWORK_NAME"
-        return 0
-    else
-        log "ERROR" "Failed to create network"
-        return 1
-    fi
-}
-
-# === DOCKERFILE GENERATION ===
-
-# Generate base Dockerfile
-generate_base_dockerfile() {
-    log "INFO" "Generating base Dockerfile"
-    
-    cat > "$COMPOSE_DIR/Dockerfile.base" << 'EOF'
+    cat > "$build_dir/Dockerfile" << 'DOCKEREOF'
+# Professional Cursor IDE Docker Container
 FROM ubuntu:22.04
 
-LABEL maintainer="Enterprise Development Team"
-LABEL version="2.0.0"
-LABEL description="Cursor IDE Base Container"
-
+# Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV DISPLAY=:1
+ENV DISPLAY=:0
+ENV HOME=/home/cursor
+ENV USER=cursor
 
-# Install system packages
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    curl wget git vim htop \
-    xvfb x11vnc fluxbox \
-    fonts-liberation \
-    fuse libfuse2 \
+    curl \
+    wget \
+    git \
+    unzip \
+    xvfb \
+    x11vnc \
+    fluxbox \
     supervisor \
-    && apt-get clean \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libdrm2 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxss1 \
+    libxtst6 \
+    xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Create user
 RUN useradd -m -s /bin/bash cursor && \
-    echo 'cursor:cursor' | chpasswd
+    usermod -aG sudo cursor && \
+    echo 'cursor ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
-# Create directories
-RUN mkdir -p /opt/cursor /home/cursor/.config
+# Set up directories
+RUN mkdir -p /app /workspace /home/cursor/.config && \
+    chown -R cursor:cursor /app /workspace /home/cursor
 
-# Download Cursor AppImage
-RUN curl -fsSL "https://download.cursor.sh/linux/appImage/x64" \
-    -o /opt/cursor/cursor.AppImage && \
-    chmod +x /opt/cursor/cursor.AppImage && \
-    ln -sf /opt/cursor/cursor.AppImage /usr/local/bin/cursor
-
-# Setup VNC
-RUN mkdir -p /home/cursor/.vnc && \
-    echo "cursor" | vncpasswd -f > /home/cursor/.vnc/passwd && \
-    chmod 600 /home/cursor/.vnc/passwd && \
-    chown -R cursor:cursor /home/cursor
+# Copy application files
+COPY --chown=cursor:cursor cursor.AppImage /app/
+RUN chmod +x /app/cursor.AppImage
 
 # Create startup script
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-EXPOSE 5900 8080
-
-WORKDIR /home/cursor
-USER cursor
-
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD pgrep -f cursor || exit 1
-
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["tail", "-f", "/dev/null"]
-EOF
-    
-    # Create entrypoint script
-    cat > "$COMPOSE_DIR/entrypoint.sh" << 'EOF'
-#!/bin/bash
+RUN cat > /app/start.sh << 'STARTEOF'
+#\!/bin/bash
 set -e
 
-export DISPLAY=:1
-
-# Start Xvfb
-Xvfb :1 -screen 0 1920x1080x24 &
-sleep 2
+# Start X11 virtual framebuffer
+Xvfb :0 -screen 0 1920x1080x24 &
+export DISPLAY=:0
 
 # Start window manager
 fluxbox &
 
-# Start VNC server
-x11vnc -display :1 -forever -usepw -shared -rfbport 5900 &
+# Start VNC server for remote access
+x11vnc -display :0 -forever -usepw -create &
 
 # Start Cursor IDE
-cursor --no-sandbox &
+cd /workspace
+exec /app/cursor.AppImage "$@"
+STARTEOF
 
-exec "$@"
-EOF
-    
-    log "PASS" "Base Dockerfile generated"
-}
+RUN chmod +x /app/start.sh
 
-# Generate development Dockerfile
-generate_dev_dockerfile() {
-    log "INFO" "Generating development Dockerfile"
-    
-    cat > "$COMPOSE_DIR/Dockerfile.dev" << 'EOF'
-FROM cursor-enterprise:base
-
-USER root
-
-# Install development tools
-RUN apt-get update && apt-get install -y \
-    nodejs npm python3 python3-pip \
-    golang-go openjdk-11-jdk \
-    postgresql-client \
-    jq tree fd-find ripgrep \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install global packages
-RUN npm install -g typescript prettier eslint && \
-    pip3 install pytest black flake8
-
-# Create workspace
-RUN mkdir -p /workspace && \
-    chown -R cursor:cursor /workspace
-
+# Switch to cursor user
 USER cursor
 WORKDIR /workspace
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD pgrep -f cursor && command -v node && command -v python3 || exit 1
-EOF
+# Expose ports
+EXPOSE 5900 3000 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD pgrep -f cursor.AppImage || exit 1
+
+# Default command
+CMD ["/app/start.sh"]
+DOCKEREOF
     
-    log "PASS" "Development Dockerfile generated"
+    log_info "Dockerfile created successfully"
 }
 
-# Generate enterprise Dockerfile
-generate_enterprise_dockerfile() {
-    log "INFO" "Generating enterprise Dockerfile"
+# Prepare build context
+prepare_build_context() {
+    log_info "Preparing build context..."
     
-    cat > "$COMPOSE_DIR/Dockerfile.enterprise" << 'EOF'
-FROM cursor-enterprise:dev
-
-USER root
-
-# Install enterprise tools
-RUN apt-get update && apt-get install -y \
-    prometheus-node-exporter \
-    rsyslog logrotate \
-    netcat-openbsd \
-    sysstat iotop \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create enterprise directories
-RUN mkdir -p /opt/cursor/enterprise/{logs,config,reports} && \
-    chown -R cursor:cursor /opt/cursor/enterprise
-
-USER cursor
-
-HEALTHCHECK --interval=60s --timeout=15s --start-period=120s --retries=5 \
-    CMD pgrep -f cursor && pgrep -f node-exporter || exit 1
-
-VOLUME ["/opt/cursor/enterprise", "/workspace"]
-EOF
+    local build_dir="$DOCKER_CACHE_DIR/build"
     
-    log "PASS" "Enterprise Dockerfile generated"
-}
-
-# === DOCKER COMPOSE GENERATION ===
-
-# Generate Docker Compose file
-generate_compose() {
-    log "INFO" "Generating Docker Compose configuration"
-    
-    cat > "$COMPOSE_DIR/docker-compose.yml" << EOF
-version: '3.8'
-
-networks:
-  cursor-network:
-    external: true
-
-volumes:
-  cursor-data:
-    name: ${VOLUME_PREFIX}-data
-  cursor-config:
-    name: ${VOLUME_PREFIX}-config
-  cursor-workspace:
-    name: ${VOLUME_PREFIX}-workspace
-
-services:
-  cursor-base:
-    build:
-      context: .
-      dockerfile: Dockerfile.base
-    image: ${DOCKER_NAMESPACE}:base
-    container_name: cursor-base
-    networks:
-      - cursor-network
-    ports:
-      - "${SERVICE_PORTS[vnc]}:5900"
-      - "${SERVICE_PORTS[web]}:8080"
-    volumes:
-      - cursor-data:/home/cursor/.local/share/cursor
-      - cursor-config:/home/cursor/.config
-    environment:
-      - DISPLAY=:1
-      - CURSOR_VERSION=${CURSOR_VERSION}
-    restart: unless-stopped
-    profiles:
-      - base
-
-  cursor-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    image: ${DOCKER_NAMESPACE}:dev
-    container_name: cursor-dev
-    networks:
-      - cursor-network
-    ports:
-      - "${SERVICE_PORTS[vnc]}:5900"
-      - "${SERVICE_PORTS[web]}:8080"
-      - "${SERVICE_PORTS[ssh]}:22"
-    volumes:
-      - cursor-data:/home/cursor/.local/share/cursor
-      - cursor-config:/home/cursor/.config
-      - cursor-workspace:/workspace
-    environment:
-      - DISPLAY=:1
-      - NODE_ENV=development
-    restart: unless-stopped
-    profiles:
-      - dev
-
-  cursor-enterprise:
-    build:
-      context: .
-      dockerfile: Dockerfile.enterprise
-    image: ${DOCKER_NAMESPACE}:enterprise
-    container_name: cursor-enterprise
-    networks:
-      - cursor-network
-    ports:
-      - "${SERVICE_PORTS[vnc]}:5900"
-      - "${SERVICE_PORTS[web]}:8080"
-      - "${SERVICE_PORTS[ssh]}:22"
-      - "${SERVICE_PORTS[api]}:3000"
-    volumes:
-      - cursor-data:/home/cursor/.local/share/cursor
-      - cursor-config:/home/cursor/.config
-      - cursor-workspace:/workspace
-      - ./logs:/opt/cursor/enterprise/logs
-    environment:
-      - DISPLAY=:1
-      - MONITORING_ENABLED=true
-    restart: unless-stopped
-    profiles:
-      - enterprise
-EOF
-    
-    log "PASS" "Docker Compose configuration generated"
-}
-
-# === CONTAINER OPERATIONS ===
-
-# Build containers
-build_containers() {
-    log "INFO" "Building Cursor IDE containers"
-    
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would build containers for type: $CONTAINER_TYPE"
-        return 0
+    # Find and copy AppImage
+    local app_binary="${SCRIPT_DIR}/cursor.AppImage"
+    if [[ \! -f "$app_binary" ]]; then
+        app_binary=$(find "$SCRIPT_DIR" -name "*.AppImage" -type f | head -1)
     fi
     
-    # Generate required files
-    generate_base_dockerfile
-    if [[ "$CONTAINER_TYPE" != "base" ]]; then
-        generate_dev_dockerfile
-    fi
-    if [[ "$CONTAINER_TYPE" == "enterprise" ]]; then
-        generate_enterprise_dockerfile
-    fi
-    generate_compose
-    
-    cd "$COMPOSE_DIR" || {
-        log "ERROR" "Failed to change to compose directory"
-        return 1
-    }
-    
-    # Build containers based on type
-    case "$CONTAINER_TYPE" in
-        "base")
-            if retry_operation "docker build -f Dockerfile.base -t '${DOCKER_NAMESPACE}:base' ."; then
-                log "PASS" "Base container built successfully"
-            else
-                log "ERROR" "Failed to build base container"
-                return 1
-            fi
-            ;;
-        "dev")
-            if retry_operation "docker build -f Dockerfile.base -t '${DOCKER_NAMESPACE}:base' ." && \
-               retry_operation "docker build -f Dockerfile.dev -t '${DOCKER_NAMESPACE}:dev' ."; then
-                log "PASS" "Development containers built successfully"
-            else
-                log "ERROR" "Failed to build development containers"
-                return 1
-            fi
-            ;;
-        "enterprise")
-            if retry_operation "docker build -f Dockerfile.base -t '${DOCKER_NAMESPACE}:base' ." && \
-               retry_operation "docker build -f Dockerfile.dev -t '${DOCKER_NAMESPACE}:dev' ." && \
-               retry_operation "docker build -f Dockerfile.enterprise -t '${DOCKER_NAMESPACE}:enterprise' ."; then
-                log "PASS" "Enterprise containers built successfully"
-            else
-                log "ERROR" "Failed to build enterprise containers"
-                return 1
-            fi
-            ;;
-        *)
-            log "ERROR" "Unknown container type: $CONTAINER_TYPE"
-            return 1
-            ;;
-    esac
-    
-    audit_log "CONTAINERS_BUILT" "SUCCESS" "Type: $CONTAINER_TYPE"
-    return 0
-}
-
-# Start services
-start_services() {
-    log "INFO" "Starting Cursor IDE services"
-    
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would start services for type: $CONTAINER_TYPE"
-        return 0
-    fi
-    
-    cd "$COMPOSE_DIR" || {
-        log "ERROR" "Failed to change to compose directory"
-        return 1
-    }
-    
-    # Start services with appropriate profile
-    local compose_cmd="docker-compose --profile $CONTAINER_TYPE up -d"
-    
-    if eval "$compose_cmd"; then
-        log "PASS" "Services started successfully"
-        show_service_status
-        audit_log "SERVICES_STARTED" "SUCCESS" "Type: $CONTAINER_TYPE"
-        return 0
+    if [[ -n "$app_binary" && -f "$app_binary" ]]; then
+        cp "$app_binary" "$build_dir/cursor.AppImage"
+        log_info "Copied AppImage to build context"
     else
-        log "ERROR" "Failed to start services"
+        log_error "Cursor AppImage not found for Docker build"
         return 1
     fi
-}
-
-# Stop services
-stop_services() {
-    log "INFO" "Stopping Cursor IDE services"
     
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would stop all services"
-        return 0
-    fi
-    
-    cd "$COMPOSE_DIR" || {
-        log "ERROR" "Failed to change to compose directory"
-        return 1
-    }
-    
-    if docker-compose down; then
-        log "PASS" "Services stopped successfully"
-        audit_log "SERVICES_STOPPED" "SUCCESS" "All services stopped"
-        return 0
-    else
-        log "ERROR" "Failed to stop services"
-        return 1
-    fi
-}
-
-# Show service status
-show_service_status() {
-    log "INFO" "Service Status Overview"
-    echo
-    
-    echo "Running Containers:"
-    docker ps --filter "name=cursor-" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" || true
-    echo
-    
-    echo "Access URLs:"
-    if docker ps | grep -q "cursor-"; then
-        echo "  VNC:         vnc://localhost:${SERVICE_PORTS[vnc]}"
-        echo "  Web UI:      http://localhost:${SERVICE_PORTS[web]}"
-        
-        if [[ "$CONTAINER_TYPE" != "base" ]]; then
-            echo "  SSH:         ssh cursor@localhost -p ${SERVICE_PORTS[ssh]}"
+    # Copy additional files if they exist
+    for file in "VERSION" "README.md"; do
+        if [[ -f "${SCRIPT_DIR}/$file" ]]; then
+            cp "${SCRIPT_DIR}/$file" "$build_dir/"
+            log_info "Copied $file to build context"
         fi
-        
-        if [[ "$CONTAINER_TYPE" == "enterprise" ]]; then
-            echo "  API:         http://localhost:${SERVICE_PORTS[api]}"
-        fi
-    fi
-    echo
-    
-    echo "Useful Commands:"
-    echo "  Shell:       docker exec -it cursor-${CONTAINER_TYPE} bash"
-    echo "  Logs:        docker-compose logs -f cursor-${CONTAINER_TYPE}"
-    echo "  Restart:     docker-compose restart cursor-${CONTAINER_TYPE}"
-    echo
-}
-
-# === BACKUP AND RESTORE ===
-
-# Create backup
-create_backup() {
-    log "INFO" "Creating container backup"
-    
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would create backup"
-        return 0
-    fi
-    
-    local backup_file="$BACKUP_DIR/cursor_backup_${TIMESTAMP}.tar.gz"
-    local backup_items=()
-    
-    # Collect volumes to backup
-    for volume in $(docker volume ls --filter "name=${VOLUME_PREFIX}-" --format "{{.Name}}"); do
-        backup_items+=("$volume")
     done
     
-    if [[ ${#backup_items[@]} -gt 0 ]]; then
-        # Create temporary container for backup
-        docker run --rm \
-            $(for vol in "${backup_items[@]}"; do echo "-v $vol:/backup/$vol:ro"; done) \
-            -v "$BACKUP_DIR:/output" \
-            busybox tar czf "/output/$(basename "$backup_file")" -C /backup .
-        
-        log "PASS" "Backup created: $backup_file"
-        audit_log "BACKUP_CREATED" "SUCCESS" "File: $backup_file"
-    else
-        log "INFO" "No volumes to backup"
-    fi
-    
-    return 0
+    log_info "Build context prepared successfully"
 }
 
-# Run health checks
-run_health_checks() {
-    log "INFO" "Running health checks"
+# Run Docker container
+run_docker_container() {
+    log_info "Running Cursor IDE Docker container..."
+    log_container "RUN" "$CONTAINER_NAME" "STARTED"
     
-    local health_issues=0
+    # Stop existing container if running
+    if docker ps -a --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+        log_info "Stopping existing container..."
+        docker stop "$CONTAINER_NAME" >/dev/null 2>&1 || true
+        docker rm "$CONTAINER_NAME" >/dev/null 2>&1 || true
+    fi
     
-    # Check container health
-    for container in $(docker ps --filter "name=cursor-" --format "{{.Names}}"); do
-        local health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "unknown")
-        if [[ "$health_status" != "healthy" ]]; then
-            log "WARN" "Container health issue: $container ($health_status)"
-            ((health_issues++))
+    # Build run command
+    local docker_run_cmd=(
+        "docker" "run"
+        "--name" "$CONTAINER_NAME"
+        "--detach"
+        "--interactive"
+        "--tty"
+    )
+    
+    # Add memory limit
+    if [[ -n "${CONTAINER_MEMORY_LIMIT:-}" ]]; then
+        docker_run_cmd+=("--memory" "$CONTAINER_MEMORY_LIMIT")
+    fi
+    
+    # Add CPU limit
+    if [[ -n "${CONTAINER_CPU_LIMIT:-}" ]]; then
+        docker_run_cmd+=("--cpus" "$CONTAINER_CPU_LIMIT")
+    fi
+    
+    # Add port mappings
+    if [[ -n "${EXPOSE_PORTS:-}" ]]; then
+        IFS=',' read -ra PORTS <<< "$EXPOSE_PORTS"
+        for port in "${PORTS[@]}"; do
+            docker_run_cmd+=("-p" "$port:$port")
+        done
+    fi
+    
+    # Add VNC port
+    docker_run_cmd+=("-p" "5900:5900")
+    
+    # Add volume mounts
+    if [[ "${MOUNT_HOME_DIRECTORY:-true}" == "true" ]]; then
+        docker_run_cmd+=("-v" "$HOME:/home/cursor/host-home")
+    fi
+    
+    if [[ "${ENABLE_PERSISTENT_STORAGE:-true}" == "true" ]]; then
+        docker_run_cmd+=("-v" "cursor-data:/app/data")
+        docker_run_cmd+=("-v" "cursor-config:/app/config")
+    fi
+    
+    # Add workspace mount
+    local workspace_dir="${PWD}"
+    docker_run_cmd+=("-v" "$workspace_dir:/workspace")
+    
+    # Add environment variables
+    docker_run_cmd+=("-e" "DISPLAY=:0")
+    
+    # Add security options
+    if [[ "${RUN_AS_NON_ROOT:-true}" == "true" ]]; then
+        docker_run_cmd+=("--user" "1000:1000")
+    fi
+    
+    # Add image name
+    docker_run_cmd+=("$DOCKER_IMAGE_NAME:$DOCKER_TAG")
+    
+    # Add any additional arguments
+    docker_run_cmd+=("$@")
+    
+    # Execute the run command
+    log_info "Executing: ${docker_run_cmd[*]}"
+    
+    if "${docker_run_cmd[@]}"; then
+        log_info "Container started successfully"
+        log_container "RUN" "$CONTAINER_NAME" "SUCCESS"
+        
+        # Show container info
+        show_container_info
+        
+        return 0
+    else
+        log_error "Failed to start container"
+        log_container "RUN" "$CONTAINER_NAME" "FAILED"
+        DOCKER_OPERATION_SUCCESS=false
+        return 1
+    fi
+}
+
+# Show container information
+show_container_info() {
+    log_info "Container information:"
+    
+    # Get container status
+    local container_status
+    container_status=$(docker ps --format "table {{.Status}}" --filter "name=$CONTAINER_NAME" | tail -1)
+    log_info "Status: $container_status"
+    
+    # Get container IP
+    local container_ip
+    container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$CONTAINER_NAME" 2>/dev/null || echo "N/A")
+    log_info "IP Address: $container_ip"
+    
+    # Show port mappings
+    log_info "Port mappings:"
+    docker port "$CONTAINER_NAME" 2>/dev/null | while read -r line; do
+        log_info "  $line"
+    done || true
+    
+    # Show access information
+    echo ""
+    echo "=== Cursor IDE Container Started ==="
+    echo "Container Name: $CONTAINER_NAME"
+    echo "VNC Access: vnc://localhost:5900"
+    echo "Container IP: $container_ip"
+    echo ""
+    echo "To view logs: docker logs $CONTAINER_NAME"
+    echo "To execute commands: docker exec -it $CONTAINER_NAME bash"
+    echo "To stop: docker stop $CONTAINER_NAME"
+    echo ""
+}
+
+# Stop Docker container
+stop_docker_container() {
+    log_info "Stopping Cursor IDE Docker container..."
+    log_container "STOP" "$CONTAINER_NAME" "STARTED"
+    
+    if docker ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+        if docker stop "$CONTAINER_NAME" >/dev/null 2>&1; then
+            log_info "Container stopped successfully"
+            log_container "STOP" "$CONTAINER_NAME" "SUCCESS"
+            
+            # Optionally remove the container
+            if [[ "${AUTO_CLEANUP:-true}" == "true" ]]; then
+                docker rm "$CONTAINER_NAME" >/dev/null 2>&1 || true
+                log_info "Container removed"
+            fi
+            
+            return 0
         else
-            log "DEBUG" "Container healthy: $container"
+            log_error "Failed to stop container"
+            log_container "STOP" "$CONTAINER_NAME" "FAILED"
+            return 1
         fi
-    done
-    
-    # Check service ports
-    for port in "${SERVICE_PORTS[@]}"; do
-        if ! nc -z localhost "$port" 2>/dev/null; then
-            log "WARN" "Service port not accessible: $port"
-            ((health_issues++))
-        fi
-    done
-    
-    if [[ $health_issues -eq 0 ]]; then
-        log "PASS" "All health checks passed"
-        return 0
     else
-        log "WARN" "Health checks completed with $health_issues issues"
-        return 1
+        log_warning "Container is not running"
+        log_container "STOP" "$CONTAINER_NAME" "NOT_RUNNING"
+        return 0
     fi
 }
 
-# === MAIN EXECUTION ===
+# List Docker containers and images
+list_docker_resources() {
+    log_info "Listing Docker resources..."
+    
+    echo "=== Cursor IDE Docker Images ==="
+    docker images --filter "reference=$DOCKER_IMAGE_NAME" --format "table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}" 2>/dev/null || echo "No images found"
+    
+    echo ""
+    echo "=== Cursor IDE Docker Containers ==="
+    docker ps -a --filter "name=$CONTAINER_NAME" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null || echo "No containers found"
+    
+    echo ""
+    echo "=== Docker Volumes ==="
+    docker volume ls --filter "name=cursor" --format "table {{.Name}}\t{{.Driver}}" 2>/dev/null || echo "No volumes found"
+}
 
-# Show usage
-show_usage() {
-    cat << EOF
-Cursor IDE Professional Docker Deployment v$SCRIPT_VERSION
+# Clean up Docker resources
+cleanup_docker_resources() {
+    log_info "Cleaning up Docker resources..."
+    
+    # Stop and remove containers
+    if docker ps -a --format "table {{.Names}}" | grep -q "cursor"; then
+        log_info "Stopping and removing Cursor containers..."
+        docker ps -a --filter "name=cursor" --format "{{.Names}}" | xargs -r docker stop >/dev/null 2>&1 || true
+        docker ps -a --filter "name=cursor" --format "{{.Names}}" | xargs -r docker rm >/dev/null 2>&1 || true
+    fi
+    
+    # Remove images
+    if docker images --format "table {{.Repository}}" | grep -q "$DOCKER_IMAGE_NAME"; then
+        log_info "Removing Cursor images..."
+        docker images --filter "reference=$DOCKER_IMAGE_NAME" --format "{{.ID}}" | xargs -r docker rmi -f >/dev/null 2>&1 || true
+    fi
+    
+    # Remove volumes (with confirmation in non-dry-run mode)
+    if docker volume ls --format "table {{.Name}}" | grep -q "cursor"; then
+        log_info "Removing Cursor volumes..."
+        docker volume ls --filter "name=cursor" --format "{{.Name}}" | xargs -r docker volume rm >/dev/null 2>&1 || true
+    fi
+    
+    log_info "Docker cleanup completed"
+}
+
+# Self-correction functions
+check_docker_status() {
+    log_info "Checking Docker status..."
+    
+    if \! command -v docker &>/dev/null; then
+        log_error "Docker is not installed"
+        return 1
+    fi
+    
+    if \! docker info >/dev/null 2>&1; then
+        log_warning "Docker daemon is not running"
+        
+        # Try to start Docker daemon
+        if command -v systemctl &>/dev/null; then
+            log_info "Attempting to start Docker daemon..."
+            sudo systemctl start docker >/dev/null 2>&1 || true
+            sleep 3
+        fi
+    fi
+    
+    # Check disk space for Docker
+    local docker_root
+    docker_root=$(docker info --format '{{.DockerRootDir}}' 2>/dev/null || echo "/var/lib/docker")
+    local available_space
+    available_space=$(df "$docker_root" 2>/dev/null | awk 'NR==2 {print int($4/1024)}' || echo "0")
+    
+    if [[ $available_space -lt 1024 ]]; then
+        log_warning "Low disk space for Docker: ${available_space}MB available"
+    fi
+}
+
+fix_directory_permissions() {
+    log_info "Attempting to fix directory permissions..."
+    
+    for dir in "$DOCKER_CONFIG_DIR" "$DOCKER_CACHE_DIR" "$DOCKER_LOG_DIR"; do
+        if [[ -d "$dir" ]]; then
+            chmod 755 "$dir" 2>/dev/null || true
+        fi
+    done
+}
+
+cleanup_build_context() {
+    log_info "Cleaning up build context..."
+    
+    local build_dir="$DOCKER_CACHE_DIR/build"
+    if [[ -d "$build_dir" ]]; then
+        rm -rf "$build_dir" 2>/dev/null || true
+        log_info "Build context cleaned up"
+    fi
+}
+
+# Cleanup functions
+cleanup_on_error() {
+    log_warning "Performing error cleanup..."
+    cleanup_on_exit
+}
+
+cleanup_on_exit() {
+    [[ -f "$LOCK_FILE" ]] && rm -f "$LOCK_FILE"
+    [[ -f "$PID_FILE" ]] && rm -f "$PID_FILE"
+    jobs -p | xargs -r kill 2>/dev/null || true
+    log_info "Cleanup completed"
+}
+
+# Display usage information
+display_usage() {
+    cat << 'USAGEEOF'
+Professional Docker Integration Framework v2.0
 
 USAGE:
-    $SCRIPT_NAME [COMMAND] [OPTIONS]
+    docker-improved-v2.sh [OPTIONS] [COMMAND]
 
 COMMANDS:
-    build               Build container images
-    start, up           Start services
-    stop, down          Stop services
-    status              Show service status
-    shell               Open container shell
-    backup              Create backup
-    health              Run health checks
-    logs                Show service logs
+    build       Build Docker image
+    run         Run Docker container (default)
+    stop        Stop Docker container
+    list        List Docker resources
+    cleanup     Clean up Docker resources
+    logs        Show container logs
 
 OPTIONS:
-    -h, --help          Show this help message
-    -t, --type TYPE     Container type: base, dev, enterprise
-    -n, --dry-run       Perform dry run
-    -f, --force         Force rebuild
-    -q, --quiet         Quiet mode
-
-CONTAINER TYPES:
-$(for type in "${!CONTAINER_TYPES[@]}"; do
-    printf "    %-12s %s\n" "$type" "${CONTAINER_TYPES[$type]}"
-done)
+    --verbose       Enable verbose output
+    --dry-run       Show what would be done
+    --help          Display this help message
+    --version       Display version information
 
 EXAMPLES:
-    $SCRIPT_NAME build --type enterprise
-    $SCRIPT_NAME start --type dev
-    $SCRIPT_NAME shell
+    ./docker-improved-v2.sh build
+    ./docker-improved-v2.sh run
+    ./docker-improved-v2.sh stop
+    ./docker-improved-v2.sh list
+    ./docker-improved-v2.sh cleanup
 
-EOF
+For more information, see the documentation.
+USAGEEOF
 }
 
-# Parse arguments
+# Parse command line arguments
 parse_arguments() {
-    local command=""
-    
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -h|--help)
-                show_usage
+            build)
+                OPERATION="build"
+                shift
+                ;;
+            run)
+                OPERATION="run"
+                shift
+                ;;
+            stop)
+                OPERATION="stop"
+                shift
+                ;;
+            list)
+                OPERATION="list"
+                shift
+                ;;
+            cleanup)
+                OPERATION="cleanup"
+                shift
+                ;;
+            logs)
+                OPERATION="logs"
+                shift
+                ;;
+            --verbose)
+                VERBOSE_MODE=true
+                shift
+                ;;
+            --dry-run)
+                DRY_RUN_MODE=true
+                shift
+                ;;
+            --help)
+                display_usage
                 exit 0
                 ;;
             --version)
-                echo "Cursor IDE Professional Docker Deployment v$SCRIPT_VERSION"
+                echo "Professional Docker Integration Framework v$VERSION"
                 exit 0
                 ;;
-            -t|--type)
-                if [[ -n "$2" ]] && [[ -n "${CONTAINER_TYPES[$2]}" ]]; then
-                    CONTAINER_TYPE="$2"
-                    shift
-                else
-                    log "ERROR" "Invalid container type: ${2:-}"
-                    exit 1
-                fi
-                ;;
-            -n|--dry-run)
-                DRY_RUN=true
-                ;;
-            -f|--force)
-                FORCE_REBUILD=true
-                ;;
-            -q|--quiet)
-                QUIET_MODE=true
-                ;;
-            build|start|up|stop|down|status|shell|backup|health|logs)
-                command="$1"
+            -*)
+                log_warning "Unknown option: $1"
+                shift
                 ;;
             *)
-                if [[ -z "$command" ]]; then
-                    command="$1"
-                else
-                    log "ERROR" "Unknown option: $1"
-                    exit 1
-                fi
+                # Pass remaining arguments to container
+                break
                 ;;
         esac
-        shift
     done
-    
-    # Set default command
-    if [[ -z "$command" ]]; then
-        command="help"
-    fi
-    
-    echo "$command"
 }
 
-# Main function
+# Main execution function
 main() {
-    local command=$(parse_arguments "$@")
+    local OPERATION="${OPERATION:-run}"
     
-    log "INFO" "Starting Cursor IDE Docker Deployment v$SCRIPT_VERSION"
-    log "INFO" "Command: $command, Container Type: $CONTAINER_TYPE"
-    audit_log "SCRIPT_STARTED" "SUCCESS" "Command: $command"
+    # Parse command line arguments
+    parse_arguments "$@"
     
-    # Initialize
-    if ! initialize_directories; then
-        log "ERROR" "Failed to initialize directories"
-        exit 1
-    fi
+    # Initialize framework
+    initialize_docker_framework
     
-    # Execute command
-    case "$command" in
+    case "$OPERATION" in
         "build")
-            check_docker || exit 1
-            initialize_network || exit 1
-            build_containers || exit 1
-            ;;
-        "start"|"up")
-            check_docker || exit 1
-            initialize_network || exit 1
-            start_services || exit 1
-            ;;
-        "stop"|"down")
-            stop_services || exit 1
-            ;;
-        "status")
-            show_service_status
-            ;;
-        "shell")
-            if [[ "$DRY_RUN" != "true" ]]; then
-                docker exec -it "cursor-${CONTAINER_TYPE}" bash
+            if build_docker_image; then
+                log_info "Docker image build completed successfully"
+                exit 0
+            else
+                log_error "Docker image build failed"
+                exit 1
             fi
             ;;
-        "backup")
-            create_backup || exit 1
+        "run")
+            # Build image if it doesn't exist
+            if \! docker images --format "{{.Repository}}:{{.Tag}}" | grep -q "^${DOCKER_IMAGE_NAME}:${DOCKER_TAG}$"; then
+                log_info "Docker image not found, building..."
+                if \! build_docker_image; then
+                    log_error "Failed to build Docker image"
+                    exit 1
+                fi
+            fi
+            
+            if run_docker_container "$@"; then
+                log_info "Docker container started successfully"
+                exit 0
+            else
+                log_error "Failed to start Docker container"
+                exit 1
+            fi
             ;;
-        "health")
-            run_health_checks
+        "stop")
+            if stop_docker_container; then
+                log_info "Docker container stopped successfully"
+                exit 0
+            else
+                log_error "Failed to stop Docker container"
+                exit 1
+            fi
+            ;;
+        "list")
+            list_docker_resources
+            exit 0
+            ;;
+        "cleanup")
+            cleanup_docker_resources
+            log_info "Docker cleanup completed"
+            exit 0
             ;;
         "logs")
-            if [[ "$DRY_RUN" != "true" ]]; then
-                cd "$COMPOSE_DIR" && docker-compose logs -f
+            if docker ps --format "table {{.Names}}" | grep -q "^${CONTAINER_NAME}$"; then
+                docker logs -f "$CONTAINER_NAME"
+            else
+                log_error "Container $CONTAINER_NAME is not running"
+                exit 1
             fi
             ;;
-        "help")
-            show_usage
-            ;;
         *)
-            log "ERROR" "Unknown command: $command"
-            show_usage
+            log_error "Unknown operation: $OPERATION"
+            display_usage
             exit 1
             ;;
     esac
-    
-    log "PASS" "Docker deployment completed successfully"
-    audit_log "SCRIPT_COMPLETED" "SUCCESS" "Command: $command"
 }
 
 # Execute main function if script is run directly

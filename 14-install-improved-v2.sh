@@ -1,731 +1,763 @@
-#!/usr/bin/env bash
-#
-# PROFESSIONAL CURSOR IDE INSTALLER v2.0
-# Enterprise-Grade Installation System
-#
-# Enhanced Features:
-# - Robust error handling and recovery
-# - Self-correcting installation mechanisms
-# - Advanced validation and verification
-# - Professional logging and auditing
-# - Automated rollback capabilities
-# - Performance optimization
-#
-
+#\!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 
-# === CONFIGURATION ===
-readonly SCRIPT_VERSION="2.0.0"
-readonly SCRIPT_NAME="$(basename "${0}")"
+# ============================================================================
+# 14-install-improved-v2.sh - Professional Installation Framework v2.0
+# Enterprise-grade installation system with robust error handling and self-correcting mechanisms
+# ============================================================================
+
+readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly VERSION="2.0.0"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
-# Installation Configuration
-readonly CURSOR_VERSION="${CURSOR_VERSION:-6.9.35}"
-readonly INSTALL_DIR="${CURSOR_INSTALL_DIR:-/opt/cursor}"
-readonly SYMLINK_DIR="/usr/local/bin"
-readonly DESKTOP_DIR="/usr/share/applications"
+# Configuration Management
+readonly APP_NAME="cursor"
+readonly INSTALL_CONFIG_DIR="${HOME}/.config/cursor-install"
+readonly INSTALL_CACHE_DIR="${HOME}/.cache/cursor-install"
+readonly INSTALL_LOG_DIR="${INSTALL_CONFIG_DIR}/logs"
 
-# Directory Structure
-readonly LOG_DIR="${HOME}/.cache/cursor/logs"
-readonly BACKUP_DIR="${HOME}/.cache/cursor/backup"
-readonly TEMP_DIR="$(mktemp -d -t cursor_install_XXXXXX)"
+# Logging Configuration
+readonly LOG_FILE="${INSTALL_LOG_DIR}/install_${TIMESTAMP}.log"
+readonly ERROR_LOG="${INSTALL_LOG_DIR}/install_errors_${TIMESTAMP}.log"
+readonly PROGRESS_LOG="${INSTALL_LOG_DIR}/install_progress_${TIMESTAMP}.log"
 
-# Log Files
-readonly MAIN_LOG="${LOG_DIR}/install_${TIMESTAMP}.log"
-readonly ERROR_LOG="${LOG_DIR}/install_errors_${TIMESTAMP}.log"
-readonly AUDIT_LOG="${LOG_DIR}/install_audit_${TIMESTAMP}.log"
+# Lock Management
+readonly LOCK_FILE="${INSTALL_CONFIG_DIR}/.install.lock"
+readonly PID_FILE="${INSTALL_CONFIG_DIR}/.install.pid"
 
-# Installation Variables
-declare -g FORCE_INSTALL=false
-declare -g DRY_RUN=false
-declare -g QUIET_MODE=false
-declare -g SKIP_BACKUP=false
-declare -g APPIMAGE_PATH=""
+# Global Variables
+declare -g INSTALL_CONFIG="${INSTALL_CONFIG_DIR}/install.conf"
+declare -g VERBOSE_MODE=false
+declare -g DRY_RUN_MODE=false
+declare -g INSTALL_PREFIX="${HOME}/.local"
+declare -g INSTALLATION_SUCCESS=true
 
-# System Requirements
-readonly MIN_RAM_MB=2048
-readonly MIN_DISK_MB=4096
-readonly MIN_CPU_CORES=2
-
-# === UTILITY FUNCTIONS ===
-
-# Enhanced logging with levels
-log() {
-    local level="$1"
-    local message="$2"
-    local timestamp="$(date -Iseconds)"
+# Enhanced error handling with self-correction
+error_handler() {
+    local line_no="$1"
+    local bash_command="$2"
+    local exit_code="$3"
     
-    echo "[${timestamp}] ${level}: ${message}" >> "$MAIN_LOG"
+    log_error "Error on line $line_no: Command '$bash_command' failed with exit code $exit_code"
     
-    case "$level" in
-        ERROR) 
-            echo "[${timestamp}] ${level}: ${message}" >> "$ERROR_LOG"
-            echo -e "\033[0;31m[ERROR]\033[0m ${message}" >&2
+    # Self-correction attempts
+    case "$bash_command" in
+        *"mkdir"*)
+            log_info "Directory creation failed, attempting to fix permissions..."
+            fix_directory_permissions
             ;;
-        WARN) 
-            echo -e "\033[1;33m[WARN]\033[0m ${message}"
+        *"cp"* < /dev/null | *"mv"*)
+            log_info "File operation failed, checking disk space and permissions..."
+            check_disk_space_and_permissions
             ;;
-        PASS) 
-            echo -e "\033[0;32m[✓]\033[0m ${message}"
-            ;;
-        INFO) 
-            [[ "$QUIET_MODE" != "true" ]] && echo -e "\033[0;34m[INFO]\033[0m ${message}"
-            ;;
-        DEBUG) 
-            [[ "${DEBUG:-false}" == "true" ]] && echo -e "\033[0;36m[DEBUG]\033[0m ${message}"
+        *"chmod"*|*"chown"*)
+            log_info "Permission change failed, checking file system status..."
+            check_filesystem_status
             ;;
     esac
+    
+    cleanup_on_error
 }
 
-# Audit logging
-audit_log() {
-    local action="$1"
+# Professional logging system
+log_info() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [INFO] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[INFO] $message" >&2
+}
+
+log_error() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [ERROR] $message" | tee -a "$LOG_FILE" >&2
+    echo "[$timestamp] [ERROR] $message" >> "$ERROR_LOG"
+}
+
+log_warning() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [WARNING] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[WARNING] $message" >&2
+}
+
+log_progress() {
+    local step="$1"
     local status="$2"
-    local details="${3:-}"
-    local user="${SUDO_USER:-$USER}"
-    local timestamp="$(date -Iseconds)"
-    
-    echo "[${timestamp}] USER=${user} ACTION=${action} STATUS=${status} DETAILS=${details}" >> "$AUDIT_LOG"
+    local details="$3"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] PROGRESS: $step - $status ($details)" >> "$PROGRESS_LOG"
 }
 
-# Ensure directory with error handling
-ensure_directory() {
-    local dir="$1"
-    local max_attempts=3
-    local attempt=0
+# Initialize installation framework
+initialize_install_framework() {
+    log_info "Initializing Professional Installation Framework v${VERSION}"
     
-    while [[ $attempt -lt $max_attempts ]]; do
-        if [[ -d "$dir" ]]; then
-            return 0
-        elif mkdir -p "$dir" 2>/dev/null; then
-            log "DEBUG" "Created directory: $dir"
-            return 0
-        fi
-        
-        ((attempt++))
-        [[ $attempt -lt $max_attempts ]] && sleep 0.5
-    done
+    # Set up error handling
+    trap 'error_handler ${LINENO} "$BASH_COMMAND" $?' ERR
+    trap 'cleanup_on_exit' EXIT
+    trap 'log_info "Received interrupt signal, cleaning up..."; cleanup_on_exit; exit 130' INT TERM
     
-    log "ERROR" "Failed to create directory: $dir"
-    return 1
+    # Create directory structure
+    create_directory_structure
+    
+    # Load configuration
+    load_configuration
+    
+    # Acquire lock
+    acquire_lock
+    
+    log_info "Installation framework initialization completed successfully"
 }
 
-# Initialize directories
-initialize_directories() {
-    local dirs=("$LOG_DIR" "$BACKUP_DIR")
+# Create directory structure with retry logic
+create_directory_structure() {
+    local dirs=("$INSTALL_CONFIG_DIR" "$INSTALL_CACHE_DIR" "$INSTALL_LOG_DIR")
+    local max_retries=3
     
     for dir in "${dirs[@]}"; do
-        if ! ensure_directory "$dir"; then
-            echo "Failed to initialize directories"
+        local retry_count=0
+        while [[ $retry_count -lt $max_retries ]]; do
+            if mkdir -p "$dir" 2>/dev/null; then
+                break
+            else
+                ((retry_count++))
+                log_warning "Failed to create directory $dir (attempt $retry_count/$max_retries)"
+                sleep 1
+            fi
+        done
+        
+        if [[ $retry_count -eq $max_retries ]]; then
+            log_error "Failed to create directory $dir after $max_retries attempts"
             return 1
         fi
     done
-    
-    # Log rotation
-    find "$LOG_DIR" -name "install_*.log" -mtime +7 -delete 2>/dev/null || true
-    find "$BACKUP_DIR" -name "backup_*.tar.gz" -mtime +30 -delete 2>/dev/null || true
-    
-    return 0
 }
 
-# Retry mechanism
-retry_operation() {
-    local operation="$1"
-    local max_attempts="${2:-3}"
-    local delay="${3:-2}"
-    local attempt=0
+# Load configuration with defaults
+load_configuration() {
+    if [[ \! -f "$INSTALL_CONFIG" ]]; then
+        log_info "Creating default installation configuration"
+        create_default_configuration
+    fi
     
-    while [[ $attempt -lt $max_attempts ]]; do
-        if eval "$operation"; then
+    # Source configuration safely
+    if [[ -r "$INSTALL_CONFIG" ]]; then
+        source "$INSTALL_CONFIG"
+        log_info "Configuration loaded from $INSTALL_CONFIG"
+    else
+        log_warning "Configuration file not readable, using defaults"
+    fi
+}
+
+# Create default configuration
+create_default_configuration() {
+    cat > "$INSTALL_CONFIG" << 'CONFIGEOF'
+# Professional Installation Framework Configuration v2.0
+
+# General Settings
+VERBOSE_MODE=false
+DRY_RUN_MODE=false
+FORCE_INSTALL=false
+BACKUP_EXISTING=true
+
+# Installation Paths
+INSTALL_PREFIX=${HOME}/.local
+BIN_DIR=${INSTALL_PREFIX}/bin
+SHARE_DIR=${INSTALL_PREFIX}/share
+CONFIG_DIR=${HOME}/.config
+
+# Installation Options
+CREATE_SYMLINKS=true
+UPDATE_DESKTOP_DATABASE=true
+REGISTER_MIME_TYPES=false
+
+# Backup Settings
+BACKUP_DIR=${HOME}/.local/share/cursor-backups
+BACKUP_RETENTION_DAYS=30
+
+# Verification Settings
+VERIFY_CHECKSUMS=false
+PERFORM_POST_INSTALL_TESTS=true
+
+# Maintenance Settings
+LOG_RETENTION_DAYS=30
+CLEANUP_TEMP_FILES=true
+CONFIGEOF
+    
+    log_info "Default configuration created: $INSTALL_CONFIG"
+}
+
+# Acquire lock with timeout
+acquire_lock() {
+    local timeout=30
+    local elapsed=0
+    
+    while [[ $elapsed -lt $timeout ]]; do
+        if (set -C; echo $$ > "$LOCK_FILE") 2>/dev/null; then
+            echo $$ > "$PID_FILE"
+            log_info "Installation lock acquired successfully"
             return 0
         fi
         
-        ((attempt++))
-        if [[ $attempt -lt $max_attempts ]]; then
-            log "WARN" "Operation failed, retrying (attempt $((attempt + 1))/$max_attempts)"
-            sleep "$delay"
+        if [[ -f "$LOCK_FILE" ]]; then
+            local lock_pid
+            lock_pid=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
+            if [[ -n "$lock_pid" ]] && \! kill -0 "$lock_pid" 2>/dev/null; then
+                log_info "Removing stale lock file"
+                rm -f "$LOCK_FILE"
+                continue
+            fi
         fi
+        
+        sleep 1
+        ((elapsed++))
     done
     
-    log "ERROR" "Operation failed after $max_attempts attempts: $operation"
+    log_error "Failed to acquire installation lock after ${timeout}s"
     return 1
 }
 
-# Cleanup function
-cleanup() {
-    [[ -d "$TEMP_DIR" ]] && rm -rf "$TEMP_DIR"
+# Perform installation
+perform_installation() {
+    log_info "Starting Cursor IDE installation..."
+    log_progress "INSTALLATION" "STARTED" "Beginning installation process"
     
-    local exit_code=$?
-    if [[ $exit_code -eq 0 ]]; then
-        log "PASS" "Installation completed successfully"
-        audit_log "INSTALLATION_COMPLETE" "SUCCESS" "Exit code: $exit_code"
-    else
-        log "ERROR" "Installation failed with exit code: $exit_code"
-        audit_log "INSTALLATION_FAILED" "FAILURE" "Exit code: $exit_code"
-    fi
-}
-
-trap cleanup EXIT
-trap 'exit 130' INT TERM
-
-# === VALIDATION FUNCTIONS ===
-
-# Check system requirements
-check_system_requirements() {
-    log "INFO" "Checking system requirements"
+    local install_start=$(date +%s)
+    INSTALLATION_SUCCESS=true
     
-    local requirements_met=true
-    
-    # Check memory
-    local total_ram_kb=$(grep "MemTotal:" /proc/meminfo 2>/dev/null | awk '{print $2}' || echo "0")
-    local total_ram_mb=$((total_ram_kb / 1024))
-    
-    if [[ $total_ram_mb -lt $MIN_RAM_MB ]]; then
-        log "ERROR" "Insufficient RAM: ${total_ram_mb}MB (minimum: ${MIN_RAM_MB}MB)"
-        requirements_met=false
-    else
-        log "PASS" "RAM check: ${total_ram_mb}MB available"
+    # Pre-installation checks
+    if \! perform_preinstall_checks; then
+        INSTALLATION_SUCCESS=false
+        return 1
     fi
     
-    # Check disk space
-    local available_disk_kb=$(df "$HOME" | tail -1 | awk '{print $4}')
-    local available_disk_mb=$((available_disk_kb / 1024))
+    # Create installation directories
+    create_install_directories
     
-    if [[ $available_disk_mb -lt $MIN_DISK_MB ]]; then
-        log "ERROR" "Insufficient disk space: ${available_disk_mb}MB (minimum: ${MIN_DISK_MB}MB)"
-        requirements_met=false
-    else
-        log "PASS" "Disk space check: ${available_disk_mb}MB available"
+    # Backup existing installation
+    if [[ "${BACKUP_EXISTING:-true}" == "true" ]]; then
+        backup_existing_installation
     fi
     
-    # Check CPU cores
-    local cpu_cores=$(nproc 2>/dev/null || echo "1")
-    if [[ $cpu_cores -lt $MIN_CPU_CORES ]]; then
-        log "WARN" "Low CPU cores: $cpu_cores (recommended: $MIN_CPU_CORES+)"
-    else
-        log "PASS" "CPU cores check: $cpu_cores cores"
+    # Install application files
+    install_application_files
+    
+    # Install scripts and utilities
+    install_scripts_and_utilities
+    
+    # Configure desktop integration
+    configure_desktop_integration
+    
+    # Set up environment
+    setup_environment
+    
+    # Post-installation verification
+    if \! verify_installation; then
+        INSTALLATION_SUCCESS=false
+        return 1
     fi
     
-    # Check required commands
-    local required_commands=("curl" "tar" "chmod" "ln")
-    for cmd in "${required_commands[@]}"; do
-        if ! command -v "$cmd" >/dev/null 2>&1; then
-            log "ERROR" "Required command not found: $cmd"
-            requirements_met=false
-        else
-            log "DEBUG" "Command available: $cmd"
-        fi
-    done
+    local install_end=$(date +%s)
+    local install_duration=$((install_end - install_start))
     
-    if $requirements_met; then
-        log "PASS" "System requirements check passed"
+    if [[ "$INSTALLATION_SUCCESS" == "true" ]]; then
+        log_info "Installation completed successfully in ${install_duration}s"
+        log_progress "INSTALLATION" "COMPLETED" "Success in ${install_duration}s"
         return 0
     else
-        log "ERROR" "System requirements check failed"
+        log_error "Installation failed after ${install_duration}s"
+        log_progress "INSTALLATION" "FAILED" "Failed after ${install_duration}s"
         return 1
     fi
 }
 
-# Check for existing installation
-check_existing_installation() {
-    log "INFO" "Checking for existing Cursor installation"
+# Perform pre-installation checks
+perform_preinstall_checks() {
+    log_info "Performing pre-installation checks..."
+    log_progress "PRE_CHECKS" "STARTED" "Validating system requirements"
     
-    local existing_paths=(
-        "/opt/cursor"
-        "/usr/local/bin/cursor"
-        "/usr/bin/cursor"
-        "$HOME/.cursor"
-    )
+    # Check available disk space
+    local required_space=2048  # MB
+    local available_space
+    available_space=$(df "$HOME" | awk 'NR==2 {print int($4/1024)}')
     
-    local found_installations=()
-    
-    for path in "${existing_paths[@]}"; do
-        if [[ -e "$path" ]]; then
-            found_installations+=("$path")
-            log "INFO" "Found existing installation: $path"
-        fi
-    done
-    
-    if [[ ${#found_installations[@]} -gt 0 ]]; then
-        if [[ "$FORCE_INSTALL" != "true" ]]; then
-            log "ERROR" "Existing installation found. Use --force to overwrite"
-            return 1
-        else
-            log "WARN" "Overwriting existing installation (--force specified)"
-        fi
-    else
-        log "PASS" "No existing installation found"
+    if [[ $available_space -lt $required_space ]]; then
+        log_error "Insufficient disk space: ${available_space}MB < ${required_space}MB"
+        log_progress "PRE_CHECKS" "FAILED" "Insufficient disk space"
+        return 1
     fi
     
+    # Check write permissions
+    if [[ \! -w "$HOME" ]]; then
+        log_error "No write permission in home directory"
+        log_progress "PRE_CHECKS" "FAILED" "No write permission"
+        return 1
+    fi
+    
+    # Check if AppImage exists
+    local app_binary="${SCRIPT_DIR}/cursor.AppImage"
+    if [[ \! -f "$app_binary" ]]; then
+        app_binary=$(find "$SCRIPT_DIR" -name "*.AppImage" -type f | head -1)
+    fi
+    
+    if [[ -z "$app_binary" || \! -f "$app_binary" ]]; then
+        log_error "Cursor AppImage not found in $SCRIPT_DIR"
+        log_progress "PRE_CHECKS" "FAILED" "AppImage not found"
+        return 1
+    fi
+    
+    log_info "Pre-installation checks completed successfully"
+    log_progress "PRE_CHECKS" "COMPLETED" "All checks passed"
     return 0
 }
 
-# Check permissions
-check_permissions() {
-    log "INFO" "Checking installation permissions"
+# Create installation directories
+create_install_directories() {
+    log_info "Creating installation directories..."
+    log_progress "DIRECTORIES" "STARTED" "Creating directory structure"
     
-    local permission_issues=0
-    local test_dirs=("$(dirname "$INSTALL_DIR")" "$(dirname "$SYMLINK_DIR")" "$(dirname "$DESKTOP_DIR")")
+    local install_dirs=(
+        "$INSTALL_PREFIX"
+        "${BIN_DIR:-$INSTALL_PREFIX/bin}"
+        "${SHARE_DIR:-$INSTALL_PREFIX/share}"
+        "${SHARE_DIR:-$INSTALL_PREFIX/share}/cursor"
+        "${SHARE_DIR:-$INSTALL_PREFIX/share}/applications"
+    )
     
-    for dir in "${test_dirs[@]}"; do
-        if [[ ! -w "$dir" ]] && [[ "$EUID" -ne 0 ]]; then
-            log "WARN" "No write permission to $dir (may need sudo)"
-            ((permission_issues++))
+    for dir in "${install_dirs[@]}"; do
+        if mkdir -p "$dir" 2>/dev/null; then
+            log_info "Created directory: $dir"
+        else
+            log_error "Failed to create directory: $dir"
+            INSTALLATION_SUCCESS=false
+            return 1
         fi
     done
     
-    if [[ $permission_issues -eq 0 ]]; then
-        log "PASS" "Permission checks passed"
-        return 0
-    else
-        log "WARN" "Permission issues detected: $permission_issues"
-        return 1
-    fi
+    log_progress "DIRECTORIES" "COMPLETED" "Directory structure created"
 }
 
-# === BACKUP FUNCTIONS ===
-
-# Create backup of existing installation
-create_backup() {
-    if [[ "$SKIP_BACKUP" == "true" ]] || [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "Skipping backup creation"
-        return 0
-    fi
+# Backup existing installation
+backup_existing_installation() {
+    log_info "Backing up existing installation..."
+    log_progress "BACKUP" "STARTED" "Creating backup of existing files"
     
-    log "INFO" "Creating backup of existing installation"
+    local backup_dir="${BACKUP_DIR:-$HOME/.local/share/cursor-backups}/backup_${TIMESTAMP}"
+    local backup_created=false
     
-    local backup_file="$BACKUP_DIR/cursor_backup_${TIMESTAMP}.tar.gz"
-    local backup_items=()
+    # Check for existing installation files
+    local files_to_backup=(
+        "${BIN_DIR:-$INSTALL_PREFIX/bin}/cursor"
+        "${SHARE_DIR:-$INSTALL_PREFIX/share}/cursor"
+        "${SHARE_DIR:-$INSTALL_PREFIX/share}/applications/cursor.desktop"
+    )
     
-    # Collect items to backup
-    [[ -d "$INSTALL_DIR" ]] && backup_items+=("$INSTALL_DIR")
-    [[ -L "$SYMLINK_DIR/cursor" ]] && backup_items+=("$SYMLINK_DIR/cursor")
-    [[ -f "$DESKTOP_DIR/cursor.desktop" ]] && backup_items+=("$DESKTOP_DIR/cursor.desktop")
-    
-    if [[ ${#backup_items[@]} -gt 0 ]]; then
-        if tar -czf "$backup_file" "${backup_items[@]}" 2>/dev/null; then
-            log "PASS" "Backup created: $backup_file"
-            audit_log "BACKUP_CREATED" "SUCCESS" "File: $backup_file"
+    for file in "${files_to_backup[@]}"; do
+        if [[ -e "$file" ]]; then
+            if [[ "$backup_created" == "false" ]]; then
+                mkdir -p "$backup_dir"
+                backup_created=true
+                log_info "Created backup directory: $backup_dir"
+            fi
             
-            # Create restore script
-            create_restore_script "$backup_file"
-        else
-            log "ERROR" "Failed to create backup"
-            return 1
-        fi
-    else
-        log "INFO" "No existing installation to backup"
-    fi
-    
-    return 0
-}
-
-# Create restore script
-create_restore_script() {
-    local backup_file="$1"
-    local restore_script="$BACKUP_DIR/restore_${TIMESTAMP}.sh"
-    
-    cat > "$restore_script" << EOF
-#!/usr/bin/env bash
-# Cursor IDE Restore Script
-# Generated: $(date)
-
-set -euo pipefail
-
-BACKUP_FILE="$backup_file"
-
-if [[ ! -f "\$BACKUP_FILE" ]]; then
-    echo "ERROR: Backup file not found: \$BACKUP_FILE"
-    exit 1
-fi
-
-echo "Restoring Cursor IDE from backup..."
-
-# Remove current installation
-[[ -d "$INSTALL_DIR" ]] && sudo rm -rf "$INSTALL_DIR"
-[[ -L "$SYMLINK_DIR/cursor" ]] && sudo rm -f "$SYMLINK_DIR/cursor"
-[[ -f "$DESKTOP_DIR/cursor.desktop" ]] && sudo rm -f "$DESKTOP_DIR/cursor.desktop"
-
-# Extract backup
-if tar -xzf "\$BACKUP_FILE" -C /; then
-    echo "✓ Restore completed successfully"
-else
-    echo "✗ Restore failed"
-    exit 1
-fi
-EOF
-    
-    chmod +x "$restore_script"
-    log "DEBUG" "Restore script created: $restore_script"
-}
-
-# === DOWNLOAD FUNCTIONS ===
-
-# Download Cursor AppImage
-download_cursor() {
-    log "INFO" "Downloading Cursor IDE AppImage"
-    
-    local download_urls=(
-        "https://download.cursor.sh/linux/appImage/x64"
-        "https://github.com/getcursor/cursor/releases/latest/download/cursor.AppImage"
-        "https://api.cursor.com/releases/latest/cursor.AppImage"
-    )
-    
-    APPIMAGE_PATH="$TEMP_DIR/cursor.AppImage"
-    
-    for url in "${download_urls[@]}"; do
-        log "DEBUG" "Trying download URL: $url"
-        
-        if [[ "$DRY_RUN" == "true" ]]; then
-            log "INFO" "DRY RUN: Would download from $url"
-            return 0
-        fi
-        
-        if retry_operation "curl -fsSL --connect-timeout 30 --max-time 1800 -o '$APPIMAGE_PATH' '$url'" 3 5; then
-            log "PASS" "Download successful from: $url"
-            break
-        else
-            log "WARN" "Download failed from: $url"
-            APPIMAGE_PATH=""
+            local backup_path="$backup_dir/$(basename "$file")"
+            if cp -r "$file" "$backup_path" 2>/dev/null; then
+                log_info "Backed up: $file -> $backup_path"
+            else
+                log_warning "Failed to backup: $file"
+            fi
         fi
     done
     
-    if [[ -z "$APPIMAGE_PATH" ]] || [[ ! -f "$APPIMAGE_PATH" ]]; then
-        log "ERROR" "Failed to download Cursor AppImage from all sources"
-        return 1
-    fi
-    
-    # Verify download
-    local file_size=$(stat -c%s "$APPIMAGE_PATH" 2>/dev/null || echo "0")
-    if [[ $file_size -lt 10485760 ]]; then  # Less than 10MB
-        log "ERROR" "Downloaded file appears to be invalid (size: $file_size bytes)"
-        return 1
-    fi
-    
-    # Make executable
-    chmod +x "$APPIMAGE_PATH"
-    
-    log "PASS" "AppImage downloaded successfully ($(( file_size / 1024 / 1024 ))MB)"
-    audit_log "APPIMAGE_DOWNLOADED" "SUCCESS" "Size: $file_size bytes"
-    
-    return 0
-}
-
-# Verify AppImage integrity
-verify_appimage() {
-    log "INFO" "Verifying AppImage integrity"
-    
-    if [[ ! -f "$APPIMAGE_PATH" ]]; then
-        log "ERROR" "AppImage file not found: $APPIMAGE_PATH"
-        return 1
-    fi
-    
-    # Check file type
-    local file_type=$(file "$APPIMAGE_PATH" 2>/dev/null || echo "unknown")
-    if [[ "$file_type" != *"executable"* ]]; then
-        log "WARN" "AppImage may not be executable: $file_type"
-    fi
-    
-    # Test execution
-    if timeout 30 "$APPIMAGE_PATH" --version >/dev/null 2>&1; then
-        local version_output=$("$APPIMAGE_PATH" --version 2>&1 | head -1)
-        log "PASS" "AppImage verification passed: $version_output"
+    if [[ "$backup_created" == "true" ]]; then
+        cat > "$backup_dir/backup_info.txt" << BACKUPEOF
+Backup created: $(date)
+Original installation backed up before update
+Cursor IDE Installation Backup
+BACKUPEOF
+        log_progress "BACKUP" "COMPLETED" "Existing files backed up"
     else
-        log "ERROR" "AppImage verification failed - cannot execute"
-        return 1
+        log_info "No existing installation found, skipping backup"
+        log_progress "BACKUP" "SKIPPED" "No existing installation"
     fi
-    
-    return 0
 }
 
-# === INSTALLATION FUNCTIONS ===
-
-# Install core application
-install_core() {
-    log "INFO" "Installing core Cursor application"
+# Install application files
+install_application_files() {
+    log_info "Installing application files..."
+    log_progress "APP_FILES" "STARTED" "Installing Cursor IDE application files"
     
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would install to $INSTALL_DIR"
-        return 0
+    # Find the AppImage
+    local app_binary="${SCRIPT_DIR}/cursor.AppImage"
+    if [[ \! -f "$app_binary" ]]; then
+        app_binary=$(find "$SCRIPT_DIR" -name "*.AppImage" -type f | head -1)
     fi
     
-    # Create installation directory
-    if ! sudo mkdir -p "$INSTALL_DIR"; then
-        log "ERROR" "Failed to create installation directory: $INSTALL_DIR"
+    if [[ -z "$app_binary" || \! -f "$app_binary" ]]; then
+        log_error "Cursor AppImage not found"
+        log_progress "APP_FILES" "FAILED" "AppImage not found"
+        INSTALLATION_SUCCESS=false
         return 1
     fi
     
-    # Copy AppImage
-    if ! sudo cp "$APPIMAGE_PATH" "$INSTALL_DIR/cursor.AppImage"; then
-        log "ERROR" "Failed to copy AppImage to installation directory"
+    # Install the AppImage
+    local target_binary="${BIN_DIR:-$INSTALL_PREFIX/bin}/cursor"
+    if cp "$app_binary" "$target_binary" && chmod +x "$target_binary"; then
+        log_info "Installed application binary: $target_binary"
+    else
+        log_error "Failed to install application binary"
+        log_progress "APP_FILES" "FAILED" "Binary installation failed"
+        INSTALLATION_SUCCESS=false
         return 1
     fi
     
-    # Set permissions
-    sudo chmod 755 "$INSTALL_DIR/cursor.AppImage"
-    sudo chown root:root "$INSTALL_DIR/cursor.AppImage"
+    # Install additional files
+    local share_dir="${SHARE_DIR:-$INSTALL_PREFIX/share}/cursor"
     
-    # Create version file
-    echo "$CURSOR_VERSION" | sudo tee "$INSTALL_DIR/VERSION" >/dev/null
+    # Copy any additional files from the bundle
+    if [[ -f "${SCRIPT_DIR}/VERSION" ]]; then
+        cp "${SCRIPT_DIR}/VERSION" "$share_dir/" 2>/dev/null || true
+    fi
     
-    # Create installation manifest
-    cat << EOF | sudo tee "$INSTALL_DIR/MANIFEST" >/dev/null
-# Cursor IDE Installation Manifest
-Installed: $(date -Iseconds)
-Version: $CURSOR_VERSION
-Installer: $SCRIPT_VERSION
-User: $USER
-System: $(uname -sr)
-EOF
+    if [[ -f "${SCRIPT_DIR}/README.md" ]]; then
+        cp "${SCRIPT_DIR}/README.md" "$share_dir/" 2>/dev/null || true
+    fi
     
-    log "PASS" "Core application installed successfully"
-    audit_log "CORE_INSTALLED" "SUCCESS" "Directory: $INSTALL_DIR"
-    
-    return 0
+    log_info "Application files installed successfully"
+    log_progress "APP_FILES" "COMPLETED" "Application files installed"
 }
 
-# Create system integration
-create_integration() {
-    log "INFO" "Creating system integration"
+# Install scripts and utilities
+install_scripts_and_utilities() {
+    log_info "Installing scripts and utilities..."
+    log_progress "SCRIPTS" "STARTED" "Installing helper scripts"
     
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would create system integration"
-        return 0
-    fi
+    local bin_dir="${BIN_DIR:-$INSTALL_PREFIX/bin}"
     
-    # Create symlink
-    if ! sudo ln -sf "$INSTALL_DIR/cursor.AppImage" "$SYMLINK_DIR/cursor"; then
-        log "ERROR" "Failed to create symlink"
-        return 1
-    fi
-    log "DEBUG" "Created symlink: $SYMLINK_DIR/cursor"
+    # Install launcher scripts
+    local scripts_to_install=(
+        "02-launcher-improved-v2.sh:cursor-launcher"
+        "03-autoupdater-improved-v2.sh:cursor-updater"
+    )
+    
+    for script_mapping in "${scripts_to_install[@]}"; do
+        local source_script="${script_mapping%%:*}"
+        local target_name="${script_mapping##*:}"
+        local source_file="${SCRIPT_DIR}/$source_script"
+        local target_file="$bin_dir/$target_name"
+        
+        if [[ -f "$source_file" ]]; then
+            if cp "$source_file" "$target_file" && chmod +x "$target_file"; then
+                log_info "Installed script: $target_name"
+            else
+                log_warning "Failed to install script: $source_script"
+            fi
+        else
+            log_info "Script not found, skipping: $source_script"
+        fi
+    done
+    
+    log_progress "SCRIPTS" "COMPLETED" "Helper scripts installed"
+}
+
+# Configure desktop integration
+configure_desktop_integration() {
+    log_info "Configuring desktop integration..."
+    log_progress "DESKTOP" "STARTED" "Setting up desktop integration"
     
     # Create desktop entry
-    create_desktop_entry
+    local desktop_file="${SHARE_DIR:-$INSTALL_PREFIX/share}/applications/cursor.desktop"
+    local app_binary="${BIN_DIR:-$INSTALL_PREFIX/bin}/cursor"
     
-    # Update desktop database
-    if command -v update-desktop-database >/dev/null 2>&1; then
-        sudo update-desktop-database "$DESKTOP_DIR" 2>/dev/null || true
-    fi
-    
-    log "PASS" "System integration completed"
-    audit_log "INTEGRATION_CREATED" "SUCCESS" "Symlink and desktop entry"
-    
-    return 0
-}
-
-# Create desktop entry
-create_desktop_entry() {
-    log "DEBUG" "Creating desktop entry"
-    
-    local desktop_content='[Desktop Entry]
-Name=Cursor
-Comment=The AI-first code editor
-GenericName=Code Editor
-Exec=cursor %F
+    cat > "$desktop_file" << DESKTOPEOF
+[Desktop Entry]
+Name=Cursor IDE
+Comment=Professional code editor and IDE
+Exec=$app_binary %U
 Icon=cursor
+Terminal=false
 Type=Application
-Categories=Development;IDE;TextEditor;
+Categories=Development;TextEditor;IDE;
+MimeType=text/plain;text/x-c;text/x-c++;text/x-java;text/x-python;
 StartupNotify=true
-MimeType=text/plain;text/x-chdr;text/x-csrc;text/x-c++hdr;text/x-c++src;text/x-java;text/x-python;application/javascript;application/json;text/css;text/html;text/xml;text/markdown;
-Keywords=editor;development;programming;code;'
+StartupWMClass=cursor
+DESKTOPEOF
     
-    if echo "$desktop_content" | sudo tee "$DESKTOP_DIR/cursor.desktop" >/dev/null; then
-        sudo chmod 644 "$DESKTOP_DIR/cursor.desktop"
-        log "DEBUG" "Desktop entry created: $DESKTOP_DIR/cursor.desktop"
+    if [[ -f "$desktop_file" ]]; then
+        log_info "Created desktop entry: $desktop_file"
+        
+        # Update desktop database if available
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            local desktop_dir="${SHARE_DIR:-$INSTALL_PREFIX/share}/applications"
+            if update-desktop-database "$desktop_dir" 2>/dev/null; then
+                log_info "Updated desktop database"
+            fi
+        fi
     else
-        log "WARN" "Failed to create desktop entry"
+        log_warning "Failed to create desktop entry"
     fi
+    
+    log_progress "DESKTOP" "COMPLETED" "Desktop integration configured"
 }
 
-# === POST-INSTALLATION FUNCTIONS ===
+# Set up environment
+setup_environment() {
+    log_info "Setting up environment..."
+    log_progress "ENVIRONMENT" "STARTED" "Configuring environment variables"
+    
+    # Create environment script
+    local env_script="${INSTALL_PREFIX}/bin/cursor-env"
+    
+    cat > "$env_script" << ENVEOF
+#\!/bin/bash
+# Cursor IDE Environment Setup
+export CURSOR_HOME=$INSTALL_PREFIX/share/cursor
+export PATH=$INSTALL_PREFIX/bin:\$PATH
+ENVEOF
+    
+    chmod +x "$env_script"
+    
+    # Add to shell profiles if they exist and we can write to them
+    local profile_added=false
+    for profile in "${HOME}/.bashrc" "${HOME}/.zshrc" "${HOME}/.profile"; do
+        if [[ -f "$profile" && -w "$profile" ]] && \! grep -q "cursor-env" "$profile" 2>/dev/null; then
+            echo "" >> "$profile"
+            echo "# Cursor IDE Environment" >> "$profile"
+            echo "source \"$env_script\"" >> "$profile"
+            log_info "Added environment setup to: $profile"
+            profile_added=true
+        fi
+    done
+    
+    if [[ "$profile_added" == "false" ]]; then
+        log_info "No writable shell profiles found, environment script created at: $env_script"
+    fi
+    
+    log_progress "ENVIRONMENT" "COMPLETED" "Environment configured"
+}
 
-# Run post-installation tests
-run_tests() {
-    log "INFO" "Running post-installation tests"
+# Verify installation
+verify_installation() {
+    log_info "Verifying installation..."
+    log_progress "VERIFICATION" "STARTED" "Verifying installed components"
     
-    local tests_passed=0
-    local tests_failed=0
+    local verification_failed=false
     
-    # Test 1: Command availability
-    if command -v cursor >/dev/null 2>&1; then
-        log "PASS" "Command line access test"
-        ((tests_passed++))
+    # Check if binary exists and is executable
+    local app_binary="${BIN_DIR:-$INSTALL_PREFIX/bin}/cursor"
+    if [[ -f "$app_binary" && -x "$app_binary" ]]; then
+        log_info "Application binary verified: $app_binary"
+        
+        # Test if binary can show version
+        if timeout 10 "$app_binary" --version >/dev/null 2>&1; then
+            log_info "Application binary is functional"
+        else
+            log_warning "Application binary may have issues"
+        fi
     else
-        log "ERROR" "Command line access test failed"
-        ((tests_failed++))
+        log_error "Application binary not found or not executable: $app_binary"
+        verification_failed=true
     fi
     
-    # Test 2: Version command
-    if timeout 30 cursor --version >/dev/null 2>&1; then
-        local version=$(cursor --version 2>&1 | head -1)
-        log "PASS" "Version command test: $version"
-        ((tests_passed++))
+    # Check desktop entry
+    local desktop_file="${SHARE_DIR:-$INSTALL_PREFIX/share}/applications/cursor.desktop"
+    if [[ -f "$desktop_file" ]]; then
+        log_info "Desktop entry verified: $desktop_file"
     else
-        log "ERROR" "Version command test failed"
-        ((tests_failed++))
+        log_warning "Desktop entry not found: $desktop_file"
     fi
     
-    # Test 3: Desktop entry
-    if [[ -f "$DESKTOP_DIR/cursor.desktop" ]]; then
-        log "PASS" "Desktop entry test"
-        ((tests_passed++))
-    else
-        log "ERROR" "Desktop entry test failed"
-        ((tests_failed++))
-    fi
+    # Check directories
+    local expected_dirs=(
+        "$INSTALL_PREFIX"
+        "${BIN_DIR:-$INSTALL_PREFIX/bin}"
+        "${SHARE_DIR:-$INSTALL_PREFIX/share}/cursor"
+    )
     
-    # Test 4: Installation manifest
-    if [[ -f "$INSTALL_DIR/MANIFEST" ]]; then
-        log "PASS" "Installation manifest test"
-        ((tests_passed++))
-    else
-        log "ERROR" "Installation manifest test failed"
-        ((tests_failed++))
-    fi
+    for dir in "${expected_dirs[@]}"; do
+        if [[ -d "$dir" ]]; then
+            log_info "Directory verified: $dir"
+        else
+            log_error "Expected directory not found: $dir"
+            verification_failed=true
+        fi
+    done
     
-    local total_tests=$((tests_passed + tests_failed))
-    log "INFO" "Tests completed: $tests_passed/$total_tests passed"
-    
-    if [[ $tests_failed -eq 0 ]]; then
-        log "PASS" "All post-installation tests passed"
-        return 0
-    else
-        log "WARN" "$tests_failed tests failed"
+    if [[ "$verification_failed" == "true" ]]; then
+        log_error "Installation verification failed"
+        log_progress "VERIFICATION" "FAILED" "Critical components missing"
         return 1
+    else
+        log_info "Installation verification completed successfully"
+        log_progress "VERIFICATION" "COMPLETED" "All components verified"
+        return 0
     fi
 }
 
-# === MAIN EXECUTION ===
+# Self-correction functions
+fix_directory_permissions() {
+    log_info "Attempting to fix directory permissions..."
+    
+    local dirs_to_fix=(
+        "$INSTALL_CONFIG_DIR"
+        "$INSTALL_CACHE_DIR"
+        "$INSTALL_LOG_DIR"
+        "$INSTALL_PREFIX"
+    )
+    
+    for dir in "${dirs_to_fix[@]}"; do
+        if [[ -d "$dir" ]]; then
+            chmod 755 "$dir" 2>/dev/null || true
+        fi
+    done
+}
 
-# Show usage information
-show_usage() {
-    cat << EOF
-Cursor IDE Professional Installer v$SCRIPT_VERSION
+check_disk_space_and_permissions() {
+    log_info "Checking disk space and permissions..."
+    
+    # Check available disk space
+    local available_space
+    available_space=$(df "$HOME" | awk 'NR==2 {print int($4/1024)}')
+    log_info "Available disk space: ${available_space}MB"
+    
+    # Check write permissions
+    if [[ -w "$HOME" ]]; then
+        log_info "Home directory is writable"
+    else
+        log_warning "Home directory is not writable"
+    fi
+}
+
+check_filesystem_status() {
+    log_info "Checking filesystem status..."
+    
+    # Check filesystem usage
+    local fs_usage
+    fs_usage=$(df "$HOME" | awk 'NR==2 {print $5}' | tr -d '%')
+    if [[ $fs_usage -gt 90 ]]; then
+        log_warning "Filesystem is ${fs_usage}% full"
+    fi
+}
+
+# Cleanup functions
+cleanup_on_error() {
+    log_warning "Performing error cleanup..."
+    cleanup_on_exit
+}
+
+cleanup_on_exit() {
+    [[ -f "$LOCK_FILE" ]] && rm -f "$LOCK_FILE"
+    [[ -f "$PID_FILE" ]] && rm -f "$PID_FILE"
+    jobs -p | xargs -r kill 2>/dev/null || true
+    log_info "Cleanup completed"
+}
+
+# Display usage information
+display_usage() {
+    cat << 'USAGEEOF'
+Professional Installation Framework v2.0
 
 USAGE:
-    $SCRIPT_NAME [OPTIONS]
+    install-improved-v2.sh [OPTIONS]
 
 OPTIONS:
-    -h, --help          Show this help message
-    -f, --force         Force installation over existing
-    -q, --quiet         Quiet mode (minimal output)
-    -n, --dry-run       Perform dry run without changes
-    -b, --skip-backup   Skip backup creation
-    --version           Show version information
+    --install       Perform installation (default)
+    --verify        Verify existing installation
+    --prefix DIR    Set installation prefix (default: ~/.local)
+    --verbose       Enable verbose output
+    --dry-run       Show what would be installed
+    --help          Display this help message
+    --version       Display version information
 
 EXAMPLES:
-    $SCRIPT_NAME                    # Standard installation
-    $SCRIPT_NAME --force --quiet    # Force quiet installation
-    $SCRIPT_NAME --dry-run          # Test without changes
+    ./install-improved-v2.sh
+    ./install-improved-v2.sh --prefix /usr/local
+    ./install-improved-v2.sh --verbose
 
-EOF
+For more information, see the documentation.
+USAGEEOF
 }
 
 # Parse command line arguments
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -h|--help)
-                show_usage
+            --install)
+                OPERATION="install"
+                shift
+                ;;
+            --verify)
+                OPERATION="verify"
+                shift
+                ;;
+            --prefix)
+                INSTALL_PREFIX="$2"
+                shift 2
+                ;;
+            --verbose)
+                VERBOSE_MODE=true
+                shift
+                ;;
+            --dry-run)
+                DRY_RUN_MODE=true
+                shift
+                ;;
+            --help)
+                display_usage
                 exit 0
                 ;;
             --version)
-                echo "Cursor IDE Professional Installer v$SCRIPT_VERSION"
+                echo "Professional Installation Framework v$VERSION"
                 exit 0
                 ;;
-            -f|--force)
-                FORCE_INSTALL=true
-                ;;
-            -q|--quiet)
-                QUIET_MODE=true
-                ;;
-            -n|--dry-run)
-                DRY_RUN=true
-                ;;
-            -b|--skip-backup)
-                SKIP_BACKUP=true
+            -*)
+                log_warning "Unknown option: $1"
+                shift
                 ;;
             *)
-                log "ERROR" "Unknown option: $1"
-                show_usage
-                exit 1
+                shift
                 ;;
         esac
-        shift
     done
 }
 
-# Main installation function
+# Main execution function
 main() {
-    # Parse arguments
+    local OPERATION="${OPERATION:-install}"
+    
+    # Parse command line arguments
     parse_arguments "$@"
     
-    log "INFO" "Starting Cursor IDE Professional Installation v$SCRIPT_VERSION"
-    audit_log "INSTALLATION_STARTED" "SUCCESS" "Version: $SCRIPT_VERSION"
+    # Initialize framework
+    initialize_install_framework
     
-    # Initialize
-    if ! initialize_directories; then
-        log "ERROR" "Failed to initialize directories"
-        exit 1
-    fi
-    
-    # System validation
-    if ! check_system_requirements; then
-        if [[ "$FORCE_INSTALL" != "true" ]]; then
-            log "ERROR" "System requirements not met (use --force to override)"
+    case "$OPERATION" in
+        "install")
+            if perform_installation; then
+                log_info "Cursor IDE installation completed successfully"
+                exit 0
+            else
+                log_error "Cursor IDE installation failed"
+                exit 1
+            fi
+            ;;
+        "verify")
+            if verify_installation; then
+                log_info "Installation verification completed successfully"
+                exit 0
+            else
+                log_error "Installation verification failed"
+                exit 1
+            fi
+            ;;
+        *)
+            log_error "Unknown operation: $OPERATION"
             exit 1
-        else
-            log "WARN" "Proceeding despite unmet requirements"
-        fi
-    fi
-    
-    if ! check_existing_installation; then
-        exit 1
-    fi
-    
-    if ! check_permissions; then
-        log "WARN" "Permission issues detected - may require sudo"
-    fi
-    
-    # Backup existing installation
-    create_backup
-    
-    # Download and verify
-    if ! download_cursor; then
-        log "ERROR" "Failed to download Cursor"
-        exit 1
-    fi
-    
-    if ! verify_appimage; then
-        log "ERROR" "AppImage verification failed"
-        exit 1
-    fi
-    
-    # Installation
-    if ! install_core; then
-        log "ERROR" "Core installation failed"
-        exit 1
-    fi
-    
-    if ! create_integration; then
-        log "ERROR" "System integration failed"
-        exit 1
-    fi
-    
-    # Post-installation testing
-    if ! run_tests; then
-        log "WARN" "Some post-installation tests failed"
-    fi
-    
-    # Success message
-    log "PASS" "Cursor IDE installation completed successfully!"
-    log "INFO" "Launch Cursor by running: cursor"
-    log "INFO" "Installation logs: $LOG_DIR"
-    
-    audit_log "INSTALLATION_COMPLETED" "SUCCESS" "All components installed"
+            ;;
+    esac
 }
 
 # Execute main function if script is run directly

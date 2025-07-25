@@ -1,644 +1,688 @@
-#!/usr/bin/env bash
-#
-# PROFESSIONAL CURSOR IDE PROJECT TRACKER v2.0
-# Enterprise-Grade Code Analysis and Monitoring System
-#
-# Enhanced Features:
-# - Robust project tracking and analysis
-# - Self-correcting metric collection
-# - Advanced dependency monitoring
-# - Professional reporting and analytics
-# - Automated quality assessment
-# - Performance optimization
-#
-
+#\!/usr/bin/env bash
 set -euo pipefail
 IFS=$'\n\t'
 
-# === CONFIGURATION ===
-readonly SCRIPT_VERSION="2.0.0"
-readonly SCRIPT_NAME="$(basename "${0}")"
+# ============================================================================
+# 16-tracker-improved-v2.sh - Professional Usage Tracking Framework v2.0
+# Enterprise-grade usage analytics with robust error handling and self-correcting mechanisms
+# ============================================================================
+
+readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly VERSION="2.0.0"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
-# Analysis Configuration
-readonly TARGET_DIR="${1:-$SCRIPT_DIR}"
-readonly ANALYSIS_ID="analysis_${TIMESTAMP}"
+# Configuration Management
+readonly APP_NAME="cursor"
+readonly TRACKER_CONFIG_DIR="${HOME}/.config/cursor-tracker"
+readonly TRACKER_CACHE_DIR="${HOME}/.cache/cursor-tracker"
+readonly TRACKER_LOG_DIR="${TRACKER_CONFIG_DIR}/logs"
 
-# Directory Structure
-readonly BASE_DIR="${HOME}/.cache/cursor/tracker"
-readonly LOG_DIR="${BASE_DIR}/logs"
-readonly REPORTS_DIR="${BASE_DIR}/reports"
-readonly METRICS_DIR="${BASE_DIR}/metrics"
-readonly TEMP_DIR="$(mktemp -d -t cursor_tracker_XXXXXX)"
+# Logging Configuration
+readonly LOG_FILE="${TRACKER_LOG_DIR}/tracker_${TIMESTAMP}.log"
+readonly ERROR_LOG="${TRACKER_LOG_DIR}/tracker_errors_${TIMESTAMP}.log"
+readonly USAGE_LOG="${TRACKER_LOG_DIR}/usage_${TIMESTAMP}.log"
 
-# Log Files
-readonly MAIN_LOG="${LOG_DIR}/tracker_${TIMESTAMP}.log"
-readonly ERROR_LOG="${LOG_DIR}/tracker_errors_${TIMESTAMP}.log"
-readonly ANALYSIS_LOG="${LOG_DIR}/analysis_${TIMESTAMP}.log"
+# Lock Management
+readonly LOCK_FILE="${TRACKER_CONFIG_DIR}/.tracker.lock"
+readonly PID_FILE="${TRACKER_CONFIG_DIR}/.tracker.pid"
 
-# Report Files
-readonly JSON_REPORT="${REPORTS_DIR}/report_${TIMESTAMP}.json"
-readonly HTML_REPORT="${REPORTS_DIR}/report_${TIMESTAMP}.html"
-readonly METRICS_CSV="${METRICS_DIR}/metrics_${TIMESTAMP}.csv"
+# Global Variables
+declare -g TRACKER_CONFIG="${TRACKER_CONFIG_DIR}/tracker.conf"
+declare -g VERBOSE_MODE=false
+declare -g DRY_RUN_MODE=false
+declare -g TRACKING_ENABLED=true
 
-# Analysis Variables
-declare -A FILE_METRICS
-declare -A PROJECT_STATS
-declare -A QUALITY_SCORES
-declare -g DRY_RUN=false
-declare -g VERBOSE=false
-declare -g INCLUDE_TESTS=false
-
-# === UTILITY FUNCTIONS ===
-
-# Enhanced logging
-log() {
-    local level="$1"
-    local message="$2"
-    local timestamp="$(date -Iseconds)"
+# Enhanced error handling with self-correction
+error_handler() {
+    local line_no="$1"
+    local bash_command="$2"
+    local exit_code="$3"
     
-    echo "[${timestamp}] ${level}: ${message}" >> "$MAIN_LOG"
+    log_error "Error on line $line_no: Command '$bash_command' failed with exit code $exit_code"
     
-    case "$level" in
-        ERROR) 
-            echo "[${timestamp}] ${level}: ${message}" >> "$ERROR_LOG"
-            echo -e "\033[0;31m[ERROR]\033[0m ${message}" >&2
+    # Self-correction attempts
+    case "$bash_command" in
+        *"mkdir"*)
+            log_info "Directory creation failed, attempting to fix permissions..."
+            fix_directory_permissions
             ;;
-        WARN) 
-            echo -e "\033[1;33m[WARN]\033[0m ${message}"
+        *"sqlite3"*)
+            log_info "Database operation failed, checking database integrity..."
+            check_database_integrity
             ;;
-        PASS) 
-            echo -e "\033[0;32m[✓]\033[0m ${message}"
-            ;;
-        INFO) 
-            echo -e "\033[0;34m[INFO]\033[0m ${message}"
-            ;;
-        DEBUG) 
-            [[ "$VERBOSE" == "true" ]] && echo -e "\033[0;36m[DEBUG]\033[0m ${message}"
+        *"ps"* < /dev/null | *"pgrep"*)
+            log_info "Process monitoring failed, using alternative methods..."
+            use_alternative_process_monitoring
             ;;
     esac
+    
+    cleanup_on_error
 }
 
-# Ensure directory with error handling
-ensure_directory() {
-    local dir="$1"
-    local max_attempts=3
-    local attempt=0
-    
-    while [[ $attempt -lt $max_attempts ]]; do
-        if [[ -d "$dir" ]]; then
-            return 0
-        elif mkdir -p "$dir" 2>/dev/null; then
-            log "DEBUG" "Created directory: $dir"
-            return 0
-        fi
-        
-        ((attempt++))
-        [[ $attempt -lt $max_attempts ]] && sleep 0.5
-    done
-    
-    log "ERROR" "Failed to create directory: $dir"
-    return 1
+# Professional logging system
+log_info() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [INFO] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[INFO] $message" >&2
 }
 
-# Initialize directories
-initialize_directories() {
-    local dirs=("$LOG_DIR" "$REPORTS_DIR" "$METRICS_DIR")
+log_error() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [ERROR] $message" | tee -a "$LOG_FILE" >&2
+    echo "[$timestamp] [ERROR] $message" >> "$ERROR_LOG"
+}
+
+log_warning() {
+    local message="$*"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] [WARNING] $message" | tee -a "$LOG_FILE"
+    [[ "$VERBOSE_MODE" == "true" ]] && echo "[WARNING] $message" >&2
+}
+
+log_usage() {
+    local event="$1"
+    local data="$2"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] USAGE: $event = $data" >> "$USAGE_LOG"
+}
+
+# Initialize tracking framework
+initialize_tracking_framework() {
+    log_info "Initializing Professional Usage Tracking Framework v${VERSION}"
+    
+    # Set up error handling
+    trap 'error_handler ${LINENO} "$BASH_COMMAND" $?' ERR
+    trap 'cleanup_on_exit' EXIT
+    trap 'log_info "Received interrupt signal, cleaning up..."; cleanup_on_exit; exit 130' INT TERM
+    
+    # Create directory structure
+    create_directory_structure
+    
+    # Load configuration
+    load_configuration
+    
+    # Initialize database
+    initialize_database
+    
+    # Acquire lock
+    acquire_lock
+    
+    log_info "Tracking framework initialization completed successfully"
+}
+
+# Create directory structure with retry logic
+create_directory_structure() {
+    local dirs=("$TRACKER_CONFIG_DIR" "$TRACKER_CACHE_DIR" "$TRACKER_LOG_DIR")
+    local max_retries=3
     
     for dir in "${dirs[@]}"; do
-        if ! ensure_directory "$dir"; then
-            echo "Failed to initialize directories"
+        local retry_count=0
+        while [[ $retry_count -lt $max_retries ]]; do
+            if mkdir -p "$dir" 2>/dev/null; then
+                break
+            else
+                ((retry_count++))
+                log_warning "Failed to create directory $dir (attempt $retry_count/$max_retries)"
+                sleep 1
+            fi
+        done
+        
+        if [[ $retry_count -eq $max_retries ]]; then
+            log_error "Failed to create directory $dir after $max_retries attempts"
             return 1
         fi
     done
-    
-    # Log rotation
-    find "$LOG_DIR" -name "tracker_*.log" -mtime +7 -delete 2>/dev/null || true
-    find "$REPORTS_DIR" -name "report_*.html" -mtime +30 -delete 2>/dev/null || true
-    
-    return 0
 }
 
-# Cleanup function
-cleanup() {
-    [[ -d "$TEMP_DIR" ]] && rm -rf "$TEMP_DIR"
+# Load configuration with defaults
+load_configuration() {
+    if [[ \! -f "$TRACKER_CONFIG" ]]; then
+        log_info "Creating default tracking configuration"
+        create_default_configuration
+    fi
     
-    local exit_code=$?
-    if [[ $exit_code -eq 0 ]]; then
-        log "PASS" "Project tracking completed successfully"
+    # Source configuration safely
+    if [[ -r "$TRACKER_CONFIG" ]]; then
+        source "$TRACKER_CONFIG"
+        log_info "Configuration loaded from $TRACKER_CONFIG"
     else
-        log "ERROR" "Project tracking failed with exit code: $exit_code"
+        log_warning "Configuration file not readable, using defaults"
     fi
 }
 
-trap cleanup EXIT
-trap 'exit 130' INT TERM
+# Create default configuration
+create_default_configuration() {
+    cat > "$TRACKER_CONFIG" << 'CONFIGEOF'
+# Professional Usage Tracking Framework Configuration v2.0
 
-# === ANALYSIS FUNCTIONS ===
+# General Settings
+VERBOSE_MODE=false
+DRY_RUN_MODE=false
+TRACKING_ENABLED=true
+PRIVACY_MODE=false
 
-# Validate target directory
-validate_target() {
-    log "INFO" "Validating target directory: $TARGET_DIR"
+# Data Collection Settings
+TRACK_LAUNCH_EVENTS=true
+TRACK_USAGE_TIME=true
+TRACK_FEATURE_USAGE=false
+TRACK_PERFORMANCE_METRICS=true
+
+# Privacy Settings
+ANONYMIZE_DATA=true
+COLLECT_PERSONAL_INFO=false
+SEND_ANALYTICS=false
+RETAIN_LOCAL_DATA=true
+
+# Storage Settings
+DATABASE_PATH=${TRACKER_CACHE_DIR}/usage.db
+MAX_DATABASE_SIZE_MB=100
+DATA_RETENTION_DAYS=90
+
+# Export Settings
+ENABLE_EXPORT=true
+EXPORT_FORMAT=json
+EXPORT_PATH=${HOME}/cursor-usage-export
+
+# Monitoring Settings
+MONITORING_INTERVAL=60
+BACKGROUND_MONITORING=true
+RESOURCE_MONITORING=true
+CONFIGEOF
     
-    if [[ ! -d "$TARGET_DIR" ]]; then
-        log "ERROR" "Target directory does not exist: $TARGET_DIR"
-        return 1
-    fi
-    
-    if [[ ! -r "$TARGET_DIR" ]]; then
-        log "ERROR" "Target directory is not readable: $TARGET_DIR"
-        return 1
-    fi
-    
-    # Check if directory contains analyzable files
-    local file_count=$(find "$TARGET_DIR" -type f \( -name "*.sh" -o -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.json" -o -name "*.md" \) | wc -l)
-    
-    if [[ $file_count -eq 0 ]]; then
-        log "WARN" "No analyzable files found in target directory"
-        return 1
-    fi
-    
-    PROJECT_STATS[target_dir]="$TARGET_DIR"
-    PROJECT_STATS[file_count]="$file_count"
-    
-    log "PASS" "Target validation completed ($file_count files found)"
-    return 0
+    log_info "Default configuration created: $TRACKER_CONFIG"
 }
 
-# Analyze file metrics
-analyze_files() {
-    log "INFO" "Analyzing project files"
+# Initialize database
+initialize_database() {
+    log_info "Initializing usage tracking database..."
     
-    local analyzed_files=0
-    local total_lines=0
-    local total_size=0
+    local db_path="${DATABASE_PATH:-$TRACKER_CACHE_DIR/usage.db}"
     
-    # File extensions to analyze
-    local extensions=("*.sh" "*.py" "*.js" "*.ts" "*.json" "*.md" "*.txt" "*.yml" "*.yaml")
+    # Check if sqlite3 is available
+    if \! command -v sqlite3 &>/dev/null; then
+        log_warning "SQLite3 not available, using file-based tracking"
+        return 0
+    fi
     
-    for ext in "${extensions[@]}"; do
-        while IFS= read -r -d '' file; do
-            # Skip hidden files and directories unless verbose
-            if [[ "$VERBOSE" != "true" ]] && [[ "$(basename "$file")" =~ ^\. ]]; then
+    # Create database schema
+    sqlite3 "$db_path" << 'SQLEOF'
+CREATE TABLE IF NOT EXISTS usage_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp TEXT NOT NULL,
+    event_type TEXT NOT NULL,
+    event_data TEXT,
+    session_id TEXT,
+    user_hash TEXT
+);
+
+CREATE TABLE IF NOT EXISTS session_data (
+    session_id TEXT PRIMARY KEY,
+    start_time TEXT NOT NULL,
+    end_time TEXT,
+    duration INTEGER,
+    features_used TEXT,
+    performance_data TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_timestamp ON usage_events(timestamp);
+CREATE INDEX IF NOT EXISTS idx_event_type ON usage_events(event_type);
+CREATE INDEX IF NOT EXISTS idx_session_id ON usage_events(session_id);
+SQLEOF
+    
+    log_info "Database initialized: $db_path"
+}
+
+# Acquire lock with timeout
+acquire_lock() {
+    local timeout=10
+    local elapsed=0
+    
+    while [[ $elapsed -lt $timeout ]]; do
+        if (set -C; echo $$ > "$LOCK_FILE") 2>/dev/null; then
+            echo $$ > "$PID_FILE"
+            log_info "Lock acquired successfully"
+            return 0
+        fi
+        
+        if [[ -f "$LOCK_FILE" ]]; then
+            local lock_pid
+            lock_pid=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
+            if [[ -n "$lock_pid" ]] && \! kill -0 "$lock_pid" 2>/dev/null; then
+                log_info "Removing stale lock file"
+                rm -f "$LOCK_FILE"
                 continue
             fi
-            
-            # Skip test files unless explicitly included
-            if [[ "$INCLUDE_TESTS" != "true" ]] && [[ "$file" =~ test|spec ]]; then
-                continue
-            fi
-            
-            analyze_file "$file"
-            ((analyzed_files++))
-            
-        done < <(find "$TARGET_DIR" -name "$ext" -type f -print0 2>/dev/null)
-    done
-    
-    # Calculate totals
-    for file in "${!FILE_METRICS[@]}"; do
-        if [[ "$file" =~ _lines$ ]]; then
-            total_lines=$((total_lines + FILE_METRICS[$file]))
-        elif [[ "$file" =~ _size$ ]]; then
-            total_size=$((total_size + FILE_METRICS[$file]))
         fi
+        
+        sleep 1
+        ((elapsed++))
     done
     
-    PROJECT_STATS[analyzed_files]="$analyzed_files"
-    PROJECT_STATS[total_lines]="$total_lines"
-    PROJECT_STATS[total_size]="$total_size"
-    PROJECT_STATS[avg_file_size]="$((total_size / (analyzed_files > 0 ? analyzed_files : 1)))"
-    
-    log "PASS" "File analysis completed ($analyzed_files files, $total_lines lines)"
+    log_warning "Could not acquire lock, continuing anyway"
     return 0
 }
 
-# Analyze individual file
-analyze_file() {
-    local file="$1"
-    local filename="$(basename "$file")"
-    local extension="${filename##*.}"
-    
-    log "DEBUG" "Analyzing file: $file"
-    
-    # Basic metrics
-    local size=$(stat -c%s "$file" 2>/dev/null || echo "0")
-    local lines=$(wc -l < "$file" 2>/dev/null || echo "0")
-    local chars=$(wc -c < "$file" 2>/dev/null || echo "0")
-    
-    FILE_METRICS["${filename}_size"]="$size"
-    FILE_METRICS["${filename}_lines"]="$lines"
-    FILE_METRICS["${filename}_chars"]="$chars"
-    FILE_METRICS["${filename}_extension"]="$extension"
-    
-    # Content analysis based on file type
-    case "$extension" in
-        sh|bash)
-            analyze_shell_script "$file" "$filename"
-            ;;
-        py)
-            analyze_python_file "$file" "$filename"
-            ;;
-        js|ts)
-            analyze_javascript_file "$file" "$filename"
-            ;;
-        json)
-            analyze_json_file "$file" "$filename"
-            ;;
-        md)
-            analyze_markdown_file "$file" "$filename"
-            ;;
-    esac
-}
-
-# Analyze shell scripts
-analyze_shell_script() {
-    local file="$1"
-    local filename="$2"
-    
-    # Count functions
-    local function_count=$(grep -c "^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*(" "$file" 2>/dev/null || echo "0")
-    
-    # Check for best practices
-    local has_shebang=$(head -1 "$file" | grep -c "^#!" || echo "0")
-    local has_set_flags=$(grep -c "set -[euo]" "$file" 2>/dev/null || echo "0")
-    local has_error_handling=$(grep -c "trap\|exit\|return" "$file" 2>/dev/null || echo "0")
-    
-    FILE_METRICS["${filename}_functions"]="$function_count"
-    FILE_METRICS["${filename}_has_shebang"]="$has_shebang"
-    FILE_METRICS["${filename}_has_set_flags"]="$has_set_flags"
-    FILE_METRICS["${filename}_has_error_handling"]="$has_error_handling"
-    
-    # Quality score (0-100)
-    local quality_score=$(( (has_shebang * 25) + (has_set_flags * 25) + (has_error_handling > 0 ? 25 : 0) + (function_count > 0 ? 25 : 0) ))
-    QUALITY_SCORES["$filename"]="$quality_score"
-    
-    log "DEBUG" "Shell script analysis: $filename (functions: $function_count, quality: $quality_score)"
-}
-
-# Analyze Python files
-analyze_python_file() {
-    local file="$1"
-    local filename="$2"
-    
-    # Count classes and functions
-    local class_count=$(grep -c "^class " "$file" 2>/dev/null || echo "0")
-    local function_count=$(grep -c "^def " "$file" 2>/dev/null || echo "0")
-    local import_count=$(grep -c "^import\|^from.*import" "$file" 2>/dev/null || echo "0")
-    
-    FILE_METRICS["${filename}_classes"]="$class_count"
-    FILE_METRICS["${filename}_functions"]="$function_count"
-    FILE_METRICS["${filename}_imports"]="$import_count"
-    
-    # Simple quality assessment
-    local has_docstring=$(grep -c '"""' "$file" 2>/dev/null || echo "0")
-    local quality_score=$(( (has_docstring > 0 ? 40 : 0) + (function_count > 0 ? 30 : 0) + (class_count > 0 ? 30 : 0) ))
-    QUALITY_SCORES["$filename"]="$quality_score"
-    
-    log "DEBUG" "Python analysis: $filename (classes: $class_count, functions: $function_count)"
-}
-
-# Analyze JavaScript/TypeScript files
-analyze_javascript_file() {
-    local file="$1"
-    local filename="$2"
-    
-    # Count functions and classes
-    local function_count=$(grep -c "function\|=>" "$file" 2>/dev/null || echo "0")
-    local class_count=$(grep -c "^class\|export class" "$file" 2>/dev/null || echo "0")
-    local import_count=$(grep -c "import\|require(" "$file" 2>/dev/null || echo "0")
-    
-    FILE_METRICS["${filename}_functions"]="$function_count"
-    FILE_METRICS["${filename}_classes"]="$class_count"
-    FILE_METRICS["${filename}_imports"]="$import_count"
-    
-    local quality_score=$(( (function_count > 0 ? 50 : 0) + (class_count > 0 ? 30 : 0) + (import_count > 0 ? 20 : 0) ))
-    QUALITY_SCORES["$filename"]="$quality_score"
-    
-    log "DEBUG" "JavaScript analysis: $filename (functions: $function_count, classes: $class_count)"
-}
-
-# Analyze JSON files
-analyze_json_file() {
-    local file="$1"
-    local filename="$2"
-    
-    # Validate JSON
-    local is_valid=0
-    if command -v jq >/dev/null 2>&1; then
-        if jq empty "$file" 2>/dev/null; then
-            is_valid=1
-        fi
-    else
-        # Basic JSON validation
-        if python3 -c "import json; json.load(open('$file'))" 2>/dev/null; then
-            is_valid=1
-        fi
+# Start usage tracking
+start_tracking() {
+    if [[ "${TRACKING_ENABLED:-true}" \!= "true" ]]; then
+        log_info "Usage tracking is disabled"
+        return 0
     fi
     
-    FILE_METRICS["${filename}_valid_json"]="$is_valid"
-    QUALITY_SCORES["$filename"]="$((is_valid * 100))"
+    log_info "Starting usage tracking..."
     
-    log "DEBUG" "JSON analysis: $filename (valid: $is_valid)"
-}
-
-# Analyze Markdown files
-analyze_markdown_file() {
-    local file="$1"
-    local filename="$2"
+    local session_id="session_${TIMESTAMP}_$$"
+    track_event "SESSION_START" "$session_id"
     
-    # Count headers and links
-    local header_count=$(grep -c "^#" "$file" 2>/dev/null || echo "0")
-    local link_count=$(grep -o "\[.*\](.*)" "$file" 2>/dev/null | wc -l || echo "0")
-    local code_block_count=$(grep -c "```" "$file" 2>/dev/null || echo "0")
-    
-    FILE_METRICS["${filename}_headers"]="$header_count"
-    FILE_METRICS["${filename}_links"]="$link_count"
-    FILE_METRICS["${filename}_code_blocks"]="$code_block_count"
-    
-    local quality_score=$(( (header_count > 0 ? 40 : 0) + (link_count > 0 ? 30 : 0) + (code_block_count > 0 ? 30 : 0) ))
-    QUALITY_SCORES["$filename"]="$quality_score"
-    
-    log "DEBUG" "Markdown analysis: $filename (headers: $header_count, links: $link_count)"
-}
-
-# === REPORTING FUNCTIONS ===
-
-# Generate comprehensive report
-generate_reports() {
-    log "INFO" "Generating analysis reports"
-    
-    generate_json_report
-    generate_html_report
-    generate_csv_metrics
-    
-    log "PASS" "All reports generated successfully"
-}
-
-# Generate JSON report
-generate_json_report() {
-    log "DEBUG" "Generating JSON report"
-    
-    cat > "$JSON_REPORT" << EOF
-{
-    "analysis_id": "$ANALYSIS_ID",
-    "timestamp": "$(date -Iseconds)",
-    "version": "$SCRIPT_VERSION",
-    "target_directory": "$TARGET_DIR",
-    "project_stats": {
-$(for key in "${!PROJECT_STATS[@]}"; do
-    echo "        \"$key\": \"${PROJECT_STATS[$key]}\","
-done | sed '$ s/,$//')
-    },
-    "file_metrics": {
-$(for key in "${!FILE_METRICS[@]}"; do
-    echo "        \"$key\": \"${FILE_METRICS[$key]}\","
-done | sed '$ s/,$//')
-    },
-    "quality_scores": {
-$(for key in "${!QUALITY_SCORES[@]}"; do
-    echo "        \"$key\": ${QUALITY_SCORES[$key]},"
-done | sed '$ s/,$//')
-    }
-}
-EOF
-    
-    log "DEBUG" "JSON report saved: $JSON_REPORT"
-}
-
-# Generate HTML report
-generate_html_report() {
-    log "DEBUG" "Generating HTML report"
-    
-    # Calculate average quality score
-    local total_quality=0
-    local quality_count=0
-    for score in "${QUALITY_SCORES[@]}"; do
-        total_quality=$((total_quality + score))
-        ((quality_count++))
-    done
-    local avg_quality=$((quality_count > 0 ? total_quality / quality_count : 0))
-    
-    cat > "$HTML_REPORT" << EOF
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursor IDE Project Analysis Report</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background-color: #f5f5f5; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 20px 0; }
-        .stat-card { background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; }
-        .stat-value { font-size: 2em; font-weight: bold; color: #007acc; }
-        .stat-label { color: #666; margin-top: 5px; }
-        .section { margin: 30px 0; }
-        .section h2 { color: #333; border-bottom: 2px solid #007acc; padding-bottom: 10px; }
-        .quality-bar { width: 100%; height: 20px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
-        .quality-fill { height: 100%; background: linear-gradient(90deg, #ff4444, #ffaa00, #44ff44); border-radius: 10px; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>Project Analysis Report</h1>
-            <p>Generated on $(date '+%Y-%m-%d %H:%M:%S')</p>
-            <p>Target: $TARGET_DIR</p>
-        </div>
-        
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value">${PROJECT_STATS[analyzed_files]:-0}</div>
-                <div class="stat-label">Files Analyzed</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">${PROJECT_STATS[total_lines]:-0}</div>
-                <div class="stat-label">Total Lines</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">$(( ${PROJECT_STATS[total_size]:-0} / 1024 ))KB</div>
-                <div class="stat-label">Total Size</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">$avg_quality%</div>
-                <div class="stat-label">Avg Quality</div>
-            </div>
-        </div>
-        
-        <div class="section">
-            <h2>Overall Quality Score</h2>
-            <div class="quality-bar">
-                <div class="quality-fill" style="width: ${avg_quality}%;"></div>
-            </div>
-            <p>${avg_quality}% - $(
-                if [[ $avg_quality -ge 80 ]]; then echo "Excellent"
-                elif [[ $avg_quality -ge 60 ]]; then echo "Good"
-                elif [[ $avg_quality -ge 40 ]]; then echo "Fair"
-                else echo "Needs Improvement"
-                fi
-            )</p>
-        </div>
-        
-        <div class="section">
-            <h2>File Quality Scores</h2>
-            <table>
-                <tr><th>File</th><th>Quality Score</th><th>Assessment</th></tr>
-$(for file in "${!QUALITY_SCORES[@]}"; do
-    local score=${QUALITY_SCORES[$file]}
-    local assessment
-    if [[ $score -ge 80 ]]; then assessment="Excellent"
-    elif [[ $score -ge 60 ]]; then assessment="Good"
-    elif [[ $score -ge 40 ]]; then assessment="Fair"
-    else assessment="Needs Improvement"
+    # Start background monitoring if enabled
+    if [[ "${BACKGROUND_MONITORING:-true}" == "true" ]]; then
+        start_background_monitoring "$session_id"
     fi
-    echo "                <tr><td>$file</td><td>${score}%</td><td>$assessment</td></tr>"
-done)
-            </table>
-        </div>
-        
-        <div class="section">
-            <h2>Analysis Summary</h2>
-            <ul>
-                <li>Analysis completed on $(date)</li>
-                <li>Target directory: $TARGET_DIR</li>
-                <li>Files analyzed: ${PROJECT_STATS[analyzed_files]:-0}</li>
-                <li>Average file size: ${PROJECT_STATS[avg_file_size]:-0} bytes</li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>
-EOF
     
-    log "DEBUG" "HTML report saved: $HTML_REPORT"
+    log_info "Usage tracking started with session ID: $session_id"
+    echo "$session_id"
 }
 
-# Generate CSV metrics
-generate_csv_metrics() {
-    log "DEBUG" "Generating CSV metrics"
+# Track usage event
+track_event() {
+    local event_type="$1"
+    local event_data="${2:-}"
+    local session_id="${3:-$(get_current_session_id)}"
     
+    if [[ "${TRACKING_ENABLED:-true}" \!= "true" ]]; then
+        return 0
+    fi
+    
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local user_hash=""
+    
+    # Generate anonymous user hash if privacy mode is disabled
+    if [[ "${ANONYMIZE_DATA:-true}" == "true" ]]; then
+        user_hash=$(echo "${USER:-$(whoami)}_${HOSTNAME:-$(hostname)}" | sha256sum | cut -d' ' -f1 | head -c16)
+    fi
+    
+    log_usage "$event_type" "$event_data"
+    
+    # Store in database if available
+    local db_path="${DATABASE_PATH:-$TRACKER_CACHE_DIR/usage.db}"
+    if command -v sqlite3 &>/dev/null && [[ -f "$db_path" ]]; then
+        sqlite3 "$db_path" << SQLEOF
+INSERT INTO usage_events (timestamp, event_type, event_data, session_id, user_hash)
+VALUES ('$timestamp', '$event_type', '$event_data', '$session_id', '$user_hash');
+SQLEOF
+    fi
+}
+
+# Start background monitoring
+start_background_monitoring() {
+    local session_id="$1"
+    
+    log_info "Starting background monitoring for session: $session_id"
+    
+    # Monitor in background
     {
-        echo "Filename,Extension,Size,Lines,Quality_Score"
-        for file in "${!QUALITY_SCORES[@]}"; do
-            local size="${FILE_METRICS[${file}_size]:-0}"
-            local lines="${FILE_METRICS[${file}_lines]:-0}"
-            local ext="${FILE_METRICS[${file}_extension]:-unknown}"
-            local quality="${QUALITY_SCORES[$file]:-0}"
-            echo "$file,$ext,$size,$lines,$quality"
+        while [[ -f "$LOCK_FILE" ]]; do
+            # Monitor resource usage
+            if [[ "${RESOURCE_MONITORING:-true}" == "true" ]]; then
+                monitor_resource_usage "$session_id"
+            fi
+            
+            # Monitor application status
+            monitor_application_status "$session_id"
+            
+            sleep "${MONITORING_INTERVAL:-60}"
         done
-    } > "$METRICS_CSV"
+    } &
     
-    log "DEBUG" "CSV metrics saved: $METRICS_CSV"
+    local monitor_pid=$\!
+    echo "$monitor_pid" > "${TRACKER_CONFIG_DIR}/.monitor.pid"
+    log_info "Background monitoring started with PID: $monitor_pid"
 }
 
-# === MAIN EXECUTION ===
+# Monitor resource usage
+monitor_resource_usage() {
+    local session_id="$1"
+    
+    # Get memory usage
+    local memory_usage
+    if memory_usage=$(ps -p $$ -o rss= 2>/dev/null); then
+        track_event "MEMORY_USAGE" "${memory_usage}KB" "$session_id"
+    fi
+    
+    # Get CPU usage
+    local cpu_usage
+    if cpu_usage=$(ps -p $$ -o %cpu= 2>/dev/null); then
+        track_event "CPU_USAGE" "${cpu_usage}%" "$session_id"
+    fi
+}
 
-# Show usage
-show_usage() {
-    cat << EOF
-Cursor IDE Professional Project Tracker v$SCRIPT_VERSION
+# Monitor application status
+monitor_application_status() {
+    local session_id="$1"
+    
+    # Check if Cursor is running
+    if pgrep -f "cursor" >/dev/null 2>&1; then
+        track_event "APPLICATION_ACTIVE" "running" "$session_id"
+    else
+        track_event "APPLICATION_INACTIVE" "not_running" "$session_id"
+    fi
+}
+
+# Stop tracking
+stop_tracking() {
+    log_info "Stopping usage tracking..."
+    
+    local session_id=$(get_current_session_id)
+    track_event "SESSION_END" "$session_id"
+    
+    # Stop background monitoring
+    if [[ -f "${TRACKER_CONFIG_DIR}/.monitor.pid" ]]; then
+        local monitor_pid
+        monitor_pid=$(cat "${TRACKER_CONFIG_DIR}/.monitor.pid" 2>/dev/null || echo "")
+        if [[ -n "$monitor_pid" ]] && kill -0 "$monitor_pid" 2>/dev/null; then
+            kill "$monitor_pid" 2>/dev/null || true
+            log_info "Background monitoring stopped"
+        fi
+        rm -f "${TRACKER_CONFIG_DIR}/.monitor.pid"
+    fi
+    
+    # Update session data
+    update_session_data "$session_id"
+    
+    log_info "Usage tracking stopped"
+}
+
+# Get current session ID
+get_current_session_id() {
+    if [[ -f "$PID_FILE" ]]; then
+        local pid
+        pid=$(cat "$PID_FILE" 2>/dev/null || echo "")
+        echo "session_${TIMESTAMP}_${pid}"
+    else
+        echo "session_unknown"
+    fi
+}
+
+# Update session data
+update_session_data() {
+    local session_id="$1"
+    local db_path="${DATABASE_PATH:-$TRACKER_CACHE_DIR/usage.db}"
+    
+    if command -v sqlite3 &>/dev/null && [[ -f "$db_path" ]]; then
+        local end_time=$(date '+%Y-%m-%d %H:%M:%S')
+        
+        sqlite3 "$db_path" << SQLEOF
+UPDATE session_data SET end_time = '$end_time' WHERE session_id = '$session_id';
+SQLEOF
+    fi
+}
+
+# Export usage data
+export_usage_data() {
+    log_info "Exporting usage data..."
+    
+    local export_path="${EXPORT_PATH:-$HOME/cursor-usage-export}"
+    local export_format="${EXPORT_FORMAT:-json}"
+    local export_file="$export_path/usage_export_${TIMESTAMP}.$export_format"
+    
+    mkdir -p "$export_path"
+    
+    local db_path="${DATABASE_PATH:-$TRACKER_CACHE_DIR/usage.db}"
+    
+    if command -v sqlite3 &>/dev/null && [[ -f "$db_path" ]]; then
+        case "$export_format" in
+            "json")
+                export_to_json "$db_path" "$export_file"
+                ;;
+            "csv")
+                export_to_csv "$db_path" "$export_file"
+                ;;
+            *)
+                log_warning "Unknown export format: $export_format, using JSON"
+                export_to_json "$db_path" "${export_file%.*}.json"
+                ;;
+        esac
+    else
+        log_warning "Database not available, exporting log files"
+        cp "$USAGE_LOG" "$export_file.log" 2>/dev/null || true
+    fi
+    
+    log_info "Usage data exported to: $export_file"
+}
+
+# Export to JSON format
+export_to_json() {
+    local db_path="$1"
+    local export_file="$2"
+    
+    cat > "$export_file" << 'JSONEOF'
+{
+  "export_info": {
+    "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+    "version": "$(echo $VERSION)",
+    "format": "json"
+  },
+  "usage_events": [
+JSONEOF
+    
+    # Export events (simplified JSON structure)
+    sqlite3 "$db_path" -separator ',' << 'SQLEOF' | while IFS=',' read -r id timestamp event_type event_data session_id user_hash; do
+SELECT id, timestamp, event_type, event_data, session_id, user_hash FROM usage_events ORDER BY timestamp;
+SQLEOF
+        if [[ -n "$id" ]]; then
+            cat >> "$export_file" << JSONEOF
+    {
+      "id": $id,
+      "timestamp": "$timestamp",
+      "event_type": "$event_type",
+      "event_data": "$event_data",
+      "session_id": "$session_id",
+      "user_hash": "$user_hash"
+    },
+JSONEOF
+        fi
+    done
+    
+    # Remove trailing comma and close JSON
+    sed -i '$ s/,$//' "$export_file" 2>/dev/null || true
+    echo "  ]" >> "$export_file"
+    echo "}" >> "$export_file"
+}
+
+# Export to CSV format
+export_to_csv() {
+    local db_path="$1"
+    local export_file="$2"
+    
+    echo "id,timestamp,event_type,event_data,session_id,user_hash" > "$export_file"
+    sqlite3 "$db_path" -separator ',' << 'SQLEOF' >> "$export_file"
+SELECT id, timestamp, event_type, event_data, session_id, user_hash FROM usage_events ORDER BY timestamp;
+SQLEOF
+}
+
+# Self-correction functions
+fix_directory_permissions() {
+    log_info "Attempting to fix directory permissions..."
+    
+    for dir in "$TRACKER_CONFIG_DIR" "$TRACKER_CACHE_DIR" "$TRACKER_LOG_DIR"; do
+        if [[ -d "$dir" ]]; then
+            chmod 755 "$dir" 2>/dev/null || true
+        fi
+    done
+}
+
+check_database_integrity() {
+    log_info "Checking database integrity..."
+    
+    local db_path="${DATABASE_PATH:-$TRACKER_CACHE_DIR/usage.db}"
+    
+    if command -v sqlite3 &>/dev/null && [[ -f "$db_path" ]]; then
+        if sqlite3 "$db_path" "PRAGMA integrity_check;" >/dev/null 2>&1; then
+            log_info "Database integrity check passed"
+        else
+            log_warning "Database integrity issues detected, attempting repair..."
+            # Backup and recreate database
+            cp "$db_path" "${db_path}.backup" 2>/dev/null || true
+            rm -f "$db_path"
+            initialize_database
+        fi
+    fi
+}
+
+use_alternative_process_monitoring() {
+    log_info "Using alternative process monitoring methods..."
+    
+    # Use /proc if available
+    if [[ -d /proc/$$ ]]; then
+        log_info "Using /proc filesystem for process monitoring"
+        return 0
+    fi
+    
+    # Fallback to basic monitoring
+    log_warning "Limited process monitoring capabilities"
+    return 1
+}
+
+# Cleanup functions
+cleanup_on_error() {
+    log_warning "Performing error cleanup..."
+    cleanup_on_exit
+}
+
+cleanup_on_exit() {
+    # Stop tracking if active
+    if [[ -f "$LOCK_FILE" ]]; then
+        stop_tracking
+    fi
+    
+    [[ -f "$LOCK_FILE" ]] && rm -f "$LOCK_FILE"
+    [[ -f "$PID_FILE" ]] && rm -f "$PID_FILE"
+    [[ -f "${TRACKER_CONFIG_DIR}/.monitor.pid" ]] && rm -f "${TRACKER_CONFIG_DIR}/.monitor.pid"
+    jobs -p | xargs -r kill 2>/dev/null || true
+    log_info "Cleanup completed"
+}
+
+# Display usage information
+display_usage() {
+    cat << 'USAGEEOF'
+Professional Usage Tracking Framework v2.0
 
 USAGE:
-    $SCRIPT_NAME [TARGET_DIR] [OPTIONS]
+    tracker-improved-v2.sh [OPTIONS] [COMMAND]
+
+COMMANDS:
+    start       Start usage tracking (default)
+    stop        Stop usage tracking
+    export      Export usage data
+    status      Show tracking status
 
 OPTIONS:
-    -h, --help          Show this help message
-    -v, --verbose       Enable verbose output
-    -n, --dry-run       Perform dry run
-    -t, --include-tests Include test files in analysis
-    --version           Show version information
+    --verbose       Enable verbose output
+    --dry-run       Show what would be tracked
+    --help          Display this help message
+    --version       Display version information
 
 EXAMPLES:
-    $SCRIPT_NAME                    # Analyze current directory
-    $SCRIPT_NAME /path/to/project   # Analyze specific directory
-    $SCRIPT_NAME --verbose          # Verbose analysis
-    $SCRIPT_NAME --include-tests    # Include test files
+    ./tracker-improved-v2.sh start
+    ./tracker-improved-v2.sh export
+    ./tracker-improved-v2.sh status
 
-EOF
+For more information, see the documentation.
+USAGEEOF
 }
 
-# Parse arguments
+# Parse command line arguments
 parse_arguments() {
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -h|--help)
-                show_usage
+            start)
+                OPERATION="start"
+                shift
+                ;;
+            stop)
+                OPERATION="stop"
+                shift
+                ;;
+            export)
+                OPERATION="export"
+                shift
+                ;;
+            status)
+                OPERATION="status"
+                shift
+                ;;
+            --verbose)
+                VERBOSE_MODE=true
+                shift
+                ;;
+            --dry-run)
+                DRY_RUN_MODE=true
+                shift
+                ;;
+            --help)
+                display_usage
                 exit 0
                 ;;
             --version)
-                echo "Cursor IDE Professional Project Tracker v$SCRIPT_VERSION"
+                echo "Professional Usage Tracking Framework v$VERSION"
                 exit 0
                 ;;
-            -v|--verbose)
-                VERBOSE=true
-                ;;
-            -n|--dry-run)
-                DRY_RUN=true
-                ;;
-            -t|--include-tests)
-                INCLUDE_TESTS=true
+            -*)
+                log_warning "Unknown option: $1"
+                shift
                 ;;
             *)
-                if [[ -d "$1" ]]; then
-                    TARGET_DIR="$1"
-                else
-                    log "ERROR" "Unknown option or invalid directory: $1"
-                    exit 1
-                fi
+                shift
                 ;;
         esac
-        shift
     done
 }
 
-# Main function
+# Main execution function
 main() {
+    local OPERATION="${OPERATION:-start}"
+    
+    # Parse command line arguments
     parse_arguments "$@"
     
-    log "INFO" "Starting Cursor IDE Project Tracker v$SCRIPT_VERSION"
-    log "INFO" "Target directory: $TARGET_DIR"
+    # Initialize framework
+    initialize_tracking_framework
     
-    # Initialize
-    if ! initialize_directories; then
-        log "ERROR" "Failed to initialize directories"
-        exit 1
-    fi
-    
-    # Validate and analyze
-    if ! validate_target; then
-        exit 1
-    fi
-    
-    if [[ "$DRY_RUN" == "true" ]]; then
-        log "INFO" "DRY RUN: Would analyze ${PROJECT_STATS[file_count]} files"
-        exit 0
-    fi
-    
-    if ! analyze_files; then
-        log "ERROR" "File analysis failed"
-        exit 1
-    fi
-    
-    # Generate reports
-    generate_reports
-    
-    # Show summary
-    echo
-    echo "Analysis Complete!"
-    echo "  Files analyzed: ${PROJECT_STATS[analyzed_files]:-0}"
-    echo "  Total lines: ${PROJECT_STATS[total_lines]:-0}"
-    echo "  Reports generated:"
-    echo "    HTML: $HTML_REPORT"
-    echo "    JSON: $JSON_REPORT"
-    echo "    CSV:  $METRICS_CSV"
-    echo
-    
-    log "PASS" "Project tracking completed successfully"
+    case "$OPERATION" in
+        "start")
+            session_id=$(start_tracking)
+            log_info "Usage tracking started successfully"
+            echo "Session ID: $session_id"
+            exit 0
+            ;;
+        "stop")
+            stop_tracking
+            log_info "Usage tracking stopped successfully"
+            exit 0
+            ;;
+        "export")
+            export_usage_data
+            log_info "Usage data exported successfully"
+            exit 0
+            ;;
+        "status")
+            if [[ -f "$LOCK_FILE" ]]; then
+                echo "Tracking Status: ACTIVE"
+                echo "Session ID: $(get_current_session_id)"
+            else
+                echo "Tracking Status: INACTIVE"
+            fi
+            exit 0
+            ;;
+        *)
+            log_error "Unknown operation: $OPERATION"
+            display_usage
+            exit 1
+            ;;
+    esac
 }
 
 # Execute main function if script is run directly
