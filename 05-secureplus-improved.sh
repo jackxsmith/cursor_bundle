@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🛡️ CURSOR BUNDLE SECUREPLUS LAUNCHER vpolicycheck-framework-v2 - DRAMATICALLY IMPROVED
+# 🛡️ CURSOR BUNDLE SECUREPLUS LAUNCHER v22-test-cursor-suite-improved-v2.sh - DRAMATICALLY IMPROVED
 # Enterprise-grade ultra-secure application launcher with advanced threat protection
 # 
 # Features:
@@ -24,7 +24,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="policycheck-framework-v2"
+readonly SCRIPT_VERSION="22-test-cursor-suite-improved-v2.sh"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
