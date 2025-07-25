@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-🚀 CURSOR BUNDLE ENTERPRISE GUI INSTALLER vv6.9.228 - SECOND GENERATION
+🚀 CURSOR BUNDLE ENTERPRISE GUI INSTALLER vv6.9.229 - SECOND GENERATION
 Next-generation enterprise installation framework with AI-powered features and quantum-ready architecture
 
 🌟 REVOLUTIONARY FEATURES:
@@ -124,7 +124,7 @@ ConfigType = Dict[str, Any]
 InstallationProfile = namedtuple('InstallationProfile', ['name', 'components', 'config'])
 
 # Constants
-VERSION = "v6.9.228"
+VERSION = "v6.9.229"
 APP_NAME = "Cursor Bundle Enterprise Installer"
 COMPANY_NAME = "Enterprise Software Solutions"
 COPYRIGHT = f"© 2025 {COMPANY_NAME}. All rights reserved."
