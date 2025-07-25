@@ -51,7 +51,7 @@ jobs:
           curl -s https://github.com/grafana/k6/releases/download/v0.49.0/k6-v0.49.0-linux-amd64.tar.gz | tar -xz
           sudo mv k6-v0.49.0-linux-amd64/k6 /usr/local/bin/
       - run: make perf-test
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: perf-report
           path: perf/perf_report.txt
