@@ -1,0 +1,27 @@
+apiVersion: v2
+name: cursor-bundle
+description: A Helm chart for Cursor Bundle - Open-source Automation Suite
+type: application
+version: 6.9.146
+appVersion: "6.9.146"
+home: https://github.com/jackxsmith/cursor_bundle
+sources:
+  - https://github.com/jackxsmith/cursor_bundle
+maintainers:
+  - name: Cursor Bundle Team
+    email: support@cursor-bundle.io
+icon: https://raw.githubusercontent.com/jackxsmith/cursor_bundle/main/cursor.svg
+keywords:
+  - automation
+  - ci-cd
+  - monitoring
+  - security
+dependencies:
+  - name: redis
+    version: "17.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled

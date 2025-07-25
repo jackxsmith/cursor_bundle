@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cursor-bundle-config
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+data:
+  app.conf: |
+    # Cursor Bundle Configuration
+    server:
+      port: 8080
+      host: "0.0.0.0"
+      workers: 4
+      timeout: 30
+    
+    logging:
+      level: info
+      format: json
+      output: stdout
+    
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
+    
+    health:
+      enabled: true
+      path: /health
+      ready_path: /ready
+    
+    cache:
+      type: redis
+      ttl: 300
+      max_size: 1000
+    
+    security:
+      cors_enabled: true
+      cors_origins: ["*"]
+      rate_limit: 100
+      rate_window: 60
+  
+  nginx.conf: |
+    server {
+        listen 80;
+        server_name _;
+        
+        location / {
+            proxy_pass http://cursor-bundle:8080;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+        
+        location /metrics {
+            proxy_pass http://cursor-bundle:9090/metrics;
+            allow 10.0.0.0/8;
+            deny all;
+        }
+        
+        location /health {
+            proxy_pass http://cursor-bundle:8080/health;
+            access_log off;
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cursor-bundle-scripts
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+data:
+  startup.sh: |
+    #!/bin/bash
+    set -e
+    
+    echo "Starting Cursor Bundle in Kubernetes..."
+    echo "Pod Name: $POD_NAME"
+    echo "Pod Namespace: $POD_NAMESPACE"
+    echo "Pod IP: $POD_IP"
+    
+    # Wait for dependencies
+    echo "Checking dependencies..."
+    until nc -z redis 6379; do
+      echo "Waiting for Redis..."
+      sleep 2
+    done
+    
+    # Run migrations
+    echo "Running migrations..."
+    make migrate || echo "No migrations to run"
+    
+    # Start application
+    echo "Starting application..."
+    exec "$@"
+  
+  health-check.sh: |
+    #!/bin/bash
+    curl -f http://localhost:8080/health || exit 1

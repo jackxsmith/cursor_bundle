@@ -1,0 +1,67 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cursor-bundle
+  labels:
+    app: cursor-bundle
+    istio-injection: enabled
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cursor-bundle
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cursor-bundle
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cursor-bundle
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cursor-bundle
+subjects:
+- kind: ServiceAccount
+  name: cursor-bundle
+  namespace: cursor-bundle
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-secrets
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+type: Opaque
+stringData:
+  database-url: "postgresql://user:password@postgres:5432/cursor_bundle"
+  redis-url: "redis://redis:6379"
+  jwt-secret: "your-jwt-secret-here"
+  encryption-key: "your-encryption-key-here"
