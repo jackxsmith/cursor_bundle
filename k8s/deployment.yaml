@@ -5,7 +5,7 @@ metadata:
   namespace: cursor-bundle
   labels:
     app: cursor-bundle
-    version: v6.9.157
+    version: v6.9.158
 spec:
   replicas: 3
   selector:
@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: cursor-bundle
-        version: v6.9.157
+        version: v6.9.158
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9090"
@@ -33,7 +33,7 @@ spec:
         fsGroup: 1000
       containers:
       - name: cursor-bundle
-        image: cursor-bundle:v6.9.157
+        image: cursor-bundle:v6.9.158
         imagePullPolicy: Always
         ports:
         - name: http
