@@ -1,7 +1,7 @@
 {
   "test_suite": {
     "name": "Cursor Bundle Advanced Test Suite",
-    "version": "6.9.216",
+    "version": "6.9.218",
     "description": "Comprehensive testing framework with policy enforcement, performance monitoring, and security validation"
   },
   "execution": {
