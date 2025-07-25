@@ -95,7 +95,7 @@ jobs:
           # Summary
           echo "Security scan summary:"
           wc -l security-reports/*.txt 2>/dev/null || echo "No security issues files created"
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Run linting
         run: |
@@ -107,7 +107,7 @@ jobs:
             echo "Lint hook not found, checking shell scripts with basic shellcheck"
             find . -name "*.sh" -type f -exec shellcheck {} \; || echo "Shellcheck completed with warnings"
           fi
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Run tests
         run: |
@@ -119,7 +119,7 @@ jobs:
             echo "Test hook not found, running basic checks"
             bash -n bump_merged.sh && echo "Syntax check passed" || echo "Syntax check failed"
           fi
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Build check
         run: |
@@ -131,7 +131,7 @@ jobs:
             echo "Build check hook not found, running basic validation"
             echo "Basic validation passed"
           fi
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Validate configuration
         run: |
@@ -144,7 +144,7 @@ jobs:
           [ -f bump_merged.sh ] && echo "✓ bump_merged.sh exists" || echo "✗ bump_merged.sh missing"
           [ -f .repo_config.yaml ] && echo "✓ .repo_config.yaml exists" || echo "✗ .repo_config.yaml missing"
           [ -d hooks ] && echo "✓ hooks directory exists" || echo "✗ hooks directory missing"
-        continue-on-error: true
+        continue-on-error: false
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
