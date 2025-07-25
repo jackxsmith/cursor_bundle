@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🌟 CURSOR BUNDLE QUANTUM ZENITY GUI INSTALLER docker-deployment-v2 - SECOND GENERATION
+# 🌟 CURSOR BUNDLE QUANTUM ZENITY GUI INSTALLER tracker-system-v2 - SECOND GENERATION
 # Revolutionary quantum-enhanced Zenity GUI installer with AI-driven user experience
 # 
 # 🚀 BREAKTHROUGH FEATURES:
