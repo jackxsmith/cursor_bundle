@@ -1,10 +1,10 @@
-# Enterprise Policy Framework vv6.9.230
+# Enterprise Policy Framework vv6.9.231
 ## Comprehensive Governance, Risk Management, and Compliance System
 
 ---
 
 ### Document Metadata
-- **Version**: v6.9.230
+- **Version**: v6.9.231
 - **Last Updated**: July 25, 2025
 - **Next Scheduled Review**: October 25, 2025
 - **Document Classification**: Internal - Confidential
@@ -1108,7 +1108,7 @@ Central Monitoring Dashboard
 
 **Document Control**
 - **Classification**: Internal - Confidential
-- **Version**: v6.9.230
+- **Version**: v6.9.231
 - **Effective Date**: July 25, 2025
 - **Review Cycle**: Quarterly
 - **Next Review**: October 25, 2025

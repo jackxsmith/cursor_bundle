@@ -2,7 +2,7 @@
 
 # =============================================================================
 # CURSOR IDE ENTERPRISE INSTALLATION FRAMEWORK
-# Version: v6.9.230
+# Version: v6.9.231
 # Description: Advanced enterprise-grade installation system for Cursor IDE
 # Author: Enterprise Development Team
 # License: MIT
@@ -17,7 +17,7 @@ IFS=$'\n\t'
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_VERSION="v6.9.230"
+readonly SCRIPT_VERSION="v6.9.231"
 readonly CURSOR_VERSION="6.9.35"
 readonly TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
 
@@ -300,7 +300,7 @@ initialize_configuration() {
     if [[ "$DRY_RUN" != "true" ]]; then
         cat > "$MAIN_CONFIG" << 'EOF'
 # Cursor IDE Enterprise Installer Configuration
-# Version: v6.9.230
+# Version: v6.9.231
 
 [general]
 installation_timeout=3600
