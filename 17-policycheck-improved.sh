@@ -3,13 +3,13 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# 17-policycheck-improved.sh - Enterprise Policy Compliance Framework v07-tkinter-improved-v2.py
+# 17-policycheck-improved.sh - Enterprise Policy Compliance Framework v09-zenity-improved-v2.sh
 # Advanced policy validation, compliance monitoring, and governance system
 # ============================================================================
 
 readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly VERSION="07-tkinter-improved-v2.py"
+readonly VERSION="09-zenity-improved-v2.sh"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # Configuration Management
@@ -913,7 +913,7 @@ main() {
 # Display usage information
 display_usage() {
     cat << 'EOF'
-Enterprise Policy Compliance Framework v07-tkinter-improved-v2.py
+Enterprise Policy Compliance Framework v09-zenity-improved-v2.sh
 
 USAGE:
     policycheck-improved.sh [PATH] [COMMAND] [FRAMEWORK] [OPTIONS]
