@@ -1,10 +1,10 @@
-# Enterprise Policy Framework v09-zenity-improved-v2.sh
+# Enterprise Policy Framework v16-tracker-improved-v2.sh
 ## Comprehensive Governance, Risk Management, and Compliance System
 
 ---
 
 ### Document Metadata
-- **Version**: 09-zenity-improved-v2.sh
+- **Version**: 16-tracker-improved-v2.sh
 - **Last Updated**: July 25, 2025
 - **Next Scheduled Review**: October 25, 2025
 - **Document Classification**: Internal - Confidential
@@ -1108,7 +1108,7 @@ Central Monitoring Dashboard
 
 **Document Control**
 - **Classification**: Internal - Confidential
-- **Version**: 09-zenity-improved-v2.sh
+- **Version**: 16-tracker-improved-v2.sh
 - **Effective Date**: July 25, 2025
 - **Review Cycle**: Quarterly
 - **Next Review**: October 25, 2025
