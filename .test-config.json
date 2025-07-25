@@ -1,0 +1,19 @@
+{
+    "version": "6.9.208",
+    "script_version": "6.9.208",
+    "timestamp": "20250725_114909",
+    "environment": {
+        "os": "Linux",
+        "arch": "x86_64",
+        "kernel": "6.14.0-24-generic",
+        "user": "jj",
+        "shell": "/bin/bash",
+        "pwd": "/home/jj/Downloads/cursor_bundle"
+    },
+    "config": {
+        "parallel_jobs": 4,
+        "timeout": 300,
+        "retry_count": 3,
+        "verbose": 1
+    }
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Cursor Bundle Test Suite" time="0" tests="1" failures="0" errors="0" skipped="0">
+<testsuite name="Main Suite" tests="1" failures="0" errors="0" skipped="0">
+<testcase name="filesystem_structure" time="4.036854334"><failure message="Test failed"/></testcase>
+</testsuite>
+</testsuites>
