@@ -43,16 +43,19 @@ ALWAYS BUMP VERSION AFTER EVERY CHANGE
 - Never commit without updating VERSION file
 - Always end tasks by bumping to next version
 - Make version bumping automatic, not optional
+- CREATE SEPARATE RELEASE BRANCH for each new version
+- Use naming convention: release/vX.X.XXX
 ```
 
 ### Implementation
 ```bash
-# Template for every commit
+# Template for every commit with separate release branch
 git add .
 echo "x.x.$(($VERSION + 1))" > VERSION
 git add VERSION
+git checkout -b release/vx.x.$(($VERSION + 1))
 git commit -m "feat: description - bumped to version x.x.$(($VERSION + 1))"
-git push origin main
+git push origin release/vx.x.$(($VERSION + 1))
 ```
 
 ---
