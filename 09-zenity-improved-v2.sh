@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🌟 CURSOR BUNDLE QUANTUM ZENITY GUI INSTALLER 22-test-cursor-suite-improved-v2.sh - SECOND GENERATION
+# 🌟 CURSOR BUNDLE QUANTUM ZENITY GUI INSTALLER 07-tkinter-improved-v2.py - SECOND GENERATION
 # Revolutionary quantum-enhanced Zenity GUI installer with AI-driven user experience
 # 
 # 🚀 BREAKTHROUGH FEATURES:

@@ -1,10 +1,10 @@
-# Enterprise Policy Framework v22-test-cursor-suite-improved-v2.sh
+# Enterprise Policy Framework v07-tkinter-improved-v2.py
 ## Comprehensive Governance, Risk Management, and Compliance System
 
 ---
 
 ### Document Metadata
-- **Version**: 22-test-cursor-suite-improved-v2.sh
+- **Version**: 07-tkinter-improved-v2.py
 - **Last Updated**: July 25, 2025
 - **Next Scheduled Review**: October 25, 2025
 - **Document Classification**: Internal - Confidential
@@ -1108,7 +1108,7 @@ Central Monitoring Dashboard
 
 **Document Control**
 - **Classification**: Internal - Confidential
-- **Version**: 22-test-cursor-suite-improved-v2.sh
+- **Version**: 07-tkinter-improved-v2.py
 - **Effective Date**: July 25, 2025
 - **Review Cycle**: Quarterly
 - **Next Review**: October 25, 2025

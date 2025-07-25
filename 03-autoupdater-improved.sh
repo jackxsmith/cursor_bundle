@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🔄 CURSOR BUNDLE AUTO-UPDATER v22-test-cursor-suite-improved-v2.sh - DRAMATICALLY IMPROVED
+# 🔄 CURSOR BUNDLE AUTO-UPDATER v07-tkinter-improved-v2.py - DRAMATICALLY IMPROVED
 # Enterprise-grade application auto-updater with advanced features
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="22-test-cursor-suite-improved-v2.sh"
+readonly SCRIPT_VERSION="07-tkinter-improved-v2.py"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -923,8 +923,8 @@ ${BOLD}UPDATE CHANNELS:${NC}
 ${BOLD}EXAMPLES:${NC}
     ${SCRIPT_NAME}                                      # Check for updates
     ${SCRIPT_NAME} --channel beta --auto-install        # Auto-install beta updates
-    ${SCRIPT_NAME} download 22-test-cursor-suite-improved-v2.sh                     # Download specific version
-    ${SCRIPT_NAME} install 22-test-cursor-suite-improved-v2.sh                      # Install specific version
+    ${SCRIPT_NAME} download 07-tkinter-improved-v2.py                     # Download specific version
+    ${SCRIPT_NAME} install 07-tkinter-improved-v2.py                      # Install specific version
     ${SCRIPT_NAME} --force --verbose                    # Force check with verbose output
     ${SCRIPT_NAME} rollback                             # Rollback to previous version
     ${SCRIPT_NAME} list-versions --channel alpha        # List alpha versions
