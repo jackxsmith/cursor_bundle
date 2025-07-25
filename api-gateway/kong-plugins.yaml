@@ -1,0 +1,383 @@
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-rate-limiting
+  namespace: cursor-bundle
+plugin: rate-limiting
+config:
+  minute: 1000
+  hour: 10000
+  policy: redis
+  redis_host: redis.cursor-bundle
+  redis_port: 6379
+  redis_timeout: 2000
+  redis_password: ""
+  redis_database: 1
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-cors
+  namespace: cursor-bundle
+plugin: cors
+config:
+  origins:
+  - "https://cursor-bundle.example.com"
+  - "https://*.cursor-bundle.example.com"
+  methods:
+  - GET
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  - OPTIONS
+  headers:
+  - Accept
+  - Accept-Version
+  - Content-Length
+  - Content-MD5
+  - Content-Type
+  - Date
+  - X-Auth-Token
+  - X-API-Key
+  - Authorization
+  exposed_headers:
+  - X-Auth-Token
+  - X-Request-ID
+  credentials: true
+  max_age: 3600
+  preflight_continue: false
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-jwt
+  namespace: cursor-bundle
+plugin: jwt
+config:
+  uri_param_names:
+  - jwt
+  header_names:
+  - Authorization
+  - X-JWT-Token
+  claims_to_verify:
+  - exp
+  - iat
+  key_claim_name: iss
+  secret_is_base64: false
+  anonymous: ""
+  run_on_preflight: true
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-key-auth
+  namespace: cursor-bundle
+plugin: key-auth
+config:
+  key_names:
+  - X-API-KEY
+  - apikey
+  key_in_body: false
+  key_in_header: true
+  key_in_query: true
+  hide_credentials: true
+  anonymous: ""
+  run_on_preflight: false
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-request-size-limiting
+  namespace: cursor-bundle
+plugin: request-size-limiting
+config:
+  allowed_payload_size: 128
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-ip-restriction
+  namespace: cursor-bundle
+plugin: ip-restriction
+config:
+  allow:
+  - "10.0.0.0/8"
+  - "172.16.0.0/12"
+  - "192.168.0.0/16"
+  - "127.0.0.1"
+  deny: []
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-prometheus
+  namespace: cursor-bundle
+plugin: prometheus
+config:
+  per_consumer: true
+  status_code_metrics: true
+  latency_metrics: true
+  bandwidth_metrics: true
+  upstream_health_metrics: true
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-zipkin
+  namespace: cursor-bundle
+plugin: zipkin
+config:
+  http_endpoint: http://jaeger-collector.observability:9411/api/v2/spans
+  sample_ratio: 0.1
+  include_credential: true
+  traceid_byte_count: 16
+  header_type: preserve
+  default_service_name: cursor-bundle-api
+  default_header_type: b3
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-opentelemetry
+  namespace: cursor-bundle
+plugin: opentelemetry
+config:
+  endpoint: http://otel-collector.observability:4318/v1/traces
+  headers:
+    X-Service-Name: cursor-bundle-api
+  resource_attributes:
+    service.name: cursor-bundle-api
+    service.version: "6.9.148"
+    service.namespace: cursor-bundle
+  batch_span_processor:
+    max_export_batch_size: 200
+    export_timeout_ms: 30000
+    inactive_timeout_ms: 5000
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-response-transformer
+  namespace: cursor-bundle
+plugin: response-transformer
+config:
+  add:
+    headers:
+    - "X-Service-Version:6.9.148"
+    - "X-API-Gateway:kong"
+    - "X-Request-ID:$(headers.x-request-id)"
+  remove:
+    headers:
+    - "X-Powered-By"
+    - "Server"
+  replace:
+    headers:
+    - "Cache-Control:public, max-age=300"
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-request-transformer
+  namespace: cursor-bundle
+plugin: request-transformer
+config:
+  add:
+    headers:
+    - "X-Forwarded-Service:cursor-bundle"
+    - "X-Request-Start:$(timestamp)"
+  remove:
+    headers: []
+  replace:
+    headers: []
+  rename:
+    headers: []
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-acl
+  namespace: cursor-bundle
+plugin: acl
+config:
+  allow:
+  - "admin"
+  - "developer"
+  - "premium_user"
+  deny: []
+  hide_groups_header: false
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: cursor-bundle-oauth2
+  namespace: cursor-bundle
+plugin: oauth2
+config:
+  scopes:
+  - "read"
+  - "write"
+  - "admin"
+  mandatory_scope: true
+  provision_key: "cursor_bundle_provision_key"
+  token_expiration: 7200
+  enable_authorization_code: true
+  enable_client_credentials: true
+  enable_implicit_grant: false
+  enable_password_grant: true
+  hide_credentials: true
+  accept_http_if_already_terminated: false
+  reuse_refresh_token: false
+  persistent_refresh_token: true
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: cursor-bundle-admin
+  namespace: cursor-bundle
+  annotations:
+    kubernetes.io/ingress.class: kong
+username: cursor-bundle-admin
+custom_id: "cursor-bundle-admin-001"
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongConsumer
+metadata:
+  name: cursor-bundle-user
+  namespace: cursor-bundle
+  annotations:
+    kubernetes.io/ingress.class: kong
+username: cursor-bundle-user
+custom_id: "cursor-bundle-user-001"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-admin-keyauth
+  namespace: cursor-bundle
+  labels:
+    konghq.com/credential: key-auth
+type: Opaque
+stringData:
+  key: "cursor-bundle-admin-api-key-2024"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-user-keyauth
+  namespace: cursor-bundle
+  labels:
+    konghq.com/credential: key-auth
+type: Opaque
+stringData:
+  key: "cursor-bundle-user-api-key-2024"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-admin-jwt
+  namespace: cursor-bundle
+  labels:
+    konghq.com/credential: jwt
+type: Opaque
+stringData:
+  algorithm: HS256
+  key: cursor-bundle-admin
+  secret: "cursor-bundle-jwt-secret-admin-2024"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-user-jwt
+  namespace: cursor-bundle
+  labels:
+    konghq.com/credential: jwt
+type: Opaque
+stringData:
+  algorithm: HS256
+  key: cursor-bundle-user
+  secret: "cursor-bundle-jwt-secret-user-2024"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-admin-oauth2
+  namespace: cursor-bundle
+  labels:
+    konghq.com/credential: oauth2
+type: Opaque
+stringData:
+  name: "Cursor Bundle Admin OAuth2"
+  client_id: "cursor-bundle-admin-oauth2-client"
+  client_secret: "cursor-bundle-admin-oauth2-secret-2024"
+  redirect_uris: "https://cursor-bundle.example.com/oauth/callback"
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cursor-bundle-user-oauth2
+  namespace: cursor-bundle
+  labels:
+    konghq.com/credential: oauth2
+type: Opaque
+stringData:
+  name: "Cursor Bundle User OAuth2"
+  client_id: "cursor-bundle-user-oauth2-client"
+  client_secret: "cursor-bundle-user-oauth2-secret-2024"
+  redirect_uris: "https://cursor-bundle.example.com/oauth/callback"
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: global-prometheus
+  labels:
+    global: "true"
+plugin: prometheus
+config:
+  per_consumer: true
+  status_code_metrics: true
+  latency_metrics: true
+  bandwidth_metrics: true
+  upstream_health_metrics: true
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongClusterPlugin
+metadata:
+  name: global-opentelemetry
+  labels:
+    global: "true"
+plugin: opentelemetry
+config:
+  endpoint: http://otel-collector.observability:4318/v1/traces
+  headers:
+    X-Service-Name: kong-gateway
+  resource_attributes:
+    service.name: kong-gateway
+    service.version: "3.4.2"
+    service.namespace: kong
+  batch_span_processor:
+    max_export_batch_size: 200
+    export_timeout_ms: 30000
+    inactive_timeout_ms: 5000

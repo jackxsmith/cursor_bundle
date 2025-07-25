@@ -1,0 +1,443 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cursor-bundle-api-gateway
+  namespace: cursor-bundle
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: cursor-bundle-rate-limiting,cursor-bundle-cors,cursor-bundle-prometheus,cursor-bundle-opentelemetry,cursor-bundle-response-transformer,cursor-bundle-request-transformer
+    konghq.com/strip-path: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  labels:
+    app: cursor-bundle
+    component: api-gateway
+spec:
+  tls:
+  - hosts:
+    - api.cursor-bundle.example.com
+    - cursor-bundle.example.com
+    secretName: cursor-bundle-api-tls
+  rules:
+  - host: api.cursor-bundle.example.com
+    http:
+      paths:
+      - path: /v1/bundles
+        pathType: Prefix
+        backend:
+          service:
+            name: cursor-bundle
+            port:
+              number: 80
+      - path: /v1/health
+        pathType: Exact
+        backend:
+          service:
+            name: cursor-bundle
+            port:
+              number: 80
+      - path: /v1/metrics
+        pathType: Exact
+        backend:
+          service:
+            name: cursor-bundle
+            port:
+              number: 9090
+  - host: cursor-bundle.example.com
+    http:
+      paths:
+      - path: /api/v1
+        pathType: Prefix
+        backend:
+          service:
+            name: cursor-bundle
+            port:
+              number: 80
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cursor-bundle-web
+            port:
+              number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cursor-bundle-admin-api
+  namespace: cursor-bundle
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: cursor-bundle-key-auth,cursor-bundle-acl,cursor-bundle-ip-restriction,cursor-bundle-prometheus,cursor-bundle-opentelemetry
+    konghq.com/strip-path: "true"
+  labels:
+    app: cursor-bundle
+    component: admin-api
+spec:
+  tls:
+  - hosts:
+    - admin.cursor-bundle.example.com
+    secretName: cursor-bundle-admin-tls
+  rules:
+  - host: admin.cursor-bundle.example.com
+    http:
+      paths:
+      - path: /admin/v1
+        pathType: Prefix
+        backend:
+          service:
+            name: cursor-bundle
+            port:
+              number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cursor-bundle-oauth-api
+  namespace: cursor-bundle
+  annotations:
+    kubernetes.io/ingress.class: kong
+    konghq.com/plugins: cursor-bundle-oauth2,cursor-bundle-cors,cursor-bundle-prometheus,cursor-bundle-opentelemetry
+    konghq.com/strip-path: "false"
+  labels:
+    app: cursor-bundle
+    component: oauth-api
+spec:
+  tls:
+  - hosts:
+    - oauth.cursor-bundle.example.com
+    secretName: cursor-bundle-oauth-tls
+  rules:
+  - host: oauth.cursor-bundle.example.com
+    http:
+      paths:
+      - path: /oauth
+        pathType: Prefix
+        backend:
+          service:
+            name: cursor-bundle-oauth
+            port:
+              number: 80
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+  name: cursor-bundle-api-routing
+  namespace: cursor-bundle
+upstream:
+  healthchecks:
+    active:
+      type: http
+      http_path: "/health"
+      healthy:
+        interval: 10
+        successes: 3
+      unhealthy:
+        interval: 10
+        tcp_failures: 3
+        timeouts: 3
+        http_failures: 3
+    passive:
+      healthy:
+        successes: 3
+      unhealthy:
+        tcp_failures: 3
+        timeouts: 3
+        http_failures: 3
+  algorithm: round-robin
+proxy:
+  protocol: http
+  connect_timeout: 10000
+  retries: 3
+  read_timeout: 60000
+  write_timeout: 60000
+route:
+  methods:
+  - GET
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  - OPTIONS
+  - HEAD
+  regex_priority: 0
+  strip_path: false
+  preserve_host: false
+  protocols:
+  - http
+  - https
+
+---
+apiVersion: configuration.konghq.com/v1
+kind: KongIngress
+metadata:
+  name: cursor-bundle-admin-routing
+  namespace: cursor-bundle
+upstream:
+  healthchecks:
+    active:
+      type: http
+      http_path: "/admin/health"
+      healthy:
+        interval: 30
+        successes: 3
+      unhealthy:
+        interval: 30
+        tcp_failures: 3
+        timeouts: 3
+        http_failures: 3
+  algorithm: least-connections
+proxy:
+  protocol: http
+  connect_timeout: 5000
+  retries: 2
+  read_timeout: 30000
+  write_timeout: 30000
+route:
+  methods:
+  - GET
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  regex_priority: 10
+  strip_path: true
+  preserve_host: true
+  protocols:
+  - https
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cursor-bundle-web
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+    component: web
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: cursor-bundle-web
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cursor-bundle-oauth
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle
+    component: oauth
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: cursor-bundle
+    component: oauth
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cursor-bundle-web
+  namespace: cursor-bundle
+  labels:
+    app: cursor-bundle-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cursor-bundle-web
+  template:
+    metadata:
+      labels:
+        app: cursor-bundle-web
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.25
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        resources:
+          requests:
+            memory: 64Mi
+            cpu: 50m
+          limits:
+            memory: 128Mi
+            cpu: 100m
+        volumeMounts:
+        - name: web-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+        - name: web-content
+          mountPath: /usr/share/nginx/html
+          readOnly: true
+      volumes:
+      - name: web-config
+        configMap:
+          name: cursor-bundle-web-config
+      - name: web-content
+        configMap:
+          name: cursor-bundle-web-content
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cursor-bundle-web-config
+  namespace: cursor-bundle
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+    
+    events {
+        worker_connections 1024;
+    }
+    
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+        
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+        
+        access_log /var/log/nginx/access.log main;
+        
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        
+        server {
+            listen 3000;
+            server_name _;
+            
+            location / {
+                root /usr/share/nginx/html;
+                index index.html;
+                try_files $uri $uri/ /index.html;
+            }
+            
+            location /api {
+                proxy_pass http://cursor-bundle:8080;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+            
+            location /metrics {
+                stub_status on;
+                access_log off;
+                allow 10.0.0.0/8;
+                deny all;
+            }
+        }
+    }
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cursor-bundle-web-content
+  namespace: cursor-bundle
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Cursor Bundle - API Gateway</title>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                min-height: 100vh;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                text-align: center;
+            }
+            h1 { font-size: 3em; margin-bottom: 0.5em; }
+            h2 { color: #f0f0f0; margin-top: 2em; }
+            .api-info {
+                background: rgba(255,255,255,0.1);
+                padding: 20px;
+                border-radius: 10px;
+                margin: 20px 0;
+            }
+            .endpoint {
+                background: rgba(0,0,0,0.2);
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 5px;
+                font-family: 'Courier New', monospace;
+            }
+            a { color: #FFD700; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🚀 Cursor Bundle</h1>
+            <p>Advanced API Gateway with Kong</p>
+            
+            <div class="api-info">
+                <h2>API Endpoints</h2>
+                <div class="endpoint">GET /api/v1/bundles</div>
+                <div class="endpoint">POST /api/v1/bundles</div>
+                <div class="endpoint">GET /api/v1/health</div>
+                <div class="endpoint">GET /api/v1/metrics</div>
+            </div>
+            
+            <div class="api-info">
+                <h2>Features</h2>
+                <ul style="text-align: left; max-width: 400px; margin: 0 auto;">
+                    <li>Rate Limiting & CORS</li>
+                    <li>JWT & OAuth2 Authentication</li>
+                    <li>API Key Management</li>
+                    <li>Request/Response Transformation</li>
+                    <li>OpenTelemetry Tracing</li>
+                    <li>Prometheus Metrics</li>
+                    <li>IP Restrictions & ACL</li>
+                </ul>
+            </div>
+            
+            <div class="api-info">
+                <h2>Monitoring</h2>
+                <p><a href="/metrics">Nginx Metrics</a></p>
+                <p><a href="https://grafana.cursor-bundle.example.com">Grafana Dashboard</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
