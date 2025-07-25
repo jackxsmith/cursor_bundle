@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# UPGRADED CURSOR BUNDLE TEST SUITE v6.9.221
+# UPGRADED CURSOR BUNDLE TEST SUITE v6.9.222
 # Advanced Enterprise Testing Framework with Policy Enforcement
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="6.9.221"
+readonly SCRIPT_VERSION="6.9.222"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
