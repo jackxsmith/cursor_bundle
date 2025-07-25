@@ -18,9 +18,20 @@
 
 ### Code Security Standards
 * All shell scripts must use strict error handling: `set -euo pipefail`
+* Comprehensive error handling library usage required for all shell scripts
+* Replace `|| true` patterns with `safe_ignore()` function with proper reasoning
+* Error logging with context and severity levels for all failure scenarios
 * Python code requires type hints and comprehensive error handling
 * Input validation mandatory for all user-facing interfaces
 * No hardcoded secrets or credentials in source code
+
+### Error Handling Guidelines
+* Use `safe_execute()` for commands that should fail fast with proper error reporting
+* Use `safe_ignore()` only when command failure is acceptable, with documented reason
+* Use `safe_execute_with_retry()` for transient failures (network, resource contention)
+* All error handlers must include context information and structured logging
+* Critical errors must generate comprehensive error dumps for debugging
+* Error recovery mechanisms should be implemented where feasible
 
 ### Container Security Requirements
 * All containers run as non-root user (UID 1000)

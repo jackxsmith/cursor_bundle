@@ -1,12 +1,32 @@
 #!/usr/bin/env bash
 # bump.sh — resilient release helper  (2025‑07‑final‑7)
+# Enhanced with comprehensive error handling
 
 set -euo pipefail
 shopt -s globstar nullglob
+
+# Source enhanced libraries
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+if [[ -f "$SCRIPT_DIR/scripts/lib/error_handling.sh" ]]; then
+    # shellcheck source=scripts/lib/error_handling.sh
+    source "$SCRIPT_DIR/scripts/lib/error_handling.sh"
+    # shellcheck source=scripts/lib/git_operations.sh
+    source "$SCRIPT_DIR/scripts/lib/git_operations.sh"
+else
+    # Fallback error handling if library not available
+    echo "WARNING: Enhanced libraries not found, using basic error handling" >&2
+    handle_error() { echo "ERROR: $1" >&2; exit "${2:-1}"; }
+    safe_execute() { eval "$1" || handle_error "$2" "$?"; }
+    atomic_git_push() { git push "${2:-origin}" "${1:-HEAD}"; }
+fi
 ################################################################################
-OWNER="jackxsmith" ; REPO="cursor_bundle"
-KEEP_RELEASE_BRANCHES=50
-MAX_RETRY=3
+# Configurable parameters with environment variable support
+OWNER="${REPO_OWNER:-jackxsmith}"
+REPO="${REPO_NAME:-cursor_bundle}"
+KEEP_RELEASE_BRANCHES="${KEEP_RELEASE_BRANCHES:-50}"
+MAX_RETRY="${MAX_RETRY_ATTEMPTS:-3}"
+GIT_TIMEOUT="${GIT_OPERATION_TIMEOUT:-60}"
+RELEASE_BRANCH_PREFIX="${RELEASE_BRANCH_PREFIX:-release/v}"
 ################################################################################
 NEW_VERSION="${1:?usage: ./bump.sh <new_version>}"
 CLONE_DIR="${REPO_DIR:-$HOME/Downloads/$REPO}"
@@ -53,6 +73,73 @@ else
     GH_TOKEN="${GH_TOKEN:-}"
 fi
 
+# Input validation functions
+validate_version_string() {
+    local version="$1"
+    local context="${2:-validate_version_string}"
+    
+    # Check if version follows semantic versioning
+    if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9._-]+)?(\+[a-zA-Z0-9._-]+)?$ ]]; then
+        handle_error 1 "Invalid version format. Expected: MAJOR.MINOR.PATCH (e.g., 6.9.164)" "$context"
+        return 1
+    fi
+    
+    log_error "DEBUG" "Version string validation passed: $version" "$context"
+    return 0
+}
+
+validate_repository_config() {
+    local context="validate_repository_config"
+    
+    # Validate owner name
+    if [[ ! "$OWNER" =~ ^[a-zA-Z0-9._-]+$ ]] || [[ ${#OWNER} -lt 1 ]] || [[ ${#OWNER} -gt 39 ]]; then
+        handle_error 1 "Invalid repository owner: '$OWNER'" "$context"
+        return 1
+    fi
+    
+    # Validate repository name
+    if [[ ! "$REPO" =~ ^[a-zA-Z0-9._-]+$ ]] || [[ ${#REPO} -lt 1 ]] || [[ ${#REPO} -gt 100 ]]; then
+        handle_error 1 "Invalid repository name: '$REPO'" "$context"
+        return 1
+    fi
+    
+    # Validate numeric parameters
+    if [[ ! "$KEEP_RELEASE_BRANCHES" =~ ^[0-9]+$ ]] || [[ "$KEEP_RELEASE_BRANCHES" -lt 1 ]] || [[ "$KEEP_RELEASE_BRANCHES" -gt 1000 ]]; then
+        handle_error 1 "Invalid KEEP_RELEASE_BRANCHES value: '$KEEP_RELEASE_BRANCHES' (must be 1-1000)" "$context"
+        return 1
+    fi
+    
+    if [[ ! "$MAX_RETRY" =~ ^[0-9]+$ ]] || [[ "$MAX_RETRY" -lt 1 ]] || [[ "$MAX_RETRY" -gt 10 ]]; then
+        handle_error 1 "Invalid MAX_RETRY value: '$MAX_RETRY' (must be 1-10)" "$context"
+        return 1
+    fi
+    
+    log_error "DEBUG" "Repository configuration validation passed" "$context"
+    return 0
+}
+
+validate_paths() {
+    local context="validate_paths"
+    
+    # Validate clone directory path
+    if [[ ! "$CLONE_DIR" =~ ^[[:print:]]+$ ]] || [[ "$CLONE_DIR" =~ [[:space:]] ]]; then
+        handle_warning "Clone directory path contains spaces or special characters: '$CLONE_DIR'" "$context"
+    fi
+    
+    # Check if paths exist and are accessible
+    validate_file_exists "$CONFIG_FILE" "$context" || log_error "INFO" "Config file not found, using defaults" "$context"
+    
+    # Validate hooks directory if it exists
+    if [[ -d "$HOOKS_DIR" ]]; then
+        if [[ ! -r "$HOOKS_DIR" ]]; then
+            handle_warning "Hooks directory is not readable: '$HOOKS_DIR'" "$context"
+        fi
+    fi
+    
+    log_error "DEBUG" "Path validation completed" "$context"
+    return 0
+}
+
 # Validate token is available
 if [ -z "$GH_TOKEN" ]; then
     echo "Warning: No GitHub token found. Set GH_TOKEN environment variable or create ~/.github_pat file"
@@ -61,6 +148,12 @@ if [ -z "$GH_TOKEN" ]; then
 else
     TOKEN_OK=true
 fi
+
+# Perform comprehensive validation
+log_error "INFO" "Starting comprehensive validation..." "main"
+validate_version_string "$NEW_VERSION" "main"
+validate_repository_config
+validate_paths
 
 # Enhanced logging functions
 log() {
@@ -86,21 +179,53 @@ banner_ok(){
   sync
 }
 
-auto_pull_rebase(){ local ref=$1
-  git fetch origin "$ref"
-  git rebase origin/"$ref" && { log "rebased $ref → origin/$ref"; return; }
-  log "rebase conflict – merging with ours"
-  git rebase --abort || true
-  git merge --no-ff -X ours origin/"$ref" -m "Merge origin/$ref (auto)"
+auto_pull_rebase() {
+    local ref="$1"
+    
+    validate_required_var "ref" "auto_pull_rebase"
+    
+    safe_execute "git fetch origin '$ref'" \
+        "Failed to fetch origin/$ref" \
+        "" \
+        "auto_pull_rebase"
+    
+    # Try atomic pull with rebase strategy first
+    if atomic_git_pull "origin" "$ref" "auto_pull_rebase" "rebase"; then
+        log_error "INFO" "Successfully rebased $ref ← origin/$ref" "auto_pull_rebase"
+        return 0
+    fi
+    
+    log_error "WARN" "Rebase conflict detected, attempting merge with ours strategy" "auto_pull_rebase"
+    
+    # Try atomic merge operation
+    if atomic_git_merge "origin/$ref" "ours" "true" "auto_pull_rebase"; then
+        log_error "INFO" "Successfully merged origin/$ref with ours strategy" "auto_pull_rebase"
+        return 0
+    fi
+    
+    handle_error 1 "Failed to auto-pull and rebase/merge $ref" "auto_pull_rebase"
 }
-safe_push(){ local ref=$1 tries=0
-  while (( tries < MAX_RETRY )); do
-    git push origin "$ref" --follow-tags && return 0
-    log "push rejected – auto‑pull & retry ($((++tries))/$MAX_RETRY)"
+safe_push(){ 
+    local ref="$1" 
+    local context="${2:-safe_push}"
+    
+    log_error "INFO" "Starting safe push for ref: $ref" "$context"
+    
+    # Try normal push first
+    if atomic_git_push "$ref" "origin" "$context"; then
+        return 0
+    fi
+    
+    # If push fails, try auto-pull and force push with lease
+    log_error "INFO" "Push rejected, attempting auto-pull and retry" "$context"
     auto_pull_rebase "$ref"
-    git push --force-with-lease origin "$ref" --follow-tags && return 0
-  done
-  die "push failed for $ref"
+    
+    if atomic_git_push "$ref" "origin" "$context" "--force-with-lease"; then
+        return 0
+    fi
+    
+    handle_error 1 "Push failed for ref: $ref after retries" "$context"
+    return 1
 }
 api(){ $TOKEN_OK && curl -fsSL \
         -H "Authorization: Bearer $GH_TOKEN" \
@@ -524,7 +649,9 @@ fi
 SSH_URL="git@github.com:$OWNER/$REPO.git"
 HTTPS_URL="https://x-access-token@github.com/$OWNER/$REPO.git"
 export GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1
-git remote set-url origin "$SSH_URL" 2>/dev/null || true
+safe_ignore "git remote set-url origin '$SSH_URL'" \
+    "Setting SSH URL, will fallback to HTTPS if this fails" \
+    "remote_setup"
 USE_SSH=true; git ls-remote origin &>/dev/null || USE_SSH=false
 ASKPASS=''; trap '[[ -n $ASKPASS ]] && rm -f "$ASKPASS"' EXIT
 if ! $USE_SSH && $TOKEN_OK; then
@@ -540,13 +667,18 @@ branch_exists(){ git ls-remote --heads origin "$1" | grep -q "$1"; }
 if branch_exists "$TARGET"; then git fetch origin "$TARGET:$TARGET"; else
   git fetch origin main && git checkout -B "$TARGET" origin/main && safe_push "$TARGET"
 fi
-git checkout "$TARGET"
+atomic_git_checkout "$TARGET" "false" "" "main"
 
 CLEAN=( bump_and_merge_* v*.sh diff-6*.patch git_log_* git_metadata_* *_report_v*.txt
         build_log_* change_summary_* code_metrics_* dependencies_* lint_report_*
         performance_* static_analysis_* test_results_* todo_fixme_*
         ci_workflows_v*.tar* )
-for p in "${CLEAN[@]}"; do git rm -f $p 2>/dev/null || true; done
+# Clean up old artifacts with proper error handling
+for pattern in "${CLEAN[@]}"; do
+    safe_ignore "git rm -f $pattern" \
+        "Cleaning pattern '$pattern' - files may not exist" \
+        "cleanup_artifacts"
+done
 GI=.gitignore; TAG='## auto‑clean (bump.sh)'
 if [[ ! -f $GI ]] || ! grep -q "$TAG" "$GI"; then
   { echo "$TAG"; printf '%s\n' "${CLEAN[@]}" '*.tar.gz' '*.tar_v*.gz' 'diff-*.patch'; } >> "$GI"
@@ -554,13 +686,42 @@ if [[ ! -f $GI ]] || ! grep -q "$TAG" "$GI"; then
 fi
 git diff --cached --quiet || { git commit -m "chore: repo housekeeping"; safe_push "$TARGET"; }
 
-OLD_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || true)
+# Get old version with fallback to VERSION file
+if ! OLD_VERSION=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//'); then
+    if [[ -f VERSION ]]; then
+        OLD_VERSION=$(<VERSION)
+        log "INFO" "Using version from VERSION file: $OLD_VERSION"
+    else
+        OLD_VERSION=""
+        log "WARN" "No previous version found, this may be the first release"
+    fi
+fi
 [[ -z $OLD_VERSION && -f VERSION ]] && OLD_VERSION=$(<VERSION)
 for f in **/*"$OLD_VERSION"*; do [[ -f $f ]] && nf=${f//$OLD_VERSION/$NEW_VERSION} && [[ $nf != $f ]] && { mkdir -p "$(dirname "$nf")"; mv "$f" "$nf"; }; done
-perl -pi -e "s/\Q$OLD_VERSION\E/$NEW_VERSION/g" $(git ls-files '*.*') 2>/dev/null || true
+# Update version strings in files with proper error handling
+if [[ -n "$OLD_VERSION" ]]; then
+    log "INFO" "Updating version strings from $OLD_VERSION to $NEW_VERSION"
+    
+    # Get list of files to update
+    local files_to_update
+    if files_to_update=$(git ls-files '*.*' 2>/dev/null); then
+        if [[ -n "$files_to_update" ]]; then
+            safe_ignore "perl -pi -e 's/\Q$OLD_VERSION\E/$NEW_VERSION/g' $files_to_update" \
+                "Version string replacement may fail for some files" \
+                "version_update"
+        else
+            log "WARN" "No files found for version string update"
+        fi
+    else
+        log "WARN" "Failed to get file list for version update"
+    fi
+else
+    log "INFO" "No old version to replace, skipping version string update"
+fi
 echo "$NEW_VERSION" > VERSION
 git add .; git diff --cached --quiet || { git commit -m "feat: bump to v$NEW_VERSION"; safe_push "$TARGET"; }
-git tag -f "v$NEW_VERSION"; safe_push "$TARGET"
+atomic_git_tag "v$NEW_VERSION" "HEAD" "Release v$NEW_VERSION" "false" "main"
+safe_push "$TARGET" "main"
 
 git fetch origin main
 git merge --no-ff origin/main -m "Merge main into $TARGET" || {
@@ -569,21 +730,45 @@ git merge --no-ff origin/main -m "Merge main into $TARGET" || {
 }
 safe_push "$TARGET"
 
-git checkout main
+atomic_git_checkout "main" "false" "" "main"
 auto_pull_rebase main
 git merge --ff-only "$TARGET" 2>/dev/null || git merge --no-ff "$TARGET" -m "Merge $TARGET into main (offline)"
 safe_push main
 
-git checkout "$TARGET"
-git merge --ff-only origin/main 2>/dev/null || true; safe_push "$TARGET"
+atomic_git_checkout "$TARGET" "false" "" "main"
+# Attempt fast-forward merge from main, but don't fail if it's not possible
+safe_ignore "git merge --ff-only origin/main" \
+    "Fast-forward merge from main not possible, continuing with current state" \
+    "final_merge"
 
-set +e
-i=0
-while read ref; do
-  ((i++)); br=${ref#refs/remotes/origin/}
-  (( i > KEEP_RELEASE_BRANCHES )) && git push origin --delete "$br" >/dev/null 2>&1
-done < <(git for-each-ref --sort=-creatordate --format='%(refname)' refs/remotes/origin/release/v*)
-set -e
+safe_push "$TARGET"
+
+# Clean up old release branches with proper error handling
+log "INFO" "Cleaning up old release branches (keeping $KEEP_RELEASE_BRANCHES most recent)"
+
+local branch_count=0
+local branches_to_delete=()
+
+# Collect branches to delete
+while IFS= read -r ref; do
+    ((branch_count++))
+    local branch_name="${ref#refs/remotes/origin/}"
+    
+    if (( branch_count > KEEP_RELEASE_BRANCHES )); then
+        branches_to_delete+=("$branch_name")
+    fi
+done < <(safe_ignore "git for-each-ref --sort=-creatordate --format='%(refname)' refs/remotes/origin/release/v*" \
+    "No release branches found - this is normal for new repositories" \
+    "branch_cleanup")
+
+# Delete old branches
+for branch in "${branches_to_delete[@]}"; do
+    safe_ignore "git push origin --delete '$branch'" \
+        "Failed to delete old branch '$branch' - may already be deleted" \
+        "branch_cleanup"
+done
+
+log "INFO" "Branch cleanup completed. Deleted ${#branches_to_delete[@]} old branches"
 
 # Execute legacy features if enabled
 generate_legacy_changelog
