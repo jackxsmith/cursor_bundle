@@ -1,0 +1,42 @@
+name: Simple Status Check
+
+on:
+  push:
+    branches: [main, 'release/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Simple validation
+        run: |
+          echo "Running simple validation checks..."
+          
+          # Check if VERSION file exists
+          if [ -f "VERSION" ]; then
+            echo "✓ VERSION file exists"
+            echo "Current version: $(cat VERSION)"
+          else
+            echo "✗ VERSION file missing"
+            exit 1
+          fi
+          
+          # Check if main script exists
+          if [ -f "bump_merged.sh" ]; then
+            echo "✓ bump_merged.sh exists"
+          else
+            echo "✗ bump_merged.sh missing"
+            exit 1
+          fi
+          
+          # Basic syntax check
+          bash -n bump_merged.sh && echo "✓ Syntax check passed" || exit 1
+          
+          echo "All checks passed successfully!"
