@@ -1,10 +1,10 @@
-# Enterprise Policy Framework vtracker-system-v2
+# Enterprise Policy Framework vpolicycheck-framework-v2
 ## Comprehensive Governance, Risk Management, and Compliance System
 
 ---
 
 ### Document Metadata
-- **Version**: tracker-system-v2
+- **Version**: policycheck-framework-v2
 - **Last Updated**: July 25, 2025
 - **Next Scheduled Review**: October 25, 2025
 - **Document Classification**: Internal - Confidential
@@ -1108,7 +1108,7 @@ Central Monitoring Dashboard
 
 **Document Control**
 - **Classification**: Internal - Confidential
-- **Version**: tracker-system-v2
+- **Version**: policycheck-framework-v2
 - **Effective Date**: July 25, 2025
 - **Review Cycle**: Quarterly
 - **Next Review**: October 25, 2025

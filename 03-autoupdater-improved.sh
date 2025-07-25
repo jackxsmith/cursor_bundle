@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🔄 CURSOR BUNDLE AUTO-UPDATER vtracker-system-v2 - DRAMATICALLY IMPROVED
+# 🔄 CURSOR BUNDLE AUTO-UPDATER vpolicycheck-framework-v2 - DRAMATICALLY IMPROVED
 # Enterprise-grade application auto-updater with advanced features
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="tracker-system-v2"
+readonly SCRIPT_VERSION="policycheck-framework-v2"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -923,8 +923,8 @@ ${BOLD}UPDATE CHANNELS:${NC}
 ${BOLD}EXAMPLES:${NC}
     ${SCRIPT_NAME}                                      # Check for updates
     ${SCRIPT_NAME} --channel beta --auto-install        # Auto-install beta updates
-    ${SCRIPT_NAME} download tracker-system-v2                     # Download specific version
-    ${SCRIPT_NAME} install tracker-system-v2                      # Install specific version
+    ${SCRIPT_NAME} download policycheck-framework-v2                     # Download specific version
+    ${SCRIPT_NAME} install policycheck-framework-v2                      # Install specific version
     ${SCRIPT_NAME} --force --verbose                    # Force check with verbose output
     ${SCRIPT_NAME} rollback                             # Rollback to previous version
     ${SCRIPT_NAME} list-versions --channel alpha        # List alpha versions
