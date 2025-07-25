@@ -3,13 +3,13 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# 17-policycheck-improved.sh - Enterprise Policy Compliance Framework vv6.9.231
+# 17-policycheck-improved.sh - Enterprise Policy Compliance Framework vposttest-framework-v2
 # Advanced policy validation, compliance monitoring, and governance system
 # ============================================================================
 
 readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly VERSION="v6.9.231"
+readonly VERSION="posttest-framework-v2"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # Configuration Management
@@ -913,7 +913,7 @@ main() {
 # Display usage information
 display_usage() {
     cat << 'EOF'
-Enterprise Policy Compliance Framework vv6.9.231
+Enterprise Policy Compliance Framework vposttest-framework-v2
 
 USAGE:
     policycheck-improved.sh [PATH] [COMMAND] [FRAMEWORK] [OPTIONS]

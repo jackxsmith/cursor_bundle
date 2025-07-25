@@ -1,7 +1,7 @@
 [2025-07-25 11:49:09] [INFO] Setting up test environment...
 [2025-07-25 11:49:09] [SUCCESS] Test environment initialized
-[2025-07-25 11:49:09] [INFO] 🚀 Starting Cursor Bundle Test Suite vv6.9.231
-[2025-07-25 11:49:09] [INFO] Version: v6.9.231 | Timestamp: 20250725_114909
+[2025-07-25 11:49:09] [INFO] 🚀 Starting Cursor Bundle Test Suite vposttest-framework-v2
+[2025-07-25 11:49:09] [INFO] Version: posttest-framework-v2 | Timestamp: 20250725_114909
 [2025-07-25 11:49:09] [INFO] 🧪 Running test: filesystem_structure
 [2025-07-25 11:49:11] [WARN] Retry attempt 2/3 for filesystem_structure
 [2025-07-25 11:49:13] [WARN] Retry attempt 3/3 for filesystem_structure
