@@ -5,9 +5,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# Source error handling library
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/error_handling.sh"
+# Source error handling library if not already loaded
+if ! declare -f log_error >/dev/null 2>&1; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [[ -f "$SCRIPT_DIR/error_handling.sh" ]]; then
+        source "$SCRIPT_DIR/error_handling.sh"
+    fi
+fi
 
 # Logging configuration
 declare -g LOG_BASE_DIR="${LOG_BASE_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/cursor-bundle/logs}"
