@@ -12,14 +12,18 @@ This policy establishes the fundamental requirement that all changes must be ver
 - **ALWAYS** check the actual GitHub repository URLs to confirm statements
 - **CONTINUE** checking until the expected result is visually confirmed
 - **NEVER** assume changes have taken effect without verification
+- **ALWAYS** verify the EXACT status count (e.g., 4/5, 5/5) shown on GitHub branches page
+- **NEVER** mark verification complete until GitHub branches page shows expected status
 
 ### 2. Specific Verification Requirements
 
 #### GitHub Actions Status Verification
 - Check https://github.com/jackxsmith/cursor_bundle/actions for workflow runs
 - Verify actual status indicators (green ✓, red ✗, yellow ●)
-- Confirm expected number of status checks (e.g., 2/2, 5/5)
+- Confirm expected number of status checks matches GitHub branches page exactly
 - Wait for workflows to complete processing
+- Check individual workflow pages to ensure all jobs are triggering
+- Verify no workflows show "This workflow does not exist"
 
 #### Branch Status Verification  
 - Check https://github.com/jackxsmith/cursor_bundle/branches for branch status
