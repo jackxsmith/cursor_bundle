@@ -2,8 +2,8 @@ apiVersion: v2
 name: cursor-bundle
 description: A Helm chart for Cursor Bundle - Open-source Automation Suite
 type: application
-version: 6.9.153
-appVersion: "6.9.153"
+version: 6.9.154
+appVersion: "6.9.154"
 home: https://github.com/jackxsmith/cursor_bundle
 sources:
   - https://github.com/jackxsmith/cursor_bundle
