@@ -4,7 +4,7 @@ replicaCount: 3
 image:
   repository: cursor-bundle
   pullPolicy: IfNotPresent
-  tag: "6.9.161"
+  tag: "6.9.162"
 
 imagePullSecrets: []
 nameOverride: ""
