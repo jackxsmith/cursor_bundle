@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🚀 CURSOR BUNDLE LAUNCHER v6.9.214 - DRAMATICALLY IMPROVED
+# 🚀 CURSOR BUNDLE LAUNCHER v6.9.216 - DRAMATICALLY IMPROVED
 # Enterprise-grade application launcher with advanced features
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="6.9.214"
+readonly SCRIPT_VERSION="6.9.216"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"

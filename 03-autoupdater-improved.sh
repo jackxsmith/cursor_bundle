@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# 🔄 CURSOR BUNDLE AUTO-UPDATER v6.9.214 - DRAMATICALLY IMPROVED
+# 🔄 CURSOR BUNDLE AUTO-UPDATER v6.9.216 - DRAMATICALLY IMPROVED
 # Enterprise-grade application auto-updater with advanced features
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="6.9.214"
+readonly SCRIPT_VERSION="6.9.216"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
@@ -923,8 +923,8 @@ ${BOLD}UPDATE CHANNELS:${NC}
 ${BOLD}EXAMPLES:${NC}
     ${SCRIPT_NAME}                                      # Check for updates
     ${SCRIPT_NAME} --channel beta --auto-install        # Auto-install beta updates
-    ${SCRIPT_NAME} download 6.9.214                     # Download specific version
-    ${SCRIPT_NAME} install 6.9.214                      # Install specific version
+    ${SCRIPT_NAME} download 6.9.216                     # Download specific version
+    ${SCRIPT_NAME} install 6.9.216                      # Install specific version
     ${SCRIPT_NAME} --force --verbose                    # Force check with verbose output
     ${SCRIPT_NAME} rollback                             # Rollback to previous version
     ${SCRIPT_NAME} list-versions --channel alpha        # List alpha versions
