@@ -64,6 +64,15 @@ log_error() {
     local level="${1:-INFO}"
     local message="${2:-Unknown error}"
     local context="${3:-${FUNCNAME[2]:-unknown}}"
+    local additional_context="${4:-}"
+    
+    # Use comprehensive logging if available
+    if declare -f log_comprehensive >/dev/null 2>&1; then
+        log_comprehensive "$level" "$message" "$context" "$additional_context"
+        return
+    fi
+    
+    # Fallback to original logging
     local timestamp
     local log_entry
     local stack_trace=""

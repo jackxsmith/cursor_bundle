@@ -8,6 +8,8 @@ shopt -s globstar nullglob
 # Source enhanced libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 if [[ -f "$SCRIPT_DIR/scripts/lib/error_handling.sh" ]]; then
+    # shellcheck source=scripts/lib/comprehensive_logging.sh
+    source "$SCRIPT_DIR/scripts/lib/comprehensive_logging.sh"
     # shellcheck source=scripts/lib/error_handling.sh
     source "$SCRIPT_DIR/scripts/lib/error_handling.sh"
     # shellcheck source=scripts/lib/git_operations.sh
@@ -75,47 +77,68 @@ fi
 
 # Input validation functions
 validate_version_string() {
+    local call_id=$(track_function_entry "${FUNCNAME[0]}" "$*")
     local version="$1"
     local context="${2:-validate_version_string}"
+    local result=0
+    
+    log_update "VALIDATION_START" "" "version=$version" "$context"
     
     # Check if version follows semantic versioning
     if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9._-]+)?(\+[a-zA-Z0-9._-]+)?$ ]]; then
+        log_update "VALIDATION_FAILED" "$version" "Invalid format" "$context" "expected=MAJOR.MINOR.PATCH"
         handle_error 1 "Invalid version format. Expected: MAJOR.MINOR.PATCH (e.g., 6.9.164)" "$context"
-        return 1
+        result=1
+    else
+        log_update "VALIDATION_PASSED" "" "version=$version" "$context" "format=semantic_version"
+        log_error "DEBUG" "Version string validation passed: $version" "$context"
     fi
     
-    log_error "DEBUG" "Version string validation passed: $version" "$context"
-    return 0
+    track_function_exit "${FUNCNAME[0]}" "$call_id" "$result" "version_valid=$([[ $result -eq 0 ]] && echo true || echo false)"
+    return $result
 }
 
 validate_repository_config() {
+    local call_id=$(track_function_entry "${FUNCNAME[0]}" "$*")
     local context="validate_repository_config"
+    local result=0
+    
+    log_update "CONFIG_VALIDATION_START" "" "owner=$OWNER repo=$REPO" "$context"
     
     # Validate owner name
     if [[ ! "$OWNER" =~ ^[a-zA-Z0-9._-]+$ ]] || [[ ${#OWNER} -lt 1 ]] || [[ ${#OWNER} -gt 39 ]]; then
+        log_update "CONFIG_VALIDATION_FAILED" "$OWNER" "Invalid owner" "$context" "constraints=alphanumeric_1-39_chars"
         handle_error 1 "Invalid repository owner: '$OWNER'" "$context"
-        return 1
+        result=1
     fi
     
     # Validate repository name
     if [[ ! "$REPO" =~ ^[a-zA-Z0-9._-]+$ ]] || [[ ${#REPO} -lt 1 ]] || [[ ${#REPO} -gt 100 ]]; then
+        log_update "CONFIG_VALIDATION_FAILED" "$REPO" "Invalid repo name" "$context" "constraints=alphanumeric_1-100_chars"
         handle_error 1 "Invalid repository name: '$REPO'" "$context"
-        return 1
+        result=1
     fi
     
     # Validate numeric parameters
     if [[ ! "$KEEP_RELEASE_BRANCHES" =~ ^[0-9]+$ ]] || [[ "$KEEP_RELEASE_BRANCHES" -lt 1 ]] || [[ "$KEEP_RELEASE_BRANCHES" -gt 1000 ]]; then
+        log_update "CONFIG_VALIDATION_FAILED" "$KEEP_RELEASE_BRANCHES" "Invalid branch count" "$context" "constraints=1-1000"
         handle_error 1 "Invalid KEEP_RELEASE_BRANCHES value: '$KEEP_RELEASE_BRANCHES' (must be 1-1000)" "$context"
-        return 1
+        result=1
     fi
     
     if [[ ! "$MAX_RETRY" =~ ^[0-9]+$ ]] || [[ "$MAX_RETRY" -lt 1 ]] || [[ "$MAX_RETRY" -gt 10 ]]; then
+        log_update "CONFIG_VALIDATION_FAILED" "$MAX_RETRY" "Invalid retry count" "$context" "constraints=1-10"
         handle_error 1 "Invalid MAX_RETRY value: '$MAX_RETRY' (must be 1-10)" "$context"
-        return 1
+        result=1
     fi
     
-    log_error "DEBUG" "Repository configuration validation passed" "$context"
-    return 0
+    if [[ $result -eq 0 ]]; then
+        log_update "CONFIG_VALIDATION_PASSED" "" "All config valid" "$context" "owner=$OWNER repo=$REPO branches=$KEEP_RELEASE_BRANCHES retry=$MAX_RETRY"
+        log_error "DEBUG" "Repository configuration validation passed" "$context"
+    fi
+    
+    track_function_exit "${FUNCNAME[0]}" "$call_id" "$result" "config_valid=$([[ $result -eq 0 ]] && echo true || echo false)"
+    return $result
 }
 
 validate_paths() {
@@ -148,6 +171,14 @@ if [ -z "$GH_TOKEN" ]; then
 else
     TOKEN_OK=true
 fi
+
+# Enable comprehensive logging and function tracking
+if declare -f wrap_all_functions >/dev/null 2>&1; then
+    log_comprehensive "INFO" "Enabling comprehensive function tracking" "main" "session=$LOG_SESSION"
+fi
+
+# Log script start with parameters
+log_update "SCRIPT_START" "" "bump_merged.sh $*" "main" "pid=$$ session=${LOG_SESSION:-unknown}"
 
 # Perform comprehensive validation
 log_error "INFO" "Starting comprehensive validation..." "main"
@@ -206,26 +237,38 @@ auto_pull_rebase() {
     handle_error 1 "Failed to auto-pull and rebase/merge $ref" "auto_pull_rebase"
 }
 safe_push(){ 
+    local call_id=$(track_function_entry "${FUNCNAME[0]}" "$*")
     local ref="$1" 
     local context="${2:-safe_push}"
+    local result=0
     
+    log_update "GIT_PUSH_START" "" "ref=$ref" "$context" "remote=origin"
     log_error "INFO" "Starting safe push for ref: $ref" "$context"
     
     # Try normal push first
     if atomic_git_push "$ref" "origin" "$context"; then
+        log_update "GIT_PUSH_SUCCESS" "" "ref=$ref" "$context" "method=normal"
+        track_function_exit "${FUNCNAME[0]}" "$call_id" "0" "push_successful=true method=normal"
         return 0
     fi
     
     # If push fails, try auto-pull and force push with lease
+    log_update "GIT_PUSH_RETRY" "normal_push" "force_with_lease" "$context" "ref=$ref"
     log_error "INFO" "Push rejected, attempting auto-pull and retry" "$context"
     auto_pull_rebase "$ref"
     
     if atomic_git_push "$ref" "origin" "$context" "--force-with-lease"; then
+        log_update "GIT_PUSH_SUCCESS" "" "ref=$ref" "$context" "method=force_with_lease"
+        track_function_exit "${FUNCNAME[0]}" "$call_id" "0" "push_successful=true method=force_with_lease"
         return 0
     fi
     
+    log_update "GIT_PUSH_FAILED" "" "ref=$ref" "$context" "all_methods_failed=true"
     handle_error 1 "Push failed for ref: $ref after retries" "$context"
-    return 1
+    result=1
+    
+    track_function_exit "${FUNCNAME[0]}" "$call_id" "$result" "push_successful=false"
+    return $result
 }
 api(){ $TOKEN_OK && curl -fsSL \
         -H "Authorization: Bearer $GH_TOKEN" \
@@ -3292,8 +3335,22 @@ function main() {
     log "INFO" "Release process for v$NEW_VERSION completed successfully!"
 }
 
+# Log script completion
+log_update "SCRIPT_COMPLETION" "running" "completed" "main" "script=bump_merged.sh version=${NEW_VERSION:-unknown} exit_code=0"
+track_milestone "VERSION_BUMP_COMPLETED" "completed" "Successfully bumped to version ${NEW_VERSION:-unknown}" "main"
+
 # Pass all script arguments to the main function
 main "$@"
+
+# Log final script status
+script_exit_code=$?
+if [[ $script_exit_code -eq 0 ]]; then
+    log_update "SCRIPT_SUCCESS" "" "bump_merged.sh completed successfully" "main" "version=${NEW_VERSION:-unknown}"
+    track_milestone "SCRIPT_EXECUTION" "completed" "Script execution successful" "main"
+else
+    log_update "SCRIPT_FAILURE" "" "bump_merged.sh failed" "main" "exit_code=$script_exit_code version=${NEW_VERSION:-unknown}"
+    track_milestone "SCRIPT_EXECUTION" "failed" "Script execution failed with code $script_exit_code" "main"
+fi
 
 # --------------   END verbatim copy of 2028.txt   ----------------------
 ARCHIVE_2028
