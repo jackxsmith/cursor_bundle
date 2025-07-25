@@ -4,7 +4,7 @@
 # Repository Information
 owner: jackxsmith
 repo: cursor_bundle
-current_version: 6.9.162
+current_version: 6.9.163
 from_branch: develop
 to_branch: main
 target_branch: main
