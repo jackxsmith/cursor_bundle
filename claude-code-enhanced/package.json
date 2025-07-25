@@ -4,11 +4,15 @@
   "description": "Enhanced Claude Code with Playwright, Firecrawl, and Context7",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node index.js",
+    "test:verbose": "node index.js --verbose",
+    "test:live": "node index.js --live",
+    "start": "node index.js --live --verbose"
   },
   "dependencies": {
     "playwright": "^1.40.0",
-    "puppeteer": "^21.0.0"
+    "puppeteer": "^21.0.0",
+    "js-yaml": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"

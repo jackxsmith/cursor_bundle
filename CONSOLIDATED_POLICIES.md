@@ -61,6 +61,9 @@ GITHUB API MUST BE PRIMARY VERIFICATION METHOD
 # PRIMARY verification command (MUST RUN EVERY TIME)
 curl -s "https://api.github.com/repos/jackxsmith/cursor_bundle/commits/main/check-runs" | jq -r '.check_runs[] | "\(.name): \(.status) - \(.conclusion)"'
 
+# MANDATORY: Check GitHub notifications after each iteration
+# Open in browser or curl: https://github.com/notifications
+
 # Expected success output:
 # check: completed - success
 # container-security: completed - success  
@@ -129,6 +132,69 @@ This document (`CONSOLIDATED_POLICIES.md`) supersedes:
 - ❌ `VERIFICATION_POLICY.md` (DEPRECATED)
 - ❌ `LESSONS_LEARNED_POLICY.md` (DEPRECATED) 
 - ❌ Multiple policy sections in `POLICIES.md` (SUPERSEDED)
+
+### LESSON 7: CONTINUOUS ITERATION UNTIL SUCCESS
+
+**MANDATORY POLICY:**
+```
+NEVER ACCEPT PARTIAL SUCCESS AS COMPLETION:
+- "4/5 status" means the task is NOT complete
+- Continue iterations until 5/5 achieved
+- User phrases like "ultrathink why are you stopping" indicate policy violation
+- Each failure iteration must lead to systematic investigation
+```
+
+**Root Cause Prevention:**
+- Users expect complete success, not partial progress
+- Stopping at 4/5 creates frustration and requires user intervention
+- Systematic debugging prevents repeated failures
+
+### LESSON 8: USER FEEDBACK INTEGRATION POLICY
+
+**MANDATORY POLICY:**
+```
+INCORPORATE USER CORRECTIONS IMMEDIATELY:
+- "you forgot to bump" = immediate bump script execution required
+- "your policies document is in multiple places" = consolidation required
+- "you violated a policy" = immediate policy compliance check
+- User corrections indicate systematic process failures
+```
+
+**Implementation Protocol:**
+- Treat every user correction as a policy violation
+- Update processes to prevent the same correction being needed again
+- Document pattern of corrections to identify systemic issues
+
+### LESSON 9: BRANCH MANAGEMENT AND MERGE POLICY
+
+**MANDATORY POLICY:**
+```
+PREVENT BRANCH AHEAD SITUATIONS:
+- "last branch is ahead" indicates improper merge/bump process
+- Always use bump scripts for proper branch management
+- Verify branch status as part of completion verification
+- Check https://github.com/jackxsmith/cursor_bundle/branches after each bump
+```
+
+**Prevention Measures:**
+- Bump scripts handle branch creation, merging, and cleanup automatically
+- Manual branch operations are forbidden
+- Branch status is part of mandatory verification checklist
+
+### LESSON 10: NOTIFICATION MONITORING POLICY
+
+**MANDATORY POLICY:**
+```
+MANDATORY GITHUB NOTIFICATIONS CHECK:
+- Check https://github.com/notifications after each iteration
+- Notifications may indicate additional issues or required actions
+- Include notification check in verification loop
+- Failed notifications may indicate incomplete operations
+```
+
+**Integration:**
+- Notifications check is now part of mandatory verification protocol
+- Helps identify issues not visible through API or visual inspection
 
 ## 🔄 VERIFICATION PROTOCOL
 
