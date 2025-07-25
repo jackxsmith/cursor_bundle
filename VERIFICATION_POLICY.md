@@ -25,6 +25,13 @@ This policy establishes the fundamental requirement that all changes must be ver
 - Check individual workflow pages to ensure all jobs are triggering
 - Verify no workflows show "This workflow does not exist"
 
+#### WebFetch Limitations for Status Checking
+- WebFetch cannot see dynamic JavaScript-rendered status indicators
+- Status checks (4/5, 5/5) are often loaded after page render via JavaScript
+- WebFetch gets initial HTML only, not authenticated/dynamic content
+- User must manually verify and report status when WebFetch cannot see it
+- Alternative: Use GitHub API endpoints when possible for programmatic verification
+
 #### Branch Status Verification  
 - Check https://github.com/jackxsmith/cursor_bundle/branches for branch status
 - Verify all branches show up-to-date status
