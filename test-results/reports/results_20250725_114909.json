@@ -1,7 +1,7 @@
 {
   "test_suite": "Cursor Bundle Test Suite",
-  "version": "docker-deployment-v2",
-  "script_version": "docker-deployment-v2",
+  "version": "tracker-system-v2",
+  "script_version": "tracker-system-v2",
   "timestamp": "20250725_114909",
   "environment": {
     "os": "Linux",

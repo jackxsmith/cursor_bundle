@@ -3,13 +3,13 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # ============================================================================
-# 17-policycheck-improved.sh - Enterprise Policy Compliance Framework vdocker-deployment-v2
+# 17-policycheck-improved.sh - Enterprise Policy Compliance Framework vtracker-system-v2
 # Advanced policy validation, compliance monitoring, and governance system
 # ============================================================================
 
 readonly SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly VERSION="docker-deployment-v2"
+readonly VERSION="tracker-system-v2"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 
 # Configuration Management
@@ -913,7 +913,7 @@ main() {
 # Display usage information
 display_usage() {
     cat << 'EOF'
-Enterprise Policy Compliance Framework vdocker-deployment-v2
+Enterprise Policy Compliance Framework vtracker-system-v2
 
 USAGE:
     policycheck-improved.sh [PATH] [COMMAND] [FRAMEWORK] [OPTIONS]
