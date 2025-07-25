@@ -2,7 +2,7 @@
 
 # =============================================================================
 # CURSOR IDE ENTERPRISE DOCKER ORCHESTRATION FRAMEWORK
-# Version: v6.9.231
+# Version: posttest-framework-v2
 # Description: Advanced containerized deployment system for Cursor IDE
 # Author: Enterprise Development Team
 # License: MIT
@@ -17,7 +17,7 @@ IFS=$'\n\t'
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly SCRIPT_VERSION="v6.9.231"
+readonly SCRIPT_VERSION="posttest-framework-v2"
 readonly CURSOR_VERSION="6.9.35"
 readonly TIMESTAMP="$(date '+%Y%m%d_%H%M%S')"
 
@@ -296,7 +296,7 @@ generate_base_dockerfile() {
 FROM ubuntu:22.04
 
 LABEL maintainer="Enterprise Development Team"
-LABEL version="v6.9.231"
+LABEL version="posttest-framework-v2"
 LABEL description="Cursor IDE Enterprise Base Container"
 
 # Prevent interactive prompts during installation
