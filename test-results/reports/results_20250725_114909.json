@@ -1,7 +1,7 @@
 {
   "test_suite": "Cursor Bundle Test Suite",
-  "version": "6.9.216",
-  "script_version": "6.9.216",
+  "version": "6.9.218",
+  "script_version": "6.9.218",
   "timestamp": "20250725_114909",
   "environment": {
     "os": "Linux",
