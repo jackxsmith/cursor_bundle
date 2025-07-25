@@ -14,6 +14,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+    ### auto‑patch mutation‑test
+    - name: Install dev dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Run mutation-test
+      run: make mutation-test || true
       - name: Checkout code
         uses: actions/checkout@v4
         with:
