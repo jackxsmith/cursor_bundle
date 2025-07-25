@@ -1,7 +1,7 @@
 {
   "test_suite": "Cursor Bundle Test Suite",
-  "version": "07-tkinter-improved-v2.py",
-  "script_version": "07-tkinter-improved-v2.py",
+  "version": "09-zenity-improved-v2.sh",
+  "script_version": "09-zenity-improved-v2.sh",
   "timestamp": "20250725_114909",
   "environment": {
     "os": "Linux",
