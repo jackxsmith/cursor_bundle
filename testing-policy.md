@@ -199,6 +199,128 @@ done
 - [ ] Verified deployment success on remote repository
 - [ ] Confirmed version numbers and branches are correct
 
+## Policy Violation Prevention Strategy
+
+**POLICY**: Implement systematic safeguards to prevent policy violations before they occur.
+
+**ROOT CAUSES OF VIOLATIONS**:
+1. **Rushing to completion** without following established procedures
+2. **Assuming partial testing** represents complete validation
+3. **Forgetting policy requirements** during task execution
+4. **Inadequate verification** of work completion
+5. **Missing mandatory steps** like version bumping or GitHub verification
+
+**MANDATORY PREVENTION MECHANISMS**:
+
+### 1. Pre-Task Policy Review
+- **REQUIRED**: Read relevant policy sections before starting any task
+- **Checklist Creation**: Create task-specific checklist from policy requirements
+- **Scope Definition**: Clearly define what "completion" means upfront
+
+### 2. Continuous Policy Compliance Checking
+- **Progressive Verification**: Check policy compliance at each step, not just at end
+- **Real-Time Validation**: Verify requirements as work progresses
+- **Mandatory Checkpoints**: Define specific points where compliance must be verified
+
+### 3. Automated Policy Enforcement
+- **Script-Based Validation**: Use scripts to verify all requirements met
+- **Completion Gates**: Don't proceed to next step until current step fully compliant
+- **Evidence Collection**: Automatically collect proof of compliance
+
+### 4. Explicit Policy Reference
+- **Quote Policies**: Reference specific policy sections when making decisions
+- **Document Compliance**: Show how each action satisfies policy requirements
+- **Assumption Validation**: Check assumptions against written policies
+
+**IMPLEMENTATION STRATEGIES**:
+
+### Before Starting Work
+```bash
+# 1. Read applicable policies
+cat testing-policy.md | grep -A10 -B5 "relevant_section"
+
+# 2. Create compliance checklist
+echo "Task: [description]" > compliance_checklist.md
+echo "Policies: [list applicable policies]" >> compliance_checklist.md
+echo "Requirements:" >> compliance_checklist.md
+# [Extract requirements from policies]
+
+# 3. Set up verification tools
+# [Prepare scripts/commands for validation]
+```
+
+### During Work Execution
+```bash
+# 1. Progressive verification
+# After each step: verify compliance with relevant policy
+# Document compliance: "This step satisfies policy X.Y.Z"
+
+# 2. Evidence collection
+# Capture command outputs that prove compliance
+# Save test results, logs, verification outputs
+
+# 3. Real-time checking
+# Don't proceed until current step verified compliant
+```
+
+### Before Claiming Completion
+```bash
+# 1. Comprehensive policy review
+# Re-read ALL applicable policies
+# Verify EVERY requirement has been met
+
+# 2. Evidence verification
+# Check that collected evidence proves compliance
+# Verify no shortcuts were taken
+
+# 3. Final validation
+# Run complete verification sequence
+# Confirm all deliverables meet policy standards
+```
+
+**SPECIFIC ANTI-VIOLATION MEASURES**:
+
+### For Testing Policies
+- **Mandatory Discovery**: Must use `find`/`grep` to discover ALL items to test
+- **Complete Testing**: Test 100% of discovered items, document 100% of results
+- **No Sampling**: Never test "some" or "most" - always test "all"
+
+### For Version Control Policies  
+- **Mandatory Bumping**: Every completed task MUST end with version bump to GitHub
+- **Branch Verification**: Must verify branch appears on GitHub before claiming completion
+- **No Shortcuts**: Never skip version bumping or GitHub verification
+
+### For Documentation Policies
+- **Real-Time Updates**: Update documentation as work progresses, not at end
+- **Complete Documentation**: Document ALL errors found, ALL fixes applied
+- **Evidence Required**: Include command outputs, error messages, verification results
+
+**VIOLATION DETECTION AND CORRECTION**:
+
+### Self-Monitoring
+- **Regular Policy Checks**: Pause periodically to verify still compliant
+- **Assumption Validation**: Regularly check assumptions against policies
+- **Scope Creep Detection**: Watch for expanding scope without policy compliance
+
+### Automatic Triggers
+- **Completion Claims**: Before claiming "done", run full policy compliance check
+- **GitHub Operations**: Before pushing, verify all policy requirements met
+- **Documentation Updates**: Before updating status, verify documentation complete
+
+**ACCOUNTABILITY MEASURES**:
+- **Explicit Policy Citations**: Reference specific policy sections for each decision
+- **Compliance Evidence**: Provide proof that each policy requirement was met
+- **Violation Acknowledgment**: If violation occurs, explicitly acknowledge and correct
+- **Process Improvement**: After violations, update prevention mechanisms
+
+**EMERGENCY PROTOCOLS**:
+If policy violation detected:
+1. **STOP**: Immediately halt current work
+2. **ASSESS**: Determine full scope of violation
+3. **CORRECT**: Fix all non-compliant aspects
+4. **VERIFY**: Confirm full compliance achieved
+5. **DOCUMENT**: Record violation and correction for future prevention
+
 ## Interruption Minimization Policy
 
 **POLICY**: Minimize unnecessary interruptions to maintain workflow efficiency.
