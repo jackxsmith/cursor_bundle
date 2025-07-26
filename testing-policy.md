@@ -104,6 +104,48 @@ To prevent shortcuts:
 - If version incorrect → Fix version and re-push
 - If commits missing → Verify git push completed successfully
 
+## Interruption Minimization Policy
+
+**POLICY**: Minimize unnecessary interruptions to maintain workflow efficiency.
+
+**REQUIRED APPROACHES**:
+1. **Assume Sensible Defaults**: Make reasonable assumptions about missing parameters
+   - Use established patterns from repository history
+   - Follow previous work patterns and conventions
+   - Default to safe, reversible actions
+
+2. **Batch Related Questions**: Group multiple related questions into single interaction
+   - Collect all unknowns before asking
+   - Present options with recommended defaults
+   - Ask once per logical task group
+
+3. **Use Context Clues**: Infer intent from available information
+   - Repository structure and existing files
+   - Previous commit messages and patterns
+   - Established workflows and conventions
+
+4. **Take Initiative**: Start with most likely solution
+   - Begin work based on best inference
+   - Document assumptions made
+   - Adjust if user corrects direction
+
+5. **Document Assumptions**: State what is being assumed
+   - Explain reasoning for choices made
+   - Highlight where user input might be needed
+   - Make it easy for user to correct course
+
+**EXAMPLES**:
+- Instead of asking "Should I create a release branch?", automatically create one when bumping versions
+- Instead of asking "What version number?", increment based on change scope (patch/minor/major)
+- Instead of asking "Which files to include?", include all relevant modified files
+- Instead of asking "What commit message?", write descriptive message based on changes
+
+**EXCEPTIONS - When to Still Ask**:
+- Destructive operations (deleting files, force pushes)
+- Ambiguous requirements with multiple valid interpretations
+- Security-sensitive operations
+- Major architectural decisions
+
 **REMEMBER**: 
 - Installation testing is NEVER complete until EVERY script passes basic tests
 - "Most scripts work" is NOT sufficient - ALL scripts must work
