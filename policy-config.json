@@ -1,0 +1,71 @@
+{
+  "version": "1.0.0",
+  "policies": {
+    "secrets": {
+      "enabled": true,
+      "severity": "critical",
+      "patterns": [
+        {
+          "name": "GitHub Personal Access Token",
+          "pattern": "ghp_[a-zA-Z0-9]{36}",
+          "severity": "critical"
+        },
+        {
+          "name": "GitHub Secret",
+          "pattern": "ghs_[a-zA-Z0-9]{36}",
+          "severity": "critical"
+        },
+        {
+          "name": "AWS Access Key",
+          "pattern": "AKIA[0-9A-Z]{16}",
+          "severity": "critical"
+        },
+        {
+          "name": "Private Key",
+          "pattern": "-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----",
+          "severity": "critical"
+        }
+      ]
+    },
+    "branches": {
+      "enabled": true,
+      "protected": ["main", "master"],
+      "naming_pattern": "^(main|master|develop|release/v[0-9]+\\.[0-9]+\\.[0-9]+|feature/.+|bugfix/.+|hotfix/.+)$",
+      "require_pr": true
+    },
+    "files": {
+      "enabled": true,
+      "forbidden_permissions": ["777", "666"],
+      "sensitive_patterns": [
+        ".env",
+        ".env.local",
+        "private_key",
+        ".pem",
+        ".key",
+        ".pfx",
+        ".p12"
+      ],
+      "max_file_size_mb": 50
+    },
+    "commits": {
+      "enabled": true,
+      "require_signature": false,
+      "conventional_format": true,
+      "format_pattern": "^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\\(.+\\))?: .+"
+    }
+  },
+  "actions": {
+    "on_violation": {
+      "block_push": true,
+      "notify": true,
+      "log": true
+    }
+  },
+  "exemptions": {
+    "files": [
+      "tests/fixtures/*",
+      "docs/examples/*"
+    ],
+    "commits": []
+  }
+}
