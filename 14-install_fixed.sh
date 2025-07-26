@@ -18,6 +18,17 @@ RELEASE_URL="https://api.cursor.com/releases/$VERSION/cursor.AppImage"
 
 ### Helpers
 log()   { echo "[install][INFO] $*" | tee -a "$LOG_FILE"; }
+
+# Check if help was requested before any operations
+if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
+    echo "Cursor IDE Installer v$VERSION"
+    echo "Usage: $0 [--help]"
+    echo "  --help    Show this help message"
+    echo ""
+    echo "This script installs Cursor IDE v$VERSION"
+    echo "Note: Requires sudo privileges for system installation"
+    exit 0
+fi
 warn()  { echo "[install][INFO] $*" | tee -a "$LOG_FILE" >&2; }
 error() { echo "[install][ERROR] $*" | tee -a "$LOG_FILE" >&2; exit 1; }
 

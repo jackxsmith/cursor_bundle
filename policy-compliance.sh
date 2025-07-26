@@ -80,6 +80,11 @@ check_secrets() {
                 continue
             fi
             
+            # Skip minified files and other common false positive sources
+            if [[ "$file" =~ \.(min\.js|min\.css|bundle\.js|dist\.js|compiled\.js)$ ]]; then
+                continue
+            fi
+            
             ((files_scanned++))
             
             for pattern_desc in "${patterns[@]}"; do

@@ -24,3 +24,8 @@ desktop-file-utils
 [2025-07-25 02:58:32][INFO] Starting Cursor IDE installation...
 [2025-07-25 02:58:32][INFO] AppImage not found, attempting to download...
 [2025-07-25 02:58:32][ERROR] Failed to download AppImage
+[install][INFO] Detected Ubuntu 25.04 — installing libfuse2t64 for AppImage support
+[2025-07-26 17:48:39][INFO] Starting Cursor IDE installer v6.9.35
+[2025-07-26 17:48:39][INFO] Command line: ./14-install_enhanced.sh --help
+2
+[install][INFO] Detected Ubuntu 25.04 — installing libfuse2t64 for AppImage support

@@ -1,0 +1,5 @@
+#\!/bin/bash
+echo "Cursor IDE Placeholder v6.9.229"
+echo "Replace this file with the actual Cursor AppImage binary"
+echo "Download from: https://cursor.sh/"
+exit 0
