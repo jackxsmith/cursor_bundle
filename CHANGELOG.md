@@ -4,6 +4,13 @@ All notable changes to the Cursor Bundle project will be documented in this file
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [[0;34m[INFO][0m Version bumped from 6.9.230 to v6.9.231
+v6.9.231] - 2025-07-26
+
+### Changed
+- Automated version bump
+
+
 ## [[0;34m[INFO][0m Version bumped from 6.9.229 to v6.9.230
 v6.9.230] - 2025-07-26
 
