@@ -64,3 +64,6 @@
 [2025-07-26T17:18:30-04:00] [VIOLATION] Secret detected: Basic Auth in file: scripts/upgrades/v6.9.40.sh
 [2025-07-26T17:18:30-04:00] [VIOLATION] Secret detected: Basic Auth in file: setup-v2.sh
 [2025-07-26T17:28:36-04:00] [VIOLATION] Secret detected: AWS Access Key ID in file: claude-code-enhanced/node_modules/@tootallnate/quickjs-emscripten/dist/generated/emscripten-module.WASM_RELEASE_SYNC.js
+[2025-07-26T18:14:36-04:00] [VIOLATION] Secret detected: Hardcoded Password in file: logs/policy-compliance/audit.log
+[2025-07-26T18:14:36-04:00] [VIOLATION] Secret detected: Hardcoded Password in file: logs/policy-compliance/compliance-20250726-171700.log
+[2025-07-26T18:14:37-04:00] [VIOLATION] Secret detected: AWS Access Key ID in file: logs/policy-compliance/compliance-20250726-172832.log

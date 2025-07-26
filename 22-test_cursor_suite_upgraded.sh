@@ -383,7 +383,7 @@ test_policy_enforcer() {
 }
 
 test_consolidated_policies() {
-    if [[ ! -f "CONSOLIDATED_POLICIES.md" ]]; then
+    if [[ ! -f "UNIFIED_POLICIES.md" ]]; then
         return 1
     fi
     
@@ -396,7 +396,7 @@ test_consolidated_policies() {
     )
     
     for section in "${required_sections[@]}"; do
-        if ! grep -q "${section}" "CONSOLIDATED_POLICIES.md"; then
+        if ! grep -q "${section}" "UNIFIED_POLICIES.md"; then
             return 1
         fi
     done
@@ -592,7 +592,7 @@ test_filesystem_structure() {
     local required_files=(
         "VERSION"
         "README.md"
-        "CONSOLIDATED_POLICIES.md"
+        "UNIFIED_POLICIES.md"
         "bump.sh"
         ".github/workflows/ci.yml"
     )
