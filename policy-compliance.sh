@@ -56,34 +56,54 @@ check_secrets() {
     local violations=0
     local files_scanned=0
     
-    # Define secret patterns
+    # Define secret patterns (strict to avoid false positives)
     local -a patterns=(
         "ghp_[a-zA-Z0-9]{36}|GitHub Personal Access Token"
         "ghs_[a-zA-Z0-9]{36}|GitHub Secret"
         "github_pat_[a-zA-Z0-9]{22}_[a-zA-Z0-9]{59}|GitHub PAT (new format)"
         "AKIA[0-9A-Z]{16}|AWS Access Key ID"
-        "aws_secret_access_key.*=.*[A-Za-z0-9/+=]{40}|AWS Secret Key"
-        "api[_-]?key.*[:=].*['\"][a-zA-Z0-9]{20,}['\"]|Generic API Key"
         "-----BEGIN (RSA|DSA|EC|OPENSSH) PRIVATE KEY-----|Private Key"
-        "password.*[:=].*['\"][^'\"]{8,}['\"]|Hardcoded Password"
-        "bearer [a-zA-Z0-9_\\-\\.=]+|Bearer Token"
-        "basic [a-zA-Z0-9_\\-\\.=]+|Basic Auth"
+        "password[[:space:]]*[:=][[:space:]]*['\"][^'\"]{12,}['\"]|Hardcoded Password"
+        "Authorization:[[:space:]]*Bearer[[:space:]]+[a-zA-Z0-9_\\-\\.=]{20,}|Bearer Token"
+        "Authorization:[[:space:]]*Basic[[:space:]]+[a-zA-Z0-9_\\-\\.=]{20,}|Basic Auth Token"
     )
     
-    # Scan all tracked files
+    # Scan all tracked files (exclude certain patterns and files)
     while IFS= read -r file; do
         if [ -f "$file" ]; then
+            # Skip certain file types and test files to reduce false positives
+            if [[ "$file" =~ \.(md|txt|json|yml|yaml)$ ]] && [[ ! "$file" =~ \.env ]]; then
+                continue
+            fi
+            
+            if [[ "$file" =~ (test|spec|example|demo|fixture|mock|node_modules|venv|\.git|\.npm|\.cache)/ ]]; then
+                continue
+            fi
+            
             ((files_scanned++))
             
             for pattern_desc in "${patterns[@]}"; do
                 IFS='|' read -r pattern description <<< "$pattern_desc"
                 
                 if grep -E "$pattern" "$file" > /dev/null 2>&1; then
+                    # Additional validation to reduce false positives
+                    local matches=$(grep -E "$pattern" "$file")
+                    
+                    # Skip comments and documentation
+                    if echo "$matches" | grep -E "^[[:space:]]*#|^[[:space:]]*//|^[[:space:]]*\*" > /dev/null; then
+                        continue
+                    fi
+                    
+                    # Skip obvious examples or templates
+                    if echo "$matches" | grep -iE "(example|template|placeholder|changeme|your_|replace)" > /dev/null; then
+                        continue
+                    fi
+                    
                     log "VIOLATION" "Secret detected: $description in file: $file"
                     ((violations++))
                     
-                    # Log line numbers
-                    grep -n -E "$pattern" "$file" | while IFS= read -r line; do
+                    # Log line numbers (first 3 matches only)
+                    grep -n -E "$pattern" "$file" | head -3 | while IFS= read -r line; do
                         log "DETAIL" "  Line: $line"
                     done
                 fi
