@@ -404,7 +404,7 @@ check_security() {
     
     # Check firewall
     if command -v ufw >/dev/null 2>&1; then
-        if ufw status | grep -q "Status: active"; then
+        if ufw status 2>/dev/null | grep -q "Status: active"; then
             SYSTEM_INFO[firewall]="ufw active"
             log "INFO" "UFW firewall is active"
         else
