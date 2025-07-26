@@ -27,6 +27,7 @@ readonly USER_CURSOR_DIR="${HOME}/.cursor"
 readonly USER_CONFIG_DIR="${HOME}/.config/cursor"
 readonly USER_DATA_DIR="${HOME}/.local/share/cursor"
 readonly USER_CACHE_DIR="${HOME}/.cache/cursor"
+readonly TEMP_DIR="$(mktemp -d -t cursor_postinstall_XXXXXX)"
 
 # Directory Structure
 readonly LOG_DIR="${USER_CACHE_DIR}/postinstall/logs"
@@ -56,10 +57,13 @@ log() {
     local message="$2"
     local timestamp="$(date -Iseconds)"
     
+    # Ensure log directory exists
+    mkdir -p "$(dirname "$MAIN_LOG")" 2>/dev/null || true
     echo "[${timestamp}] ${level}: ${message}" >> "$MAIN_LOG"
     
     case "$level" in
         ERROR) 
+            mkdir -p "$(dirname "$ERROR_LOG")" 2>/dev/null || true
             echo "[${timestamp}] ${level}: ${message}" >> "$ERROR_LOG"
             echo -e "\033[0;31m[ERROR]\033[0m ${message}" >&2
             ;;
