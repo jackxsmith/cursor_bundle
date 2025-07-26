@@ -41,6 +41,7 @@
 - Pre-push policy compliance checks
 - Mandatory documentation of test results
 - Required verification of all fixes
+- **ZERO TOLERANCE**: Any untested scripts found later constitute a policy violation
 
 ## Violation Prevention
 To prevent shortcuts:
@@ -48,5 +49,25 @@ To prevent shortcuts:
 2. Document results in `installation_test_results.md`
 3. Test each script individually, not just sampling
 4. Fix ALL errors, not just major ones
+5. **MANDATORY**: Test EVERY script with `--help` flag
+6. **MANDATORY**: Test EVERY script for timeout/hang issues
+7. **MANDATORY**: Document EVERY error found, no matter how minor
 
-**REMEMBER**: Claiming "installation works" without testing ALL options is a policy violation.
+## Enhanced Testing Requirements
+**POLICY**: ALL installation scripts MUST be tested for:
+- Help flag functionality (`--help`, `-h`)
+- GUI dialog prevention (scripts should not open GUI on help)
+- Log directory creation issues
+- Permission requirements
+- Timeout/hanging behavior
+- Argument parsing errors
+
+**VIOLATION CONSEQUENCES**:
+- Finding untested installation errors after "completion" = **IMMEDIATE RE-TEST ALL**
+- Claiming "all fixed" without complete testing = **POLICY VIOLATION**
+- Any installation script that fails basic help test = **CRITICAL ERROR**
+
+**REMEMBER**: 
+- Installation testing is NEVER complete until EVERY script passes basic tests
+- "Most scripts work" is NOT sufficient - ALL scripts must work
+- Policy violations will require complete re-testing from scratch

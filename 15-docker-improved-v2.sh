@@ -69,6 +69,8 @@ log() {
     local message="$2"
     local timestamp="$(date -Iseconds)"
     
+    # Ensure log directory exists
+    mkdir -p "$(dirname "$MAIN_LOG")" 2>/dev/null || true
     echo "[${timestamp}] ${level}: ${message}" >> "$MAIN_LOG"
     
     case "$level" in

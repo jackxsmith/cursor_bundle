@@ -66,3 +66,35 @@
 - **Result**: Shows proper usage information
 
 ### Testing Progress: 9/18 scripts tested so far...
+
+## ADDITIONAL ERRORS FOUND:
+
+### ❌ ERROR #6: 09-zenity_fixed.sh
+- **Command**: `./09-zenity_fixed.sh --help`
+- **Error**: Script immediately opens GUI dialog instead of showing help
+- **Cause**: No help flag handling, tries to open zenity GUI immediately
+- **Fix Needed**: Add help flag check before GUI initialization
+
+### ❌ ERROR #7: 15-docker-improved-v2.sh
+- **Command**: `./15-docker-improved-v2.sh --help`
+- **Error**: `/home/jj/.cache/cursor/docker/logs/docker_20250726_175820.log: No such file or directory`
+- **Cause**: Log directory not created before logging
+- **Fix Needed**: Create log directory before writing logs
+
+### ❌ ERROR #8: get-docker.sh
+- **Command**: `./get-docker.sh --help`
+- **Error**: Script immediately starts Docker installation without checking help flag
+- **Cause**: No help flag handling, goes straight to installation
+- **Fix Needed**: Add help flag check before starting installation process
+
+### ✅ PASS: 09-zenity-improved-v2.sh
+- **Command**: `./09-zenity-improved-v2.sh --help`
+- **Result**: Shows proper usage information
+
+### ✅ PASS: 15-docker_install.sh
+- **Command**: `./15-docker_install.sh --help`
+- **Result**: Shows proper usage information
+
+### ✅ PASS: 15-docker-improved.sh
+- **Command**: `./15-docker-improved.sh --help`
+- **Result**: Shows proper usage information

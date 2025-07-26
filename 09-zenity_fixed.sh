@@ -7,6 +7,17 @@ VERSION="6.9.35"
 APPIMAGE_FILE="01-appimage_v6.9.35.AppImage"
 INSTALL_DIR="/opt/cursor"
 
+# Check if help was requested
+if [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
+    echo "Zenity GUI Installer for Cursor IDE v$VERSION"
+    echo "Usage: $0 [--help]"
+    echo "  --help    Show this help message"
+    echo ""
+    echo "This script provides a GUI installer using Zenity"
+    echo "Requires: zenity, GUI environment (X11/Wayland)"
+    exit 0
+fi
+
 # Check if zenity is available
 if ! command -v zenity >/dev/null 2>&1; then
     echo "Error: Zenity is not installed"

@@ -1,5 +1,18 @@
 #!/bin/sh
 set -e
+
+# Check if help was requested before anything else
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    echo "Docker Engine for Linux installation script"
+    echo "Usage: $0 [--help]"
+    echo "  --help    Show this help message"
+    echo ""
+    echo "This script installs Docker Engine for Linux"
+    echo "Requires: root or sudo privileges"
+    echo "See: https://docs.docker.com/engine/install/"
+    exit 0
+fi
+
 # Docker Engine for Linux installation script.
 #
 # This script is intended as a convenient way to configure docker's package
