@@ -15,6 +15,16 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+# Source professional error checking framework (temporarily disabled due to conflicts)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# if [[ -f "$SCRIPT_DIR/scripts/lib/professional_error_checking.sh" ]]; then
+#     source "$SCRIPT_DIR/scripts/lib/professional_error_checking.sh"
+#     setup_error_trap "release_cleanup"
+#     log_framework "INFO" "Professional error checking framework loaded"
+# else
+    echo "INFO: Professional error checking framework temporarily disabled" >&2
+# fi
+
 # === CONFIGURATION ===
 readonly SCRIPT_VERSION="2.0.0"
 readonly SCRIPT_NAME="$(basename "${0}")"
@@ -33,7 +43,7 @@ readonly ARTIFACTS_DIR="${HOME}/.cache/cursor/release/artifacts"
 
 # Log Files
 readonly MAIN_LOG="${LOG_DIR}/release_${TIMESTAMP}.log"
-readonly ERROR_LOG="${LOG_DIR}/release_errors_${TIMESTAMP}.log"
+readonly RELEASE_ERROR_LOG="${LOG_DIR}/release_errors_${TIMESTAMP}.log"
 readonly AUDIT_LOG="${LOG_DIR}/release_audit_${TIMESTAMP}.log"
 
 # Configuration
@@ -72,7 +82,7 @@ log() {
     
     case "$level" in
         ERROR) 
-            echo "[${timestamp}] ${level}: ${message}" >> "$ERROR_LOG"
+            echo "[${timestamp}] ${level}: ${message}" >> "$RELEASE_ERROR_LOG"
             echo -e "\033[0;31m[ERROR]\033[0m ${message}" >&2
             ;;
         WARN) 
@@ -370,7 +380,6 @@ bump_version() {
     esac
     
     local new_version="v${major}.${minor}.${patch}"
-    log "INFO" "Version bumped from $current_version to $new_version"
     
     echo "$new_version"
 }
@@ -533,15 +542,15 @@ push_to_remote() {
     
     local current_branch=$(git rev-parse --abbrev-ref HEAD)
     
-    # Push commits
-    if ! retry_operation "git push origin $current_branch" 3 5; then
+    # Push commits using regular git operations
+    if ! git push origin "$current_branch"; then
         log "ERROR" "Failed to push commits"
         return 1
     fi
     
     # Push tags
     if [[ "$CREATE_TAG" == "true" ]]; then
-        if ! retry_operation "git push origin $version" 3 5; then
+        if ! git push origin --tags; then
             log "ERROR" "Failed to push tag"
             return 1
         fi
@@ -707,6 +716,93 @@ parse_arguments() {
     echo "$bump_type"
 }
 
+# Cleanup function for error handling
+release_cleanup() {
+    log "INFO" "Performing release cleanup"
+    
+    # Clean up any temporary files
+    [[ -n "${TEMP_FILES:-}" ]] && rm -f $TEMP_FILES 2>/dev/null || true
+    
+    # Log final state
+    if [[ -n "${ERROR_COUNT:-}" ]] && [[ $ERROR_COUNT -gt 0 ]]; then
+        log "ERROR" "Release failed with $ERROR_COUNT errors"
+        audit_log "RELEASE_FAILED" "ERROR" "Errors: $ERROR_COUNT"
+    fi
+}
+
+# Enhanced argument validation
+validate_release_arguments() {
+    local bump_type="$1"
+    
+    log_framework "INFO" "Validating release arguments" "validate_release_arguments"
+    
+    # Validate bump type
+    if ! validate_required_param "bump_type" "$bump_type" "string"; then
+        return 1
+    fi
+    
+    case "$bump_type" in
+        major|minor|patch) ;;
+        *)
+            log_framework "ERROR" "Invalid bump type: $bump_type (expected: major, minor, or patch)" "validate_release_arguments"
+            return 1
+            ;;
+    esac
+    
+    # Validate required commands
+    validate_command_exists "git" true || return 1
+    validate_command_exists "curl" false
+    validate_command_exists "jq" false
+    
+    # Validate environment
+    validate_environment "HOME" true || return 1
+    validate_environment "USER" true || return 1
+    
+    # Validate repository state
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        log_framework "ERROR" "Not in a git repository" "validate_release_arguments"
+        return 1
+    fi
+    
+    # Validate disk space (require 500MB for release artifacts)
+    validate_disk_space "." 500 || return 1
+    
+    # Validate version file exists and is readable
+    validate_required_param "VERSION_FILE" "$VERSION_FILE" "file" || return 1
+    
+    log_framework "INFO" "Release argument validation completed successfully" "validate_release_arguments"
+    return 0
+}
+
+# Enhanced git operations with validation
+safe_git_operation() {
+    local operation="$1"
+    shift
+    local args=("$@")
+    
+    log_framework "DEBUG" "Performing safe git operation: $operation ${args[*]}" "safe_git_operation"
+    
+    # Validate git is available
+    if ! validate_command_exists "git" true; then
+        return 1
+    fi
+    
+    # Check git repository status
+    if ! git rev-parse --git-dir >/dev/null 2>&1; then
+        log_framework "ERROR" "Not in a git repository" "safe_git_operation"
+        return 1
+    fi
+    
+    # Execute git operation with retry
+    if ! safe_execute "git $operation ${args[*]}" "Git operation failed: $operation" 2 3; then
+        log_framework "ERROR" "Git operation failed after retries: $operation ${args[*]}" "safe_git_operation"
+        return 1
+    fi
+    
+    log_framework "DEBUG" "Git operation completed successfully: $operation" "safe_git_operation"
+    return 0
+}
+
 # Main function
 main() {
     local bump_type=$(parse_arguments "$@")
@@ -714,6 +810,22 @@ main() {
     log "INFO" "Starting Professional Release Management v$SCRIPT_VERSION"
     log "INFO" "Bump type: $bump_type"
     audit_log "RELEASE_STARTED" "SUCCESS" "Type: $bump_type"
+    
+    # Enhanced validation suite (temporarily disabled)
+    # if ! validate_release_arguments "$bump_type"; then
+    #     log "ERROR" "Release argument validation failed"
+    #     exit 1
+    # fi
+    
+    # Run comprehensive system validation
+    if command -v run_comprehensive_validation >/dev/null 2>&1; then
+        log "INFO" "Running comprehensive system validation"
+        if ! run_comprehensive_validation; then
+            log "ERROR" "System validation failed"
+            exit 1
+        fi
+        log "PASS" "System validation completed successfully"
+    fi
     
     # Initialize
     if ! initialize_directories; then
@@ -758,10 +870,21 @@ main() {
     update_version_file "$new_version"
     update_changelog "$new_version"
     
-    # Git operations
-    commit_changes "$new_version"
-    create_git_tag "$new_version"
-    push_to_remote "$new_version"
+    # Git operations with enhanced error checking
+    if ! commit_changes "$new_version"; then
+        log "ERROR" "Failed to commit changes"
+        exit 1
+    fi
+    
+    if ! create_git_tag "$new_version"; then
+        log "ERROR" "Failed to create git tag"
+        exit 1
+    fi
+    
+    if ! push_to_remote "$new_version"; then
+        log "ERROR" "Failed to push to remote"
+        exit 1
+    fi
     
     # Generate artifacts
     generate_artifacts "$new_version"
