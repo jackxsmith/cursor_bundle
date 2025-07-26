@@ -44,6 +44,22 @@ declare -g AUTO_PUSH=true
 declare -g CREATE_TAG=true
 declare -g GENERATE_ARTIFACTS=true
 
+# GitHub Integration
+OWNER="${REPO_OWNER:-jackxsmith}"
+REPO="${REPO_NAME:-cursor_bundle}"
+API="https://api.github.com"
+
+# GitHub token from environment or file
+if [[ -f "$HOME/.github_pat" ]]; then
+    GH_TOKEN="$(cat "$HOME/.github_pat" 2>/dev/null || echo "")"
+else
+    GH_TOKEN="${GH_TOKEN:-}"
+fi
+
+# Hook and function directories
+HOOKS_DIR="${SCRIPT_DIR}/hooks"
+FUNCTIONS_DIR="${SCRIPT_DIR}/functions"
+
 # === UTILITY FUNCTIONS ===
 
 # Enhanced logging
@@ -146,6 +162,114 @@ retry_operation() {
     
     log "ERROR" "Operation failed after $max_attempts attempts: $operation"
     return 1
+}
+
+# GitHub API function
+api() {
+    local endpoint="$1"
+    local method="${2:-GET}"
+    local data="${3:-}"
+    
+    if [[ -z "$GH_TOKEN" ]]; then
+        log "WARN" "GitHub token not available, skipping API call"
+        return 1
+    fi
+    
+    local curl_args=(-fsSL -H "Authorization: token $GH_TOKEN" -H "Accept: application/vnd.github.v3+json")
+    
+    if [[ "$method" != "GET" ]]; then
+        curl_args+=(-X "$method")
+    fi
+    
+    if [[ -n "$data" ]]; then
+        curl_args+=(-d "$data")
+    fi
+    
+    curl "${curl_args[@]}" "$API/$endpoint"
+}
+
+# Execute hook with error handling
+execute_hook() {
+    local hook_type="$1"
+    local hook_name="$2"
+    local hook_path="$HOOKS_DIR/$hook_type/$hook_name"
+    
+    if [[ ! -x "$hook_path" ]]; then
+        log "DEBUG" "Hook not found or not executable: $hook_path"
+        return 0
+    fi
+    
+    log "INFO" "Executing $hook_type hook: $hook_name"
+    
+    if [[ "$DRY_RUN" == "true" ]]; then
+        log "INFO" "DRY RUN: Would execute hook $hook_path"
+        return 0
+    fi
+    
+    if ! "$hook_path"; then
+        log "ERROR" "Hook failed: $hook_path"
+        return 1
+    fi
+    
+    log "PASS" "Hook executed successfully: $hook_name"
+    return 0
+}
+
+# Run pre-commit hooks
+run_pre_commit_hooks() {
+    log "INFO" "Running pre-commit hooks"
+    
+    local hooks=("test" "lint" "security_scan" "build_check")
+    
+    for hook in "${hooks[@]}"; do
+        if ! execute_hook "pre-commit" "$hook"; then
+            log "ERROR" "Pre-commit hook failed: $hook"
+            return 1
+        fi
+    done
+    
+    log "PASS" "All pre-commit hooks passed"
+    return 0
+}
+
+# Run post-release hooks
+run_post_release_hooks() {
+    local version="$1"
+    
+    log "INFO" "Running post-release hooks for version $version"
+    
+    # Set environment variables for hooks
+    export RELEASE_VERSION="$version"
+    export RELEASE_TIMESTAMP="$TIMESTAMP"
+    
+    local hooks=("deploy" "notify_teams" "update_docs" "cleanup")
+    
+    for hook in "${hooks[@]}"; do
+        execute_hook "post-release" "$hook" || log "WARN" "Post-release hook failed: $hook"
+    done
+    
+    log "PASS" "Post-release hooks completed"
+    return 0
+}
+
+# Validate version format
+validate_version_string() {
+    local version="$1"
+    
+    if [[ ! "$version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        log "ERROR" "Invalid version format: $version (expected: v0.0.0)"
+        return 1
+    fi
+    
+    log "DEBUG" "Version format validated: $version"
+    return 0
+}
+
+# Source function libraries if available
+source_function_libraries() {
+    [[ -f "$FUNCTIONS_DIR/notifications.sh" ]] && source "$FUNCTIONS_DIR/notifications.sh"
+    [[ -f "$FUNCTIONS_DIR/changelog.sh" ]] && source "$FUNCTIONS_DIR/changelog.sh"  
+    [[ -f "$FUNCTIONS_DIR/artifacts.sh" ]] && source "$FUNCTIONS_DIR/artifacts.sh"
 }
 
 # === GIT OPERATIONS ===
@@ -594,6 +718,9 @@ main() {
         exit 1
     fi
     
+    # Source function libraries
+    source_function_libraries
+    
     # Validate Git repository
     if ! check_git_repo; then
         exit 1
@@ -615,6 +742,15 @@ main() {
     
     log "INFO" "Bumping version from $current_version to $new_version"
     
+    # Validate version format
+    validate_version_string "$new_version"
+    
+    # Run pre-commit hooks
+    if ! run_pre_commit_hooks; then
+        log "ERROR" "Pre-commit hooks failed"
+        exit 1
+    fi
+    
     # Update files
     update_version_file "$new_version"
     update_changelog "$new_version"
@@ -626,6 +762,9 @@ main() {
     
     # Generate artifacts
     generate_artifacts "$new_version"
+    
+    # Run post-release hooks
+    run_post_release_hooks "$new_version"
     
     # Summary
     log "PASS" "Release process completed successfully!"
