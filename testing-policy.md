@@ -67,7 +67,27 @@ To prevent shortcuts:
 - Claiming "all fixed" without complete testing = **POLICY VIOLATION**
 - Any installation script that fails basic help test = **CRITICAL ERROR**
 
+## GitHub Branch Verification Requirements
+**POLICY**: After every bump to GitHub, MUST verify:
+- Release branch appears on GitHub repository
+- Version number is correct in branch name
+- All commits are properly pushed
+- GitHub Actions workflows trigger successfully
+
+**VERIFICATION COMMANDS**:
+- `git branch -r | grep v6.9.XXX` - Verify remote branch exists
+- `git push origin main` - Ensure main branch is current
+- `git push -u origin release/vX.Y.Z` - Ensure release branch pushed
+- Check GitHub repository web interface for branch visibility
+
+**FAILURE PROTOCOL**:
+- If branch not visible on GitHub → Re-push with force if needed
+- If version incorrect → Fix version and re-push
+- If commits missing → Verify git push completed successfully
+
 **REMEMBER**: 
 - Installation testing is NEVER complete until EVERY script passes basic tests
 - "Most scripts work" is NOT sufficient - ALL scripts must work
 - Policy violations will require complete re-testing from scratch
+- **GitHub branch visibility MUST be verified after every push**
+- Any GitHub sync issues MUST be resolved before claiming completion
