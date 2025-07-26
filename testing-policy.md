@@ -104,6 +104,101 @@ To prevent shortcuts:
 - If version incorrect → Fix version and re-push
 - If commits missing → Verify git push completed successfully
 
+## Comprehensive Feature Validation Policy
+
+**POLICY**: Implement systematic verification processes to catch errors before claiming completion.
+
+**MANDATORY VERIFICATION STEPS**:
+
+### Pre-Implementation Validation
+1. **Feature Discovery**: Use systematic enumeration instead of sampling
+   - `find . -name "pattern*" -type f` to discover ALL matching files
+   - `grep -r "pattern" --include="*.ext"` to find ALL occurrences
+   - Never assume "most files" represent "all files"
+
+2. **Dependency Mapping**: Identify all interconnected components
+   - Check imports/includes in modified files
+   - Verify referenced files exist
+   - Test fallback mechanisms
+
+3. **Test Environment Setup**: Ensure consistent testing conditions
+   - Document test commands in advance
+   - Prepare test data/scenarios
+   - Set up logging for all test runs
+
+### During Implementation Validation
+4. **Progressive Testing**: Test each change immediately
+   - Test after each individual fix, not batched
+   - Verify fix works before moving to next item
+   - Document test results in real-time
+
+5. **Cross-Platform Verification**: Test on different scenarios
+   - Test with different argument combinations
+   - Test edge cases (empty inputs, missing files)
+   - Test error conditions and recovery
+
+6. **Integration Testing**: Verify interactions between components
+   - Test modified components with their dependencies
+   - Verify no regression in related functionality
+   - Check system-wide impact
+
+### Post-Implementation Validation
+7. **Comprehensive Re-testing**: Verify entire feature set
+   - Re-run ALL tests, not just new ones
+   - Test the complete user workflow end-to-end
+   - Verify documentation matches implementation
+
+8. **Deployment Verification**: Confirm changes are properly deployed
+   - Verify git status shows expected state
+   - Check remote repository reflects changes
+   - Confirm version numbers are correct
+
+**ERROR REDUCTION STRATEGIES**:
+
+### Systematic Discovery
+- **Use Tools Over Manual**: Prefer `find`, `grep`, `git ls-files` over manual listing
+- **Pattern Matching**: Use comprehensive patterns to catch all variants
+- **Cross-Reference**: Compare multiple discovery methods for completeness
+
+### Verification Automation
+- **Script Testing**: Create test scripts that can be re-run
+- **Checksum Verification**: Verify file integrity after changes
+- **State Validation**: Check system state before/after changes
+
+### Documentation Standards
+- **Real-Time Logging**: Document as you work, not after
+- **Evidence Collection**: Capture command outputs and error messages
+- **Assumption Tracking**: Document what you assume vs. what you verify
+
+**EXAMPLES OF IMPROVED PROCESS**:
+
+Instead of:
+```bash
+# Test a few GUI scripts
+python3 ./07-tkinter_fixed.py --help
+python3 ./07-tkinter-improved.py --help
+```
+
+Do:
+```bash
+# Discover ALL GUI scripts
+find . -name "*tkinter*.py" -o -name "*gui*.py" -o -name "*zenity*.sh" | sort
+# Test EVERY discovered script
+for script in $(find . -name "*tkinter*.py" -o -name "*gui*.py"); do
+    echo "Testing: $script"
+    python3 "$script" --help 2>&1 | tee -a test_results.log
+done
+```
+
+**VERIFICATION CHECKLIST**:
+- [ ] Used systematic discovery (find/grep) instead of manual enumeration
+- [ ] Tested ALL discovered items, not a sample
+- [ ] Verified each fix individually before proceeding
+- [ ] Documented test results in real-time
+- [ ] Checked for dependencies and side effects
+- [ ] Verified deployment success on remote repository
+- [ ] Confirmed version numbers and branches are correct
+
 ## Interruption Minimization Policy
 
 **POLICY**: Minimize unnecessary interruptions to maintain workflow efficiency.
