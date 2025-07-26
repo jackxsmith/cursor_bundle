@@ -153,17 +153,19 @@ retry_operation() {
     return 1
 }
 
+# Global variable to track installation status
+INSTALLATION_FAILED=false
+
 # Cleanup function
 cleanup() {
     [[ -d "$TEMP_DIR" ]] && rm -rf "$TEMP_DIR"
     
-    local exit_code=$?
-    if [[ $exit_code -eq 0 ]]; then
-        log "PASS" "Installation completed successfully"
-        audit_log "INSTALLATION_COMPLETE" "SUCCESS" "Exit code: $exit_code"
+    if [[ "$INSTALLATION_FAILED" == "true" ]]; then
+        log "ERROR" "Installation failed - see errors above"
+        audit_log "INSTALLATION_FAILED" "FAILURE" "Installation process encountered errors"
     else
-        log "ERROR" "Installation failed with exit code: $exit_code"
-        audit_log "INSTALLATION_FAILED" "FAILURE" "Exit code: $exit_code"
+        log "PASS" "Installation completed successfully"
+        audit_log "INSTALLATION_COMPLETE" "SUCCESS" "Installation completed without errors"
     fi
 }
 
@@ -650,6 +652,7 @@ parse_arguments() {
                 ;;
             *)
                 log "ERROR" "Unknown option: $1"
+                INSTALLATION_FAILED=true
                 show_usage
                 exit 1
                 ;;
@@ -669,6 +672,7 @@ main() {
     # Initialize
     if ! initialize_directories; then
         log "ERROR" "Failed to initialize directories"
+        INSTALLATION_FAILED=true
         exit 1
     fi
     
@@ -676,6 +680,7 @@ main() {
     if ! check_system_requirements; then
         if [[ "$FORCE_INSTALL" != "true" ]]; then
             log "ERROR" "System requirements not met (use --force to override)"
+            INSTALLATION_FAILED=true
             exit 1
         else
             log "WARN" "Proceeding despite unmet requirements"
@@ -683,6 +688,7 @@ main() {
     fi
     
     if ! check_existing_installation; then
+        INSTALLATION_FAILED=true
         exit 1
     fi
     
@@ -696,22 +702,26 @@ main() {
     # Download and verify
     if ! download_cursor; then
         log "ERROR" "Failed to download Cursor"
+        INSTALLATION_FAILED=true
         exit 1
     fi
     
     if ! verify_appimage; then
         log "ERROR" "AppImage verification failed"
+        INSTALLATION_FAILED=true
         exit 1
     fi
     
     # Installation
     if ! install_core; then
         log "ERROR" "Core installation failed"
+        INSTALLATION_FAILED=true
         exit 1
     fi
     
     if ! create_integration; then
         log "ERROR" "System integration failed"
+        INSTALLATION_FAILED=true
         exit 1
     fi
     
