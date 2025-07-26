@@ -1,0 +1,8 @@
+[2025-07-26T15:46:24-04:00] INFO: Starting Professional Test Suite Framework v2.0.0
+[2025-07-26T15:46:24-04:00] INFO: Suite: Professional Test Suite Framework v2.0.0, Category: 
+[2025-07-26T15:46:24-04:00] INFO: Initializing Professional Test Suite Framework v2.0.0
+[2025-07-26T15:46:24-04:00] DEBUG: Created directory: /home/jj/Downloads/cursor_bundle/tests
+[2025-07-26T15:46:24-04:00] DEBUG: Created directory: /home/jj/Downloads/cursor_bundle/reports/testing
+[2025-07-26T15:46:24-04:00] DEBUG: Created directory: /home/jj/Downloads/cursor_bundle/artifacts/testing
+[2025-07-26T15:46:24-04:00] DEBUG: Created test configuration
+[2025-07-26T15:46:24-04:00] PASS: Framework initialization completed

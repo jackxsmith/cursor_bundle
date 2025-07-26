@@ -67,19 +67,22 @@
 
 ### Testing Progress: 9/18 scripts tested so far...
 
-## ADDITIONAL ERRORS FOUND:
+## ADDITIONAL ERRORS FOUND AND FIXED:
 
-### ❌ ERROR #6: 09-zenity_fixed.sh
+### ✅ FIXED: 09-zenity_fixed.sh
 - **Command**: `./09-zenity_fixed.sh --help`
-- **Error**: Script immediately opens GUI dialog instead of showing help
-- **Cause**: No help flag handling, tries to open zenity GUI immediately
-- **Fix Needed**: Add help flag check before GUI initialization
+- **Result**: Shows proper usage information (after fix)
+- **Fix Applied**: Added help flag check before GUI initialization
 
-### ❌ ERROR #7: 15-docker-improved-v2.sh
+### ✅ FIXED: 15-docker-improved.sh
+- **Command**: `./15-docker-improved.sh --help`
+- **Result**: Shows proper usage information (after fix)
+- **Fix Applied**: Added log directory creation before logging
+
+### ✅ FIXED: 15-docker-improved-v2.sh
 - **Command**: `./15-docker-improved-v2.sh --help`
-- **Error**: `/home/jj/.cache/cursor/docker/logs/docker_20250726_175820.log: No such file or directory`
-- **Cause**: Log directory not created before logging
-- **Fix Needed**: Create log directory before writing logs
+- **Result**: Shows proper usage information (after fix)
+- **Fix Applied**: Fixed argument parsing and help flag handling
 
 ### ❌ ERROR #8: get-docker.sh
 - **Command**: `./get-docker.sh --help`
@@ -98,3 +101,34 @@
 ### ✅ PASS: 15-docker-improved.sh
 - **Command**: `./15-docker-improved.sh --help`
 - **Result**: Shows proper usage information
+
+## GUI INSTALLATION ERRORS FOUND:
+
+### ✅ FIXED: 07-tkinter_fixed.py
+- **Command**: `python3 ./07-tkinter_fixed.py --help`
+- **Result**: Shows proper usage information (after fix)
+- **Fix Applied**: Added help flag handling and fallback script detection
+
+### ❌ ERROR #10: 07-tkinter-improved-v2.py
+- **Command**: `python3 ./07-tkinter-improved-v2.py --help`
+- **Error**: Script starts GUI initialization instead of showing help, ignores --help flag
+- **Cause**: Help flag not checked before GUI initialization
+- **Fix Needed**: Add help flag handling before importing/starting GUI
+
+### ❌ ERROR #11: 09-zenity-improved.sh
+- **Command**: `./09-zenity-improved.sh --help`
+- **Error**: Script hangs/times out instead of showing help
+- **Cause**: No help flag handling, tries to start GUI immediately
+- **Fix Needed**: Add help flag check before zenity operations
+
+### ✅ PASS: 07-tkinter-improved.py
+- **Command**: `python3 ./07-tkinter-improved.py --help`
+- **Result**: Shows proper usage information
+
+### ✅ PASS: 09-zenity-improved-v2.sh
+- **Command**: `./09-zenity-improved-v2.sh --help`
+- **Result**: Shows proper usage information
+
+### ✅ PASS: 09-zenity_fixed.sh (FIXED)
+- **Command**: `./09-zenity_fixed.sh --help`
+- **Result**: Shows proper usage information (after fix)

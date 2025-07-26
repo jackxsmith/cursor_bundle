@@ -69,12 +69,42 @@ def run_installer(script_path: str, mode: str, progress: ttk.Progressbar, root: 
 
 
 def main() -> None:
+    # Check if help was requested
+    if len(sys.argv) > 1 and sys.argv[1] in ("--help", "-h"):
+        print("Tkinter GUI Installer for Cursor IDE")
+        print("")
+        print("This script provides a graphical installer using tkinter.")
+        print("Usage: python3 07-tkinter_fixed.py")
+        print("")
+        print("GUI buttons:")
+        print("  Install   - Install Cursor IDE")
+        print("  Uninstall - Remove Cursor IDE")
+        print("  Quit      - Exit the installer")
+        return
+
     # Determine the location of the installer relative to this script
     script_dir = os.path.abspath(os.path.dirname(__file__))
-    install_script = os.path.join(script_dir, "install_v6.9.35.sh")
-    if not os.path.isfile(install_script):
+    # Try different possible installer script names
+    possible_scripts = [
+        "install_v6.9.35.sh",
+        "install.sh", 
+        "14-install_fixed.sh",
+        "14-install-improved.sh",
+        "14-install-improved-v2.sh"
+    ]
+    
+    install_script = None
+    for script_name in possible_scripts:
+        candidate = os.path.join(script_dir, script_name)
+        if os.path.isfile(candidate):
+            install_script = candidate
+            break
+    
+    if not install_script:
         sys.stderr.write(
-            f"Error: installer script not found at {install_script}\nPlease ensure this script resides in the same directory.\n"
+            f"Error: No installer script found. Looked for:\n"
+            f"  {', '.join(possible_scripts)}\n"
+            f"Please ensure an installer script is available in the same directory.\n"
         )
         sys.exit(1)
 

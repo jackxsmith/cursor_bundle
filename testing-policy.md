@@ -62,6 +62,25 @@ To prevent shortcuts:
 - Timeout/hanging behavior
 - Argument parsing errors
 
+## GUI Script Testing Requirements
+**POLICY**: ALL GUI installation scripts MUST be tested for:
+- **NO GUI DIALOGS ON HELP**: Scripts must show help text, not open GUI
+- **PROPER HELP HANDLING**: Help flags must be checked BEFORE GUI initialization
+- **DEPENDENCY CHECKING**: Missing dependencies must be handled gracefully
+- **TIMEOUT PREVENTION**: Scripts must not hang waiting for GUI interaction
+- **HEADLESS COMPATIBILITY**: Scripts should handle missing DISPLAY environment
+
+**GUI SCRIPT IDENTIFICATION**:
+- Any script containing: tkinter, zenity, gui, dialog, wx, qt
+- Any Python script with GUI imports
+- Any script that opens windows or dialogs
+
+**GUI TESTING PROTOCOL**:
+1. Test with `--help` flag (must show help, not GUI)
+2. Test with timeout (must not hang)
+3. Test in headless environment (DISPLAY= script --help)
+4. Verify dependencies exist before GUI initialization
+
 **VIOLATION CONSEQUENCES**:
 - Finding untested installation errors after "completion" = **IMMEDIATE RE-TEST ALL**
 - Claiming "all fixed" without complete testing = **POLICY VIOLATION**

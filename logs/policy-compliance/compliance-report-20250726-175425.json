@@ -1,0 +1,11 @@
+{
+  "timestamp": "2025-07-26T17:54:25-04:00",
+  "repository": "git@github.com:jackxsmith/cursor_bundle.git",
+  "branch": "main",
+  "commit": "7799ff1424c4a8b400888389f45dd307026a120d",
+  "user": "Jack X. Smith",
+  "violations": 0,
+  "compliance_status": "PASSED",
+  "log_file": "/home/jj/Downloads/cursor_bundle/logs/policy-compliance/compliance-20250726-175412.log",
+  "violations_log": "/home/jj/Downloads/cursor_bundle/logs/policy-compliance/violations.log"
+}

@@ -780,12 +780,16 @@ EOF
 parse_arguments() {
     local command=""
     
+    # Check for help first before any other processing
+    for arg in "$@"; do
+        if [[ "$arg" == "--help" ]] || [[ "$arg" == "-h" ]]; then
+            show_usage
+            exit 0
+        fi
+    done
+    
     while [[ $# -gt 0 ]]; do
         case $1 in
-            -h|--help)
-                show_usage
-                exit 0
-                ;;
             --version)
                 echo "Cursor IDE Professional Docker Deployment v$SCRIPT_VERSION"
                 exit 0
@@ -809,23 +813,27 @@ parse_arguments() {
                 QUIET_MODE=true
                 ;;
             build|start|up|stop|down|status|shell|backup|health|logs)
-                command="$1"
-                ;;
-            *)
                 if [[ -z "$command" ]]; then
                     command="$1"
                 else
-                    log "ERROR" "Unknown option: $1"
+                    log "ERROR" "Multiple commands specified"
                     exit 1
                 fi
+                ;;
+            *)
+                log "ERROR" "Unknown option: $1"
+                show_usage
+                exit 1
                 ;;
         esac
         shift
     done
     
-    # Set default command
+    # Validate command was provided
     if [[ -z "$command" ]]; then
-        command="help"
+        log "ERROR" "No command specified"
+        show_usage
+        exit 1
     fi
     
     echo "$command"
@@ -833,6 +841,14 @@ parse_arguments() {
 
 # Main function
 main() {
+    # Check for help first - before any other processing
+    for arg in "$@"; do
+        if [[ "$arg" == "--help" ]] || [[ "$arg" == "-h" ]]; then
+            show_usage
+            return 0
+        fi
+    done
+    
     local command=$(parse_arguments "$@")
     
     log "INFO" "Starting Cursor IDE Docker Deployment v$SCRIPT_VERSION"

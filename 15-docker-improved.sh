@@ -54,6 +54,9 @@ declare -A SERVICE_PORTS=(
     ["health"]=8081
 )
 
+# Ensure log directory exists
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+
 # Log files
 readonly MAIN_LOG="$LOG_DIR/docker-${TIMESTAMP}.log"
 readonly ERROR_LOG="$LOG_DIR/docker-error-${TIMESTAMP}.log"

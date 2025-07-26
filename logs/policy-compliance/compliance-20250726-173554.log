@@ -1,0 +1,28 @@
+===================================================
+Policy Compliance Check - 2025-07-26T17:35:54-04:00
+===================================================
+Repository: git@github.com:jackxsmith/cursor_bundle.git
+Branch: release/v6.9.233
+User: Jack X. Smith
+===================================================
+[2025-07-26T17:35:54-04:00] [INFO] Starting secret scanning...
+[2025-07-26T17:35:56-04:00] [INFO] Secret scanning complete. Files scanned: 149, Violations: 0
+[2025-07-26T17:35:56-04:00] [INFO] Checking branch protection rules...
+[2025-07-26T17:35:56-04:00] [INFO] Checking commit signatures...
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: b407b4f chore: bump version to v6.9.233
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: 7862b0b fix: resolve installation script failures and policy compliance issues
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: cefc8be chore: bump version to v6.9.232
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: c640da4 feat: add comprehensive policy compliance system
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: ff665a2 Bump version to [0;34m[INFO][0m Version bumped from 6.9.230 to v6.9.231 v6.9.231
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: 3d9633f chore: ensure all scripts have executable permissions
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: d3dd72f fix: define timestamp variable in performance logging
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: 1bab646 fix: handle ufw permission errors gracefully
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: 65c75e8 fix: improve logging robustness in scripts
+[2025-07-26T17:35:56-04:00] [WARNING] Unsigned commit: 44b8e50 Clean up VERSION file formatting
+[2025-07-26T17:35:56-04:00] [INFO] Commit signature check: 10/10 commits are unsigned
+[2025-07-26T17:35:56-04:00] [INFO] Checking file permissions...
+[2025-07-26T17:36:05-04:00] [INFO] File permission check complete. Violations: 0
+[2025-07-26T17:36:05-04:00] [INFO] Checking for sensitive files...
+[2025-07-26T17:36:05-04:00] [INFO] Sensitive file check complete. Violations: 0
+[2025-07-26T17:36:05-04:00] [INFO] Compliance report generated: /home/jj/Downloads/cursor_bundle/logs/policy-compliance/compliance-report-20250726-173605.json
+[2025-07-26T17:36:05-04:00] [SUCCESS] ✅ All policy compliance checks passed!
