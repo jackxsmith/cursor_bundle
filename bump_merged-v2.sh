@@ -256,8 +256,11 @@ run_post_release_hooks() {
 validate_version_string() {
     local version="$1"
     
-    if [[ ! "$version" =~ ^v?[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-        log "ERROR" "Invalid version format: $version (expected: v0.0.0)"
+    # Remove 'v' prefix for validation if present
+    local clean_version="${version#v}"
+    
+    if [[ ! "$clean_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        log "ERROR" "Invalid version format: $version (expected: v0.0.0 or 0.0.0)"
         return 1
     fi
     
