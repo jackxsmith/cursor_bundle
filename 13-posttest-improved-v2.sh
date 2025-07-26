@@ -97,6 +97,7 @@ measure_performance() {
     local duration=$(((end_time - start_time) / 1000000))
     
     TEST_METRICS["${test_name}_duration_ms"]="$duration"
+    local timestamp="$(date -Iseconds)"
     echo "[${timestamp}] PERF: ${test_name} completed in ${duration}ms" >> "$PERFORMANCE_LOG"
     
     return $exit_code
