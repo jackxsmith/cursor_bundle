@@ -1,7 +1,7 @@
 {
   "test_suite": {
     "name": "Cursor Bundle Advanced Test Suite",
-    "version": "22-test-cursor-suite-improved-v2.sh",
+    "version": "16-tracker-improved-v2.sh",
     "description": "Comprehensive testing framework with policy enforcement, performance monitoring, and security validation"
   },
   "execution": {

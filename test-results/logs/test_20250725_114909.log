@@ -1,7 +1,7 @@
 [2025-07-25 11:49:09] [INFO] Setting up test environment...
 [2025-07-25 11:49:09] [SUCCESS] Test environment initialized
-[2025-07-25 11:49:09] [INFO] 🚀 Starting Cursor Bundle Test Suite v22-test-cursor-suite-improved-v2.sh
-[2025-07-25 11:49:09] [INFO] Version: 22-test-cursor-suite-improved-v2.sh | Timestamp: 20250725_114909
+[2025-07-25 11:49:09] [INFO] 🚀 Starting Cursor Bundle Test Suite v16-tracker-improved-v2.sh
+[2025-07-25 11:49:09] [INFO] Version: 16-tracker-improved-v2.sh | Timestamp: 20250725_114909
 [2025-07-25 11:49:09] [INFO] 🧪 Running test: filesystem_structure
 [2025-07-25 11:49:11] [WARN] Retry attempt 2/3 for filesystem_structure
 [2025-07-25 11:49:13] [WARN] Retry attempt 3/3 for filesystem_structure

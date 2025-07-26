@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 
-# UPGRADED CURSOR BUNDLE TEST SUITE v22-test-cursor-suite-improved-v2.sh
+# UPGRADED CURSOR BUNDLE TEST SUITE v16-tracker-improved-v2.sh
 # Advanced Enterprise Testing Framework with Policy Enforcement
 # 
 # Features:
@@ -19,7 +19,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 # === CONFIGURATION ===
-readonly SCRIPT_VERSION="22-test-cursor-suite-improved-v2.sh"
+readonly SCRIPT_VERSION="16-tracker-improved-v2.sh"
 readonly SCRIPT_NAME="$(basename "${0}")"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
