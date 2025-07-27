@@ -234,10 +234,10 @@ generate_secure_password() {
 encrypt_credential() {
     local credential_name="$1"
     local credential_value="$2"
-    local password="${ENCRYPTION_PASSWORD:-$(generate_secure_password)}"
+    local encryption_key="${ENCRYPTION_PASSWORD:-$(generate_secure_password)}"
     
     if command -v openssl >/dev/null 2>&1; then
-        echo "$credential_value" | openssl enc -aes-256-cbc -salt -a -pass pass:"$password" > "${CREDENTIALS_FILE}.${credential_name}"
+        echo "$credential_value" | openssl enc -aes-256-cbc -salt -a -pass pass:"$encryption_key" > "${CREDENTIALS_FILE}.${credential_name}"
         chmod 600 "${CREDENTIALS_FILE}.${credential_name}"
         log_info "Credential encrypted and stored: $credential_name" "github_auth"
     else
@@ -249,12 +249,12 @@ encrypt_credential() {
 
 decrypt_credential() {
     local credential_name="$1"
-    local password="${ENCRYPTION_PASSWORD:-$(generate_secure_password)}"
+    local encryption_key="${ENCRYPTION_PASSWORD:-$(generate_secure_password)}"
     local credential_file="${CREDENTIALS_FILE}.${credential_name}"
     
     if [[ -f "$credential_file" ]]; then
         if command -v openssl >/dev/null 2>&1; then
-            openssl enc -aes-256-cbc -d -a -pass pass:"$password" -in "$credential_file" 2>/dev/null || cat "$credential_file"
+            openssl enc -aes-256-cbc -d -a -pass pass:"$encryption_key" -in "$credential_file" 2>/dev/null || cat "$credential_file"
         else
             cat "$credential_file"
         fi
