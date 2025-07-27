@@ -4,6 +4,30 @@ All notable changes to the Cursor Bundle project will be documented in this file
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
+## [v6.9.246] - 2025-07-26
+
+### Added
+- Comprehensive GitHub code improvement tools integration
+- GitHub Copilot automated code review feedback after each push
+- OpenAI Codex integration for continuous code improvement
+- CodeQL v3 security scanning with GitHub Actions workflow analysis
+- Super Linter multi-language code quality validation
+- Dependabot configuration for automated dependency updates
+- Post-push feedback collection and analysis system
+- Automated improvement suggestions with optional auto-application
+- Enterprise framework integration for all GitHub tools
+
+### Enhanced
+- Bump script now collects AI feedback after each release
+- Enterprise framework includes GitHub tools validation
+- Security improvements with dynamic password generation
+- Added unified testing interface for code quality tools
+
+### Security
+- Fixed hardcoded password vulnerability with secure generation
+- All credentials now use encryption with dynamic keys
+- Policy compliance validation for all pushes
+
 ## [v6.9.245] - 2025-07-26
 
 ### Changed
