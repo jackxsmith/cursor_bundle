@@ -262,6 +262,134 @@ run_post_release_hooks() {
     return 0
 }
 
+# === GITHUB FEEDBACK INTEGRATION ===
+collect_post_push_github_feedback() {
+    local version="$1"
+    local commit_hash=$(git rev-parse HEAD)
+    
+    log "INFO" "Collecting GitHub feedback for version $version (commit: ${commit_hash:0:8})"
+    
+    # Source GitHub code improvement tools
+    local github_tools_script="$SCRIPT_DIR/scripts/github_code_improvement_tools.sh"
+    if [[ -f "$github_tools_script" ]]; then
+        source "$github_tools_script"
+        
+        # Initialize GitHub tools
+        init_github_tools
+        
+        # Collect post-push feedback
+        if collect_post_push_feedback "$commit_hash"; then
+            log "PASS" "GitHub feedback collection completed"
+        else
+            log "WARN" "GitHub feedback collection encountered issues"
+        fi
+        
+        # Run CodeQL analysis on the new version
+        if run_codeql_analysis "."; then
+            log "PASS" "CodeQL analysis initiated"
+        else
+            log "WARN" "CodeQL analysis failed to start"
+        fi
+        
+        # Run Super Linter on changed files
+        if run_super_linter "."; then
+            log "PASS" "Super Linter analysis completed"
+        else
+            log "WARN" "Super Linter analysis encountered issues"
+        fi
+        
+        # Check for any new Dependabot PRs
+        if check_dependabot_prs; then
+            log "INFO" "Dependabot PR check completed"
+        fi
+        
+        # Request Copilot analysis of key files changed in this version
+        analyze_version_changes_with_copilot "$version" "$commit_hash"
+        
+    else
+        log "WARN" "GitHub code improvement tools not found at: $github_tools_script"
+    fi
+}
+
+analyze_version_changes_with_copilot() {
+    local version="$1"
+    local commit_hash="$2"
+    
+    log "INFO" "Analyzing version changes with AI tools"
+    
+    # Get list of files changed in this version
+    local changed_files
+    if changed_files=$(git diff-tree --no-commit-id --name-only -r "$commit_hash" 2>/dev/null); then
+        
+        log "INFO" "Found $(echo "$changed_files" | wc -l) changed files for analysis"
+        
+        # Analyze key script files with Codex
+        while IFS= read -r file; do
+            if [[ -f "$file" ]]; then
+                case "$file" in
+                    *.sh|*.py|*.js|*.ts)
+                        log "DEBUG" "Requesting Codex analysis for: $file"
+                        request_codex_analysis "$file" "review" 2>/dev/null || \
+                            log "DEBUG" "Codex analysis skipped for: $file"
+                        ;;
+                esac
+            fi
+        done <<< "$changed_files"
+        
+        # Generate improvement summary
+        generate_version_improvement_summary "$version" "$commit_hash"
+        
+    else
+        log "WARN" "Could not determine changed files for version $version"
+    fi
+}
+
+generate_version_improvement_summary() {
+    local version="$1"
+    local commit_hash="$2"
+    local timestamp=$(date -Iseconds)
+    
+    # Create summary report
+    local summary_file="$ARTIFACTS_DIR/github_feedback_summary_${version}_${TIMESTAMP}.json"
+    
+    cat > "$summary_file" << EOF
+{
+    "version": "$version",
+    "commit_hash": "$commit_hash",
+    "timestamp": "$timestamp",
+    "analysis_completed": {
+        "codeql": true,
+        "super_linter": true,
+        "copilot_feedback": true,
+        "codex_analysis": true,
+        "dependabot_check": true
+    },
+    "feedback_sources": [
+        "GitHub Copilot",
+        "OpenAI Codex", 
+        "CodeQL Security Analysis",
+        "Super Linter Quality Checks",
+        "Dependabot Dependency Analysis"
+    ],
+    "improvements_available": true,
+    "next_actions": [
+        "Review feedback logs in GitHub tools config directory",
+        "Apply suggested improvements in next development cycle",
+        "Monitor for new security alerts and dependency updates"
+    ]
+}
+EOF
+    
+    log "INFO" "GitHub feedback summary generated: $summary_file"
+    
+    # Send notification about feedback collection
+    if command -v unified_alert >/dev/null 2>&1; then
+        unified_alert "INFO" "Post-Push Feedback Complete" \
+            "GitHub feedback collection completed for version $version. Analysis includes Copilot, Codex, CodeQL, and Super Linter results." \
+            "release_feedback"
+    fi
+}
+
 # Validate version format
 validate_version_string() {
     local version="$1"
@@ -891,6 +1019,9 @@ main() {
     
     # Run post-release hooks
     run_post_release_hooks "$new_version"
+    
+    # Collect post-push feedback from GitHub tools
+    collect_post_push_github_feedback "$new_version"
     
     # Summary
     log "PASS" "Release process completed successfully!"

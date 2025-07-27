@@ -23,6 +23,7 @@ declare -A FRAMEWORK_STATUS=(
     ["logging"]="unknown"
     ["alerting"]="unknown"
     ["github"]="unknown"
+    ["github_tools"]="unknown"
     ["testing"]="unknown"
     ["monitoring"]="unknown"
     ["security"]="unknown"
@@ -199,6 +200,21 @@ load_security_framework() {
         fi
     done
     
+    # Load GitHub code improvement tools
+    if [[ -f "${INTEGRATION_DIR}/github_code_improvement_tools.sh" ]]; then
+        if source "${INTEGRATION_DIR}/github_code_improvement_tools.sh" 2>/dev/null; then
+            ((available_tools++))
+            log_integration "INFO" "GitHub code improvement tools loaded"
+            FRAMEWORK_STATUS["github_tools"]="loaded"
+        else
+            log_integration "WARN" "Failed to load GitHub code improvement tools"
+            FRAMEWORK_STATUS["github_tools"]="failed"
+        fi
+    else
+        FRAMEWORK_STATUS["github_tools"]="missing"
+        log_integration "WARN" "GitHub code improvement tools not found"
+    fi
+    
     if [[ $available_tools -gt 0 ]]; then
         FRAMEWORK_STATUS["security"]="available"
         log_integration "INFO" "Security framework available ($available_tools tools)"
@@ -230,6 +246,12 @@ validate_framework_integration() {
     if ! test_github_framework; then
         ((validation_errors++))
         log_integration "ERROR" "GitHub framework validation failed"
+    fi
+    
+    # Test GitHub tools integration
+    if ! test_github_tools_framework; then
+        ((validation_errors++))
+        log_integration "ERROR" "GitHub tools framework validation failed"
     fi
     
     # Test cross-framework communication
@@ -279,6 +301,38 @@ test_github_framework() {
             return $?
         fi
     fi
+    return 1
+}
+
+test_github_tools_framework() {
+    if [[ "${FRAMEWORK_STATUS["github_tools"]}" == "loaded" ]]; then
+        # Test GitHub tools availability
+        if command -v init_github_tools >/dev/null 2>&1; then
+            log_integration "INFO" "GitHub tools framework available"
+            
+            # Test specific tool functions
+            local tools_working=0
+            
+            if command -v validate_tools_availability >/dev/null 2>&1; then
+                ((tools_working++))
+            fi
+            
+            if command -v collect_post_push_feedback >/dev/null 2>&1; then
+                ((tools_working++))
+            fi
+            
+            if command -v request_codex_analysis >/dev/null 2>&1; then
+                ((tools_working++))
+            fi
+            
+            if [[ $tools_working -gt 0 ]]; then
+                log_integration "INFO" "GitHub tools framework functional ($tools_working/3 tools available)"
+                return 0
+            fi
+        fi
+    fi
+    
+    log_integration "WARN" "GitHub tools framework not functional"
     return 1
 }
 
@@ -380,6 +434,9 @@ create_unified_testing_interface() {
                     ;;
                 "integration")
                     run_integration_tests "$target"
+                    ;;
+                "github_tools")
+                    run_github_tools_tests "$target"
                     ;;
                 *)
                     unified_log "ERROR" "Unknown test type: $test_type" "testing"
@@ -484,6 +541,43 @@ run_integration_tests() {
     test_cross_framework_communication
     
     unified_log "INFO" "Integration tests completed" "testing"
+}
+
+run_github_tools_tests() {
+    local target="$1"
+    
+    unified_log "INFO" "Running GitHub tools tests on: $target" "testing"
+    
+    if [[ "${FRAMEWORK_STATUS["github_tools"]}" == "loaded" ]]; then
+        # Test tools availability
+        if command -v test_all_tools >/dev/null 2>&1; then
+            unified_log "INFO" "Testing GitHub tools availability" "testing"
+            test_all_tools 2>&1 | while read -r line; do
+                unified_log "INFO" "GitHub Tools: $line" "testing"
+            done
+        fi
+        
+        # Test specific functionalities
+        if [[ -f "$target" ]]; then
+            # Test file analysis
+            if command -v request_codex_analysis >/dev/null 2>&1; then
+                unified_log "INFO" "Testing Codex analysis on: $target" "testing"
+                request_codex_analysis "$target" "review" >/dev/null 2>&1 || \
+                    unified_log "WARN" "Codex analysis test failed" "testing"
+            fi
+            
+            # Test quality checks
+            if command -v run_file_quality_checks >/dev/null 2>&1; then
+                unified_log "INFO" "Testing quality checks on: $target" "testing"
+                run_file_quality_checks "$target"
+            fi
+        fi
+        
+        unified_log "INFO" "GitHub tools tests completed" "testing"
+    else
+        unified_log "WARN" "GitHub tools not available for testing" "testing"
+        return 1
+    fi
 }
 
 # === MONITORING ===
