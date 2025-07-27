@@ -219,10 +219,22 @@ setup_github_app_auth() {
     return 1
 }
 
+generate_secure_password() {
+    # Generate a secure password using available tools
+    if command -v openssl >/dev/null 2>&1; then
+        openssl rand -base64 32 | tr -d '\n'
+    elif command -v head >/dev/null 2>&1 && [[ -c /dev/urandom ]]; then
+        head -c 32 /dev/urandom | base64 | tr -d '\n'
+    else
+        # Fallback: generate from timestamp and process info
+        echo "${USER}_$(date +%s)_$$_$(hostname)" | sha256sum | cut -d' ' -f1
+    fi
+}
+
 encrypt_credential() {
     local credential_name="$1"
     local credential_value="$2"
-    local password="${ENCRYPTION_PASSWORD:-cursor_bundle_secure}"
+    local password="${ENCRYPTION_PASSWORD:-$(generate_secure_password)}"
     
     if command -v openssl >/dev/null 2>&1; then
         echo "$credential_value" | openssl enc -aes-256-cbc -salt -a -pass pass:"$password" > "${CREDENTIALS_FILE}.${credential_name}"
@@ -237,7 +249,7 @@ encrypt_credential() {
 
 decrypt_credential() {
     local credential_name="$1"
-    local password="${ENCRYPTION_PASSWORD:-cursor_bundle_secure}"
+    local password="${ENCRYPTION_PASSWORD:-$(generate_secure_password)}"
     local credential_file="${CREDENTIALS_FILE}.${credential_name}"
     
     if [[ -f "$credential_file" ]]; then
